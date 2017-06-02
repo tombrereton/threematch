@@ -41,9 +41,9 @@ WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + 75
 # ============================================
 # locator functions
 # ============================================
-def getLeftTopOfTile(tileX, tileY):
-    left = (tileX * CELL_SIZE) + (tileX - 1)
-    top = (tileY * CELL_SIZE) + (tileY - 1)
+def getLeftTopOfTile(tile_x, tile_y):
+    left = (tile_x * CELL_SIZE) + (tile_x - 1)
+    top = (tile_y * CELL_SIZE) + (tile_y - 1)
     return (left, top)
 
 
@@ -64,7 +64,6 @@ def getSpotClicked(board, x, y):
 # ============================================
 # event loop
 # ============================================
-
 
 
 # ============================================
@@ -89,6 +88,9 @@ def main():
         font = pygame.font.Font(None, int(24 * HD_SCALE))
         moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         score_text = font.render("Score: 000", 1, (10, 10, 10))
+        game_over_text = ""
+        game_over_text = font.render("", 1, (10, 10, 10))
+        textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT/2, centerx=WINDOW_WIDTH/2)
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
@@ -107,6 +109,12 @@ def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 going = False
+            elif c.MOVES_LEFT == 0:
+                game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
+                game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
+                textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT/2, centerx=WINDOW_WIDTH/2)
+                screen.blit(game_over_text, (textpos))
+                # going = False
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 going = False
             elif event.type == MOUSEBUTTONDOWN:
@@ -122,6 +130,7 @@ def main():
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
+        screen.blit(game_over_text, (textpos))
         pygame.display.flip()
 
 
