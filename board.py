@@ -16,27 +16,27 @@ class Board(object):
     as needed.
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cellSize: int):
-        self.bearGrid = beargrid.BearGrid(screen, rows, columns, cellSize)
-        self.gemGrid = gemgrid.GemGrid(screen, rows, columns, cellSize)
-        self.iceGrid = icegrid.IceGrid(screen, rows, columns, cellSize)
+    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int):
+        self.bear_grid = beargrid.BearGrid(screen, rows, columns, cell_size)
+        self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size)
+        self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size)
         self.screen = screen
 
-    def isIce(self, x_coord: int, y_coord: int):
+    def is_ice(self, x_coord: int, y_coord: int):
         pass
 
-    def isBear(self, x_coord: int, y_coord: int):
+    def is_bear(self, x_coord: int, y_coord: int):
         pass
 
-    def isBearUncovered(self, x_coord: int, y_coord: int):
+    def is_bear_uncovered(self, x_coord: int, y_coord: int):
         pass
 
-    def newBoard(self):
+    def new_board(self):
         # generates a random new board
         # create 9x9 candies on board
         pass
 
-    def swapGems(self):
+    def swap_gems(self):
         # call the gemgrid swap class but also checks
         # for ice and bears
         pass

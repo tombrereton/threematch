@@ -12,7 +12,7 @@ data_dir = os.path.join(main_dir, 'resources')
 # load functions
 # ============================================
 
-def loadImage(name: str, size: int, colorkey=None):
+def load_image(name: str, size: int, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:
         image = pygame.image.load(fullname)
@@ -20,7 +20,9 @@ def loadImage(name: str, size: int, colorkey=None):
     except pygame.error:
         print('Cannot load image:', fullname)
         raise SystemExit(geterror())
-    image = image.convert()
+
+    # convert alpha makes the images transparent
+    image = image.convert_alpha()
     if colorkey is not None:
         if colorkey is -1:
             colorkey = image.get_at((0, 0))
@@ -28,7 +30,7 @@ def loadImage(name: str, size: int, colorkey=None):
     return image, image.get_rect()
 
 
-def loadSound(name: str):
+def load_sound(name: str):
     class NoneSound:
         def play(self): pass
 

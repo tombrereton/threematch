@@ -3,9 +3,10 @@
 # http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
-import pygame
 import random
 import sys
+
+import pygame
 from pygame.locals import *
 
 # Create the constants (go ahead and experiment with different values)
