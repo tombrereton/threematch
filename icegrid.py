@@ -20,8 +20,8 @@ class IceGrid(g.Grid):
     Sub class of Grid
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int):
-        super().__init__(screen, rows, columns, cell_size)
+    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+        super().__init__(screen, rows, columns, cell_size, margin)
 
     def new_grid(self):
         """
@@ -35,8 +35,8 @@ class IceGrid(g.Grid):
                 sprite = Ice(self.cell_size + int(self.cell_size/4) + 4)
                 self.grid[i][j] = sprite
                 self.screen.blit(sprite.image,
-                                 (i * (self.cell_size + self.cell_size / 4),
-                                  j * (self.cell_size + self.cell_size / 4)))
+                                 (self.margin/2 + i * (self.cell_size + self.cell_size / 4),
+                                  self.margin/2 + j * (self.cell_size + self.cell_size / 4)))
 
     def addIce(self, ice: Ice, x_coord: int, y_coord: int):
         pass

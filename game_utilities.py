@@ -12,6 +12,20 @@ data_dir = os.path.join(main_dir, 'resources')
 # load functions
 # ============================================
 
+def load_background(name: str, width: int, height: int):
+    fullname = os.path.join(data_dir, name)
+    try:
+        image = pygame.image.load(fullname)
+        image = pygame.transform.smoothscale(image, (width, height))
+    except pygame.error:
+        print('Cannot load image:', fullname)
+        raise SystemExit(geterror())
+
+    # convert alpha makes the images transparent
+    image = image.convert_alpha()
+    return image, image.get_rect()
+
+
 def load_image(name: str, size: int, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:

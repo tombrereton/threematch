@@ -16,10 +16,10 @@ class Board(object):
     as needed.
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int):
-        self.bear_grid = beargrid.BearGrid(screen, rows, columns, cell_size)
-        self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size)
-        self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size)
+    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+        self.bear_grid = beargrid.BearGrid(screen, rows, columns, cell_size, margin)
+        self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size, margin)
+        self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size, margin)
         self.screen = screen
 
     def is_ice(self, x_coord: int, y_coord: int):

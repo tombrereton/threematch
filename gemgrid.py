@@ -22,8 +22,8 @@ class GemGrid(g.Grid):
     """
     Sub class of Grid
     """
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int):
-        super().__init__(screen, rows, columns, cell_size)
+    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+        super().__init__(screen, rows, columns, cell_size, margin)
 
     def new_grid(self):
         """
@@ -32,13 +32,14 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        offset = self.cell_size/4/2
+        centering_offset = self.cell_size/4/2
         for i in range(0, self.rows):
             for j in range(0, self.columns):
                 sprite = Gem(self.cell_size)
                 self.grid[i][j] = sprite
                 self.screen.blit(sprite.image,
-                                 (offset + i * (self.cell_size + self.cell_size / 4), offset + j * (self.cell_size + self.cell_size / 4)))
+                                 (self.margin/2 + centering_offset + i * (self.cell_size + self.cell_size / 4),
+                                  self.margin/2 + centering_offset + j * (self.cell_size + self.cell_size / 4)))
 
 
 def addGem(self, gem: Gem, x_coord: int, y_coord: int):

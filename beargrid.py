@@ -45,8 +45,8 @@ class BearGrid(g.Grid):
     A class to store the bear locations as a 2D grid
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int):
-        super().__init__(screen, rows, columns, cell_size)
+    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+        super().__init__(screen, rows, columns, cell_size, margin)
 
     def new_grid(self):
         """

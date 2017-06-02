@@ -1,7 +1,14 @@
+"""
+background image credit:
+Designed by Freepik
+http://www.freepik.com/free-vector/abstract-background-with-a-watercolor-texture_886474.htm
+"""
+
 import pygame
 from pygame.locals import *
 
 import board as b
+import game_utilities as util
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
@@ -18,8 +25,8 @@ HD_SCALE = 2  # Scale for changing the number of pixels
 CELL_SIZE = 25 * HD_SCALE  # Width of each shape (pixels).
 PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
-MARGIN = 100 * HD_SCALE  # Margin around the board (pixels).
-WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
+MARGIN = 70 * HD_SCALE  # Margin around the board (pixels).
+WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN - 10
 WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + 75
 
 
@@ -68,13 +75,16 @@ def main():
     pygame.display.set_caption("Gem Island")
 
     # create the background
-    background = pygame.Surface(screen.get_size())
+    background,_ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
+    # background = pygame.image.load("background.jpg")
+    # background = pygame.transform.smoothscale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
+    # background = pygame.Surface(screen.get_size())
     background = background.convert()
-    background.fill((255, 255, 255))
+    # background.fill((255, 255, 255))
     screen.blit(background, (0, 0))
 
     # create the board
-    board = b.Board(screen, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE)
+    board = b.Board(screen, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
 
 
     # flip the screen after adding everything to it
