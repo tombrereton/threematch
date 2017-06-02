@@ -48,14 +48,14 @@ def getLeftTopOfTile(tileX, tileY):
 
 def getSpotClicked(board, x, y):
     # from the x & y pixel coordinates, get the x & y board coordinates
-    for i in range(0, 8):
-        for j in range(0, 8):
+    for i in range(0, PUZZLE_ROWS):
+        for j in range(0, PUZZLE_COLUMNS):
             # for candyX in range(len(board)):
             #     for candyY in range(len(board[0])):
             #         left, top = getLeftTopOfTile(candyX, candyY)
             gemRect = pygame.Rect(board.get_gem(i, j).rect)
             if gemRect.collidepoint(x, y):
-                return board.get_gem(i,j).punched()
+                return board.get_gem(i, j).punched()
     return (None)
 
 
@@ -113,15 +113,13 @@ def main():
         board.get_gem_group().update()
         board.get_ice_group().update()
 
-        #Draw Everything
+        # Draw Everything
         screen.blit(background, (0, 0))
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
         pygame.display.flip()
-
-
 
 
 if __name__ == '__main__':
