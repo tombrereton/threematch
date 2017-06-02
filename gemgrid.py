@@ -14,7 +14,7 @@ class Gem(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, gems)
         self.type = random.randint(1, 8)
         self.is_bonus = False
-        self.gem_name = "bean{}.png".format(self.type)
+        self.gem_name = "Stone_0{}_05.png".format(self.type)
         self.image, self.rect = util.load_image(self.gem_name, size)
 
 

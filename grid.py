@@ -14,7 +14,7 @@ class Grid(object):
         self.columns = columns
         self.cell_size = cell_size
         self.margin = margin
-        self.grid = [[-1 for x in range(self.rows)] for y in range(self.columns)]
+        self.grid = [[0 for x in range(self.rows)] for y in range(self.columns)]
 
         # generate gem grid
         self.new_grid()
