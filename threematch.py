@@ -1,7 +1,10 @@
 """
 background image credit:
 Designed by Freepik
-http://www.freepik.com/free-vector/abstract-background-with-a-watercolor-texture_886474.htm
+http://www.freepik.com
+
+asset credit:
+1001.com
 """
 
 import pygame
@@ -21,12 +24,12 @@ if not pygame.mixer: print('Warning, sound disabled')
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-HD_SCALE = 2  # Scale for changing the number of pixels
-CELL_SIZE = 25 * HD_SCALE  # Width of each shape (pixels).
+HD_SCALE = 1  # Scale for changing the number of pixels
+CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
 PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
-MARGIN = 70 * HD_SCALE  # Margin around the board (pixels).
-WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN - 10
+MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
+WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
 WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + 75
 
 
@@ -75,17 +78,20 @@ def main():
     pygame.display.set_caption("Gem Island")
 
     # create the background
-    background,_ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
-    # background = pygame.image.load("background.jpg")
-    # background = pygame.transform.smoothscale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
-    # background = pygame.Surface(screen.get_size())
+    background, _ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
     background = background.convert()
-    # background.fill((255, 255, 255))
     screen.blit(background, (0, 0))
+
+    # Put Text On The Background
+    if pygame.font:
+        font = pygame.font.Font(None, int(24 * HD_SCALE))
+        moves_left_text = font.render("Moves Left: 16", 1, (10, 10, 10))
+        score_text = font.render("Score: 000", 1, (10, 10, 10))
+        screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
     board = b.Board(screen, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
-
 
     # flip the screen after adding everything to it
     pygame.display.flip()
