@@ -12,6 +12,7 @@ from pygame.locals import *
 
 import board as b
 import game_utilities as util
+import global_variables as c
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
@@ -55,6 +56,7 @@ def getSpotClicked(board, x, y):
             #         left, top = getLeftTopOfTile(candyX, candyY)
             gemRect = pygame.Rect(board.get_gem(i, j).rect)
             if gemRect.collidepoint(x, y):
+                c.MOVES_LEFT = c.MOVES_LEFT - 1
                 return board.get_gem(i, j).punched()
     return (None)
 
@@ -85,7 +87,7 @@ def main():
     # Put Text On The Background
     if pygame.font:
         font = pygame.font.Font(None, int(24 * HD_SCALE))
-        moves_left_text = font.render("Moves Left: 16", 1, (10, 10, 10))
+        moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         score_text = font.render("Score: 000", 1, (10, 10, 10))
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
@@ -115,6 +117,7 @@ def main():
 
         # Draw Everything
         screen.blit(background, (0, 0))
+        moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
         board.get_ice_group().draw(screen)

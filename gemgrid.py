@@ -59,7 +59,7 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        centering_offset = self.cell_size / 4 / 2
+        centering_offset = self.cell_size * 1/7
         for i in range(0, self.rows):
             for j in range(0, self.columns):
                 gem = Gem(self.cell_size)
