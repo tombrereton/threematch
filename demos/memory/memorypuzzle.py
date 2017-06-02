@@ -3,7 +3,10 @@
 # http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
-import random, pygame, sys
+import pygame
+import random
+import sys
+
 from pygame.locals import *
 
 FPS = 30 # frames per second, the general speed of the program

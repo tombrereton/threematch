@@ -3,7 +3,9 @@
 # http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
-import pygame, sys, random
+import pygame
+import random
+import sys
 from pygame.locals import *
 
 # Create the constants (go ahead and experiment with different values)
