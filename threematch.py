@@ -53,9 +53,9 @@ def getSpotClicked(board, x, y):
             # for candyX in range(len(board)):
             #     for candyY in range(len(board[0])):
             #         left, top = getLeftTopOfTile(candyX, candyY)
-            candyRect = pygame.Rect(board.get_sprite(i, j))
-            if candyRect.collidepoint(x, y):
-                return board.get_sprite(i, j)
+            gemRect = pygame.Rect(board.get_gem(i, j).rect)
+            if gemRect.collidepoint(x, y):
+                return board.get_gem(i,j).punched()
     return (None)
 
 
@@ -108,7 +108,20 @@ def main():
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 going = False
             elif event.type == MOUSEBUTTONDOWN:
-                spotx = getSpotClicked(background, event.pos[0], event.pos[1])
+                spotx = getSpotClicked(board, event.pos[0], event.pos[1])
+
+        board.get_gem_group().update()
+        board.get_ice_group().update()
+
+        #Draw Everything
+        screen.blit(background, (0, 0))
+        screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+        board.get_ice_group().draw(screen)
+        board.get_gem_group().draw(screen)
+        pygame.display.flip()
+
+
 
 
 if __name__ == '__main__':

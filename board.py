@@ -40,3 +40,15 @@ class Board(object):
         # call the gemgrid swap class but also checks
         # for ice and bears
         pass
+
+    def get_gem(self, x_coord: int, y_coord: int):
+        return self.gem_grid.get_gem(x_coord, y_coord)
+
+    def get_gem_group(self):
+        return gemgrid.gem_group
+
+    def get_ice_group(self):
+        return icegrid.ice_group
+
+    def get_bear_group(self):
+        return beargrid.bear_group

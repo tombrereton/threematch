@@ -3,7 +3,7 @@ import pygame
 import game_utilities as util
 import grid as g
 
-bears = pygame.sprite.Group
+bear_group = pygame.sprite.Group
 
 
 class Bear(pygame.sprite.Sprite):
@@ -14,7 +14,7 @@ class Bear(pygame.sprite.Sprite):
     def __init__(self, cell_size: int):
         # call super constructor
         # and add bear to bears group
-        pygame.sprite.Sprite.__init__(self, bears)
+        pygame.sprite.Sprite.__init__(self, bear_group)
 
         self.bear_file = "bear.png"
         self.bear_size = cell_size * 2

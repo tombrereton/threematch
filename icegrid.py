@@ -32,11 +32,16 @@ class IceGrid(g.Grid):
         """
         for i in range(0, self.rows):
             for j in range(5, self.columns):
-                sprite = Ice(self.cell_size + int(self.cell_size/4) + 4)
-                self.grid[i][j] = sprite
-                self.screen.blit(sprite.image,
-                                 (self.margin/2 + i * (self.cell_size + self.cell_size / 4),
-                                  self.margin/2 + j * (self.cell_size + self.cell_size / 4)))
+                ice = Ice(self.cell_size + int(self.cell_size/4) + 4)
+                x = self.margin / 2 + i * (self.cell_size + self.cell_size / 4)
+                y = self.margin / 2 + j * (self.cell_size + self.cell_size / 4)
+                ice.rect.left = x
+                ice.rect.top = y
+                self.grid[i][j] = ice
+                self.screen.blit(ice.image, (x, y))
+                # self.screen.blit(ice.image,
+                #                  (self.margin/2 + i * (self.cell_size + self.cell_size / 4),
+                #                   self.margin/2 + j * (self.cell_size + self.cell_size / 4)))
 
     def addIce(self, ice: Ice, x_coord: int, y_coord: int):
         pass
