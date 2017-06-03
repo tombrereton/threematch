@@ -56,16 +56,19 @@ class BearGrid(g.Grid):
         :return:
         """
         for i in range(4):
-            bear = Bear(self.cell_size)
-            x = int(self.margin + i * bear.bear_size)
-            bear.rect.left = x
-            bear.rect.top = self.margin
-            # self.screen.blit(bear.image, (x, self.margin))
+            self.add_bear(i, 2 * i, 0)
 
-    def add_bear(self, x_coord: int, y_coord: int):
+    def add_bear(self, bear_ID: int, x_coord: int, y_coord: int):
         # adds a bear portion something like
         # self.beargrid[x_coord][y_coord] = BearPortion(bearID, portion)
-        pass
+        bear = Bear(self.cell_size)
+        x = int(self.margin + x_coord * self.cell_size)
+        y = int(self.margin + y_coord * self.cell_size)
+        bear.rect.left = x
+        bear.rect.top = y
+        for i in range(2):
+            for j in range(2):
+                self.grid[x_coord + i][y_coord + j] = BearPortion(bear_ID, i + 2 * j)
 
     def remove_bear(self, x_coord: int, y_coord: int):
         pass
