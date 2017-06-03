@@ -63,8 +63,8 @@ class GemGrid(g.Grid):
         for i in range(0, self.rows):
             for j in range(0, self.columns):
                 gem = Gem(self.cell_size)
-                x = self.margin / 2 + centering_offset + i * (self.cell_size + self.cell_size / 4)
-                y = self.margin / 2 + centering_offset + j * (self.cell_size + self.cell_size / 4)
+                x = self.margin / 2 + centering_offset + j * (self.cell_size + self.cell_size / 4)
+                y = self.margin / 2 + centering_offset + i * (self.cell_size + self.cell_size / 4)
                 gem.rect.left = x
                 gem.rect.top = y
                 self.grid[i][j] = gem

@@ -30,11 +30,11 @@ class IceGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        for i in range(0, self.rows):
-            for j in range(5, self.columns):
+        for i in range(5, self.rows):
+            for j in range(0, self.columns):
                 ice = Ice(self.cell_size + int(self.cell_size/4) + 4)
-                x = self.margin / 2 + i * (self.cell_size + self.cell_size / 4)
-                y = self.margin / 2 + j * (self.cell_size + self.cell_size / 4)
+                x = self.margin / 2 + j * (self.cell_size + self.cell_size / 4)
+                y = self.margin / 2 + i * (self.cell_size + self.cell_size / 4)
                 ice.rect.left = x
                 ice.rect.top = y
                 self.grid[i][j] = ice

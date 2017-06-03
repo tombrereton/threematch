@@ -2,6 +2,7 @@ import pygame
 
 import game_utilities as util
 import grid as g
+import global_variables as c
 
 bear_group = pygame.sprite.Group
 
@@ -55,7 +56,7 @@ class BearGrid(g.Grid):
         adds the bears to the screen
         :return:
         """
-        pass
+
 
     def add_bear(self, x_coord: int, y_coord: int):
         # adds a bear portion something like
