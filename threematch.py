@@ -20,17 +20,18 @@ if not pygame.mixer: print('Warning, sound disabled')
 # ============================================
 # Global Constants
 # ============================================
-HD_SCALE = 1  # Scale for changing the number of pixels
+HD_SCALE = 1.4  # Scale for changing the number of pixels
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
+MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
+TEXT_AREA = int(75 * HD_SCALE)
 PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
-MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
 WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
-WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + 75
+WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + TEXT_AREA
 
 
 # FONT_SIZE = 36
@@ -125,6 +126,7 @@ def main():
         moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+        board.get_bear_group().draw(screen)
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
         screen.blit(game_over_text, (textpos))
