@@ -128,6 +128,7 @@ def main():
         moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+        board.get_bear_group().draw(screen)
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
         screen.blit(game_over_text, (textpos))

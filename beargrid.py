@@ -2,9 +2,8 @@ import pygame
 
 import game_utilities as util
 import grid as g
-import global_variables as c
 
-bear_group = pygame.sprite.Group
+bear_group = pygame.sprite.Group()
 
 
 class Bear(pygame.sprite.Sprite):
@@ -17,7 +16,7 @@ class Bear(pygame.sprite.Sprite):
         # and add bear to bears group
         pygame.sprite.Sprite.__init__(self, bear_group)
 
-        self.bear_file = "bear.png"
+        self.bear_file = "tiles/tile_01.png"
         self.bear_size = cell_size * 2
         self.image, self.rect = util.load_image(self.bear_file, self.bear_size)
 
@@ -56,7 +55,12 @@ class BearGrid(g.Grid):
         adds the bears to the screen
         :return:
         """
-
+        for i in range(4):
+            bear = Bear(int(1.25 * self.cell_size) + 4)
+            x = int(self.margin / 2 + i * bear.bear_size)
+            bear.rect.left = x
+            bear.rect.top = self.margin
+            # self.screen.blit(bear.image, (x, self.margin))
 
     def add_bear(self, x_coord: int, y_coord: int):
         # adds a bear portion something like
