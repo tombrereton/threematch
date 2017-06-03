@@ -153,4 +153,4 @@ ENV/
 .ropeproject
 
 /demos/cabbages-and-kings/
-.idea
+.idea/
