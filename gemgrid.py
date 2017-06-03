@@ -107,7 +107,6 @@ class GemGrid(g.Grid):
         self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
                                                                        self.grid[y_coord][x_coord]
         # testing up animation
-        # copy gem grid
         # swap gems in new grid
         # remove gems from gem group
         # add new grid to gem group
