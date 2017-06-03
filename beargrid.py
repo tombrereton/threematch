@@ -61,8 +61,8 @@ class BearGrid(g.Grid):
         for i in range(4):
             x = random.choice(range(self.columns - 1))
             y = random.choice(range(5, self.rows - 1))
-            if self.check_bear_boundaries(x, y):
-                self.add_bear(i, x, y)
+            if self.check_bear_boundaries(y, x):
+                self.add_bear(i, y, x)
 
     def add_bear(self, bear_ID: int, y_coord: int, x_coord: int):
         # adds a bear portion something like
@@ -75,20 +75,20 @@ class BearGrid(g.Grid):
         self.sprites[bear_ID] = bear
         for i in range(2):
             for j in range(2):
-                self.grid[x_coord + i][y_coord + j] = BearPortion(bear_ID, i + 2 * j)
+                self.grid[y_coord + i][x_coord + j] = BearPortion(bear_ID, i + 2 * j)
 
-    def remove_bear(self, bear_ID: int, x_coord: int, y_coord: int):
+    def remove_bear(self, bear_ID: int, y_coord: int, x_coord: int):
         bear = self.sprites.pop(bear_ID)
         bear_group.remove(bear)
         for i in range(2):
             for j in range(2):
-                self.grid[x_coord + i][y_coord + j] = 0
+                self.grid[y_coord + i][x_coord + j] = 0
 
     def check_bear_boundaries(self, y_coord: int, x_coord: int):
         if x_coord < self.columns - 1 and y_coord < self.rows - 1:
             for i in range(2):
                 for j in range(2):
-                    if self.grid[x_coord + i][y_coord + j] != 0:
+                    if self.grid[y_coord + i][x_coord + j] != 0:
                         return False
             return True
         return False
