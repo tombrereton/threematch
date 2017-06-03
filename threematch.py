@@ -50,9 +50,6 @@ def getSpotClicked(board, x, y):
     # from the x & y pixel coordinates, get the x & y board coordinates
     for i in range(0, PUZZLE_ROWS):
         for j in range(0, PUZZLE_COLUMNS):
-            # for candyX in range(len(board)):
-            #     for candyY in range(len(board[0])):
-            #         left, top = getLeftTopOfTile(candyX, candyY)
             gemRect = pygame.Rect(board.get_gem(i, j).rect)
             if gemRect.collidepoint(x, y):
                 c.MOVES_LEFT = c.MOVES_LEFT - 1
