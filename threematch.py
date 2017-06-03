@@ -64,16 +64,20 @@ def get_gem_location_from_click(board, x, y):
 # event loop
 # ============================================
 
-def check_events(board, game_over_text, going, screen, textpos, gem_row, gem_column):
+def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, screen: pygame.display, text_pos: str,
+                 gem_row: int,
+                 gem_column: int):
     """
     This function loops of the events from the event queue.
 
     If there are 2 clicks of neighbouring gems, it tries to swap them.
+    :param gem_column:
+    :param gem_row:
     :param board:
     :param game_over_text:
     :param going:
     :param screen:
-    :param textpos:
+    :param text_pos:
     :return:
     """
 
@@ -83,8 +87,8 @@ def check_events(board, game_over_text, going, screen, textpos, gem_row, gem_col
         elif c.MOVES_LEFT == 0:
             game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
             game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
-            textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-            screen.blit(game_over_text, (textpos))
+            text_pos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+            screen.blit(game_over_text, text_pos)
             # going = False
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
             going = False
@@ -132,7 +136,7 @@ def check_events(board, game_over_text, going, screen, textpos, gem_row, gem_col
                     gem_row = None
                     gem_column = None
 
-    return game_over_text, going, textpos, gem_row, gem_column
+    return game_over_text, going, text_pos, gem_row, gem_column
 
 
 # ============================================
@@ -157,9 +161,8 @@ def main():
         font = pygame.font.Font(None, int(24 * HD_SCALE))
         moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         score_text = font.render("Score: 000", 1, (10, 10, 10))
-        game_over_text = ""
         game_over_text = font.render("", 1, (10, 10, 10))
-        textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+        text_pos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
@@ -180,10 +183,8 @@ def main():
         clock.tick(60)
 
         # loop over events
-        game_over_text, going, textpos, gem_row, gem_column = check_events(board, game_over_text, going, screen,
-                                                                           textpos,
-                                                                           gem_row,
-                                                                           gem_column)
+        game_over_text, going, text_pos, gem_row, gem_column = \
+            check_events(board, game_over_text, going, screen, text_pos, gem_row, gem_column)
 
         board.get_gem_group().update()
         board.get_ice_group().update()
@@ -196,7 +197,7 @@ def main():
         board.get_bear_group().draw(screen)
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
-        screen.blit(game_over_text, textpos)
+        screen.blit(game_over_text, text_pos)
         pygame.display.flip()
 
 

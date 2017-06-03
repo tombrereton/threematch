@@ -59,11 +59,14 @@ class BearGrid(g.Grid):
         :return:
         """
         self.sprites = {}
-        for i in range(4):
+        self.total_bears = 3
+        i = 0
+        while i < self.total_bears:
             x = random.choice(range(self.columns - 1))
             y = random.choice(range(4, self.rows - 1))
             if self.check_bear_boundaries(y, x):
                 self.add_bear(i, y, x)
+                i = i + 1
 
     def add_bear(self, bear_ID: int, y_coord: int, x_coord: int):
         # adds a bear portion something like
