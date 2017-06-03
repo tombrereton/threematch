@@ -197,6 +197,23 @@ class GemGrid(g.Grid):
         self.grid[y_coord][x_coord], self.grid[y_coord][x_coord - 1] = self.grid[y_coord][x_coord - 1], \
                                                                        self.grid[y_coord][x_coord]
 
+    def pull_down(self):
+        # transpose = lambda x : [[x[i][j] for i in range(len(x))] for j in range(len(x[0]))]
+        # self.grid = transpose([[j for j in i if j == 0] + [j for j in i if j != 0] for i in transpose(self.grid)])
+        for i in range(self.rows - 1, 0, -1):
+            for j in range(self.columns):
+                if self.grid[i][j] == 0:
+                    for k in range(i + 1, self.rows):
+                        if self.grid[k][j] != 0:
+                            self.grid[i][j], self.grid[k][j] = self.grid[k][j], 0
+                            x = self.margin + self.centering_offset + j * self.cell_size
+                            y = self.margin + self.centering_offset + i * self.cell_size
+                            self.grid[i][j].rect = pygame.Rect((x, y, self.gem_size, self.gem_size))
+        for i in range(self.rows):
+            for j in range(self.columns):
+                if self.grid[i][j] == 0:
+                    self.addgem(i, j)
+
     def row_match_count(self, i: int, j: int, columns: int):
         """
         rows match count
