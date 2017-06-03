@@ -11,7 +11,7 @@ class Ice(pygame.sprite.Sprite):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, ice_group)
         self.layer = 3
-        self.ice_layer = "ice_layer_{}.png".format(self.layer)
+        self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
         self.image, self.rect = util.load_image(self.ice_layer, size)
 
 
