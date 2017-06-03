@@ -22,13 +22,13 @@ class Board(object):
         self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size, margin)
         self.screen = screen
 
-    def is_ice(self, x_coord: int, y_coord: int):
+    def is_ice(self, y_coord: int, x_coord: int):
         pass
 
-    def is_bear(self, x_coord: int, y_coord: int):
+    def is_bear(self, y_coord: int, x_coord: int):
         pass
 
-    def is_bear_uncovered(self, x_coord: int, y_coord: int):
+    def is_bear_uncovered(self, y_coord: int, x_coord: int):
         pass
 
     def new_board(self):
@@ -41,11 +41,11 @@ class Board(object):
         # for ice and bears
         pass
 
-    def animate_gem_swap(self, x_coord: int, y_coord: int, direction: str):
-        self.gem_grid.animate_swap(x_coord, y_coord, direction)
+    def animate_gem_swap(self, y_coord: int, x_coord: int, direction: str):
+        self.gem_grid.animate_swap(y_coord, x_coord, direction)
 
-    def get_gem(self, x_coord: int, y_coord: int):
-        return self.gem_grid.get_gem(x_coord, y_coord)
+    def get_gem(self, y_coord: int, x_coord: int):
+        return self.gem_grid.get_gem(y_coord, x_coord)
 
     def get_gem_group(self):
         return gemgrid.gem_group
