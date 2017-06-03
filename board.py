@@ -84,3 +84,18 @@ class Board(object):
 
     def get_medal_group(self):
         return medalgrid.medal_group
+
+    def check_mactches(self):
+        """
+        Finds the location of the horizontal matches.
+        Deletes the gems if match greater than 2
+        Pulls down new gems
+        Repeats until no horizontal matches
+        Finds the location of the vertical matches.
+        Deletes the gems if match greater than 2
+        Pulls down new gems
+        Repeats until no horizontal matches
+        Repeats entire loop again until no more matches
+        :return:
+        """
+        pass
