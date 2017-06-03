@@ -57,7 +57,7 @@ def get_gem_location_from_click(board, x, y):
                 # c.MOVES_LEFT = c.MOVES_LEFT - 1
                 # board.swap_gems(i, j, "up")
                 # return board.get_gem(i, j).punched()
-    return (None)
+    return None, None
 
 
 # ============================================
@@ -89,38 +89,46 @@ def check_events(board, game_over_text, going, screen, textpos, gem_row, gem_col
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
             going = False
         elif event.type == MOUSEBUTTONDOWN:
-
+            # get gem coordinates if user clicks
             if gem_row is None and gem_column is None:
+                # if use has not clicked yet, get the first gem coordinates
                 gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+
             else:
+                # if user has already clicked, get the second gem coordinates
                 second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
 
-                if (second_gem_row == gem_row - 1 and second_gem_column == gem_column):
+                # we check if the second gem is a neighbouring gem, swap it if so
+                if second_gem_row == gem_row - 1 and second_gem_column == gem_column:
                     # swap up
                     board.swap_gems(gem_row, gem_column, "up")
                     gem_row = None
                     gem_column = None
+                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
-                elif (second_gem_row == gem_row + 1 and second_gem_column == gem_column):
+                elif second_gem_row == gem_row + 1 and second_gem_column == gem_column:
                     # swap down
                     board.swap_gems(gem_row, gem_column, "down")
                     gem_row = None
                     gem_column = None
+                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
-                elif (second_gem_row == gem_row and second_gem_column == gem_column + 1):
+                elif second_gem_row == gem_row and second_gem_column == gem_column + 1:
                     # swap right
                     board.swap_gems(gem_row, gem_column, "right")
                     gem_row = None
                     gem_column = None
+                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
-                elif (second_gem_row == gem_row and second_gem_column == gem_column - 1):
+                elif second_gem_row == gem_row and second_gem_column == gem_column - 1:
                     # swap down
                     board.swap_gems(gem_row, gem_column, "left")
                     gem_row = None
                     gem_column = None
+                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
                 else:
-                    # set gems coords to None
+                    # if the second gem is not a neighbouring gem, set the gem coordinates to none
                     gem_row = None
                     gem_column = None
 

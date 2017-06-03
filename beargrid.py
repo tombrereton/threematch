@@ -1,8 +1,9 @@
+import random
+
 import pygame
 
 import game_utilities as util
 import grid as g
-import random
 
 bear_group = pygame.sprite.Group()
 
@@ -60,7 +61,7 @@ class BearGrid(g.Grid):
         self.sprites = {}
         for i in range(4):
             x = random.choice(range(self.columns - 1))
-            y = random.choice(range(5, self.rows - 1))
+            y = random.choice(range(4, self.rows - 1))
             if self.check_bear_boundaries(y, x):
                 self.add_bear(i, y, x)
 
