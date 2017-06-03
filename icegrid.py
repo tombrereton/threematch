@@ -45,3 +45,6 @@ class IceGrid(g.Grid):
     def removeIce(self, y_coord: int, x_coord: int):
         ice_group.remove(self.grid[y_coord][x_coord])
         self.grid[y_coord][x_coord] = 0
+
+    def isIce(self, y_coord: int, x_coord: int):
+        return self.grid[y_coord][x_coord] != 0

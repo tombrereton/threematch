@@ -106,6 +106,7 @@ def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, 
                 if second_gem_row == gem_row - 1 and second_gem_column == gem_column:
                     # swap up
                     board.swap_gems(gem_row, gem_column, "up")
+                    board.remove_ice(gem_row, gem_column)
                     gem_row = None
                     gem_column = None
                     c.MOVES_LEFT = c.MOVES_LEFT - 1
