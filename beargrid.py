@@ -69,8 +69,13 @@ class BearGrid(g.Grid):
                 i = i + 1
 
     def add_bear(self, bear_ID: int, y_coord: int, x_coord: int):
-        # adds a bear portion something like
-        # self.beargrid[x_coord][y_coord] = BearPortion(bearID, portion)
+        """
+        Method to add a bear (four bear portions) to the grid
+        :param bear_ID: Number of bear to be added
+        :param y_coord: y coordinate to add bear at (top left of bear)
+        :param x_coord: x coordinate to add beat at (top left of bear)
+        :return: None
+        """
         bear = Bear(self.cell_size)
         x = int(self.margin + x_coord * self.cell_size)
         y = int(self.margin + y_coord * self.cell_size)
@@ -82,6 +87,13 @@ class BearGrid(g.Grid):
                 self.grid[y_coord + i][x_coord + j] = BearPortion(bear_ID, i + 2 * j)
 
     def remove_bear(self, bear_ID: int, y_coord: int, x_coord: int):
+        """
+        Method to remove a bear (four bear portions) from the grid
+        :param bear_ID: Number of bear to be removed
+        :param y_coord: y coordinate to remove bear from (top left of bear)
+        :param x_coord: x coordinate to remove bear from (top left of bear)
+        :return: None
+        """
         bear = self.sprites.pop(bear_ID)
         bear_group.remove(bear)
         for i in range(2):
@@ -89,6 +101,12 @@ class BearGrid(g.Grid):
                 self.grid[y_coord + i][x_coord + j] = 0
 
     def check_bear_boundaries(self, y_coord: int, x_coord: int):
+        """
+        Method to check is a bear can be added at a certain location
+        :param y_coord: y coordinate to check (top left of bear)
+        :param x_coord: x coordinate to check (top left of bear)
+        :return: None
+        """
         if x_coord < self.columns - 1 and y_coord < self.rows - 1:
             for i in range(2):
                 for j in range(2):
@@ -110,6 +128,7 @@ class BearGrid(g.Grid):
         if self.grid[y_coord][x_coord] != 1 and self.grid[y_coord][x_coord].portion == 0:
             for i in range(2):
                 for j in range(2):
-                    pass
+                    if not self.grid[y_coord + i][x_coord + j].uncovered:
+                        return False
             return True
         return False
