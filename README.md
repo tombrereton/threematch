@@ -10,9 +10,13 @@ Style guide
 ---
 
 Refer to the pep-8 website for a consistent style.
-[](https://www.python.org/dev/peps/pep-0008/)
+
+[https://www.python.org/dev/peps/pep-0008/](https://www.python.org/dev/peps/pep-0008/)
+
+Some sections included below.
 
 **Function Names**
+
 Function names should be lowercase, with words separated by underscores as necessary to improve readability.
 
 ```python
@@ -24,6 +28,7 @@ mixedCase is allowed only in contexts where that's already the prevailing style 
 compatibility.
 
 **Function and method arguments**
+
 Always use self for the first argument to instance methods.
 
 ```python
@@ -38,6 +43,7 @@ underscore rather than use an abbreviation or spelling corruption. Thus class_ i
 is to avoid such clashes by using a synonym.)
 
 **Method Names and Instance Variables**
+
 Use the function naming rules: lowercase with words separated by underscores as necessary to improve readability.
 
 Use one leading underscore only for non-public methods and instance variables.
