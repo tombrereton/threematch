@@ -70,13 +70,13 @@ class GemGrid(g.Grid):
                 self.grid[i][j] = gem
                 self.screen.blit(gem.image, (x, y))
 
-    def addgem(self, gem: Gem, x_coord: int, y_coord: int):
+    def addgem(self, gem: Gem, y_coord: int, x_coord: int):
         pass
 
-    def removegem(self, x_coord: int, y_coord: int):
+    def removegem(self, y_coord: int, x_coord: int):
         pass
 
-    def swapgems(self, x_coord: int, y_coord: int, direction: str):
+    def swapgems(self, y_coord: int, x_coord: int, direction: str):
         """
         provide x and y coordinate and direction and
         swap the gem at x and y with the gem in the direction
