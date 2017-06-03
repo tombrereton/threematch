@@ -16,11 +16,11 @@ with the following keys:
 """
 
 import copy
-import pygame
 import random
 import sys
 import time
 
+import pygame
 from pygame.locals import *
 
 FPS = 30  # frames per second to update the screen
@@ -148,7 +148,7 @@ def runGame():
                 else:
                     # this is the end of a mouse drag
                     firstSelectedGem = checkForGemClick((lastMouseDownX, lastMouseDownY))
-                    clickedSpace = checkForGemClick(event.pos)
+                    # clickedSpace = checkForGemClick(event.pos)
                     if not firstSelectedGem or not clickedSpace:
                         # if not part of a valid drag, deselect both
                         firstSelectedGem = None

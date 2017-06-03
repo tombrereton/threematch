@@ -1,8 +1,9 @@
+import random
+
 import pygame
 
 import game_utilities as util
 import grid as g
-import random
 
 bear_group = pygame.sprite.Group()
 
@@ -30,9 +31,9 @@ class BearPortion(object):
     or bottom right.
     """
 
-    def __init__(self, bear_ID: int, portion: int):
+    def __init__(self, bear_id: int, portion: int):
         # bear is id number, starting from 0
-        self.bear = bear_ID
+        self.bear_id = bear_id
 
         # for a 2x2 bear, portion = {0,1,2,3}
         # where 0 = top left, 3 = bottom right
@@ -58,16 +59,19 @@ class BearGrid(g.Grid):
         :return:
         """
         self.sprites = {}
-        for i in range(4):
+        self.total_bears = 3
+        i = 0
+        while i < self.total_bears:
             x = random.choice(range(self.columns - 1))
-            y = random.choice(range(5, self.rows - 1))
+            y = random.choice(range(4, self.rows - 1))
             if self.check_bear_boundaries(y, x):
                 self.add_bear(i, y, x)
+                i = i + 1
 
-    def add_bear(self, bear_ID: int, y_coord: int, x_coord: int):
+    def add_bear(self, bear_id: int, y_coord: int, x_coord: int):
         """
         Method to add a bear (four bear portions) to the grid
-        :param bear_ID: Number of bear to be added
+        :param bear_id: Number of bear to be added
         :param y_coord: y coordinate to add bear at (top left of bear)
         :param x_coord: x coordinate to add beat at (top left of bear)
         :return: None
@@ -77,10 +81,10 @@ class BearGrid(g.Grid):
         y = int(self.margin + y_coord * self.cell_size)
         bear.rect.left = x
         bear.rect.top = y
-        self.sprites[bear_ID] = bear
+        self.sprites[bear_id] = bear
         for i in range(2):
             for j in range(2):
-                self.grid[y_coord + i][x_coord + j] = BearPortion(bear_ID, i + 2 * j)
+                self.grid[y_coord + i][x_coord + j] = BearPortion(bear_id, i + 2 * j)
 
     def remove_bear(self, bear_ID: int, y_coord: int, x_coord: int):
         """
@@ -122,7 +126,8 @@ class BearGrid(g.Grid):
         for i in range(self.rows - 1):
             for j in range(self.columns - 1):
                 if self.freeable(i, j):
-                    self.remove_bear(i, j)
+                    bear_id = self.grid[i][j].bear_id
+                    self.remove_bear(bear_id, i, j)
 
     def freeable(self, y_coord: int, x_coord: int):
         """
@@ -131,7 +136,7 @@ class BearGrid(g.Grid):
         :param x_coord: x coordinate to check
         :return: True if uncovered bear exists, False if not
         """
-        if self.grid[y_coord][x_coord] != 1 and self.grid[y_coord][x_coord].portion == 0:
+        if self.grid[y_coord][x_coord] != 0 and self.grid[y_coord][x_coord].portion == 0:
             for i in range(2):
                 for j in range(2):
                     if not self.grid[y_coord + i][x_coord + j].uncovered:

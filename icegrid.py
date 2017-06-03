@@ -30,13 +30,9 @@ class IceGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        for i in range(5, self.rows):
+        for i in range(4, self.rows):
             for j in range(self.columns):
                 self.addIce(i, j)
-                # self.screen.blit(ice.image, (x, y))
-                # self.screen.blit(ice.image,
-                #                  (self.margin/2 + i * (self.cell_size + self.cell_size / 4),
-                #                   self.margin/2 + j * (self.cell_size + self.cell_size / 4)))
 
     def addIce(self, y_coord: int, x_coord: int):
         """
@@ -61,3 +57,6 @@ class IceGrid(g.Grid):
         """
         ice_group.remove(self.grid[y_coord][x_coord])
         self.grid[y_coord][x_coord] = 0
+
+    def isIce(self, y_coord: int, x_coord: int):
+        return self.grid[y_coord][x_coord] != 0
