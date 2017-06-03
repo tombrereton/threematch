@@ -20,7 +20,7 @@ if not pygame.mixer: print('Warning, sound disabled')
 # ============================================
 # Global Constants
 # ============================================
-HD_SCALE = 2  # Scale for changing the number of pixels
+HD_SCALE = 1  # Scale for changing the number of pixels
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
