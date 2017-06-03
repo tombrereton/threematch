@@ -43,8 +43,8 @@ class IceGrid(g.Grid):
                 #                  (self.margin/2 + i * (self.cell_size + self.cell_size / 4),
                 #                   self.margin/2 + j * (self.cell_size + self.cell_size / 4)))
 
-    def addIce(self, ice: Ice, x_coord: int, y_coord: int):
+    def addIce(self, ice: Ice, y_coord: int, x_coord: int):
         pass
 
-    def removeIce(self, x_coord: int, y_coord: int):
+    def removeIce(self, y_coord: int, x_coord: int):
         pass

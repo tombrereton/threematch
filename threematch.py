@@ -54,8 +54,8 @@ def getSpotClicked(board, x, y):
             gemRect = pygame.Rect(board.get_gem(i, j).rect)
             if gemRect.collidepoint(x, y):
                 c.MOVES_LEFT = c.MOVES_LEFT - 1
-                # board.animate_gem_swap(i, j, "up")
-                return board.get_gem(i, j).punched()
+                board.animate_gem_swap(i, j, "up")
+                # return board.get_gem(i, j).punched()
     return (None)
 
 

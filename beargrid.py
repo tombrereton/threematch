@@ -16,7 +16,7 @@ class Bear(pygame.sprite.Sprite):
         # and add bear to bears group
         pygame.sprite.Sprite.__init__(self, bear_group)
 
-        self.bear_file = "tiles/tile_01.png"
+        self.bear_file = "tiles/medal_02_01.png"
         self.bear_size = cell_size * 2
         self.image, self.rect = util.load_image(self.bear_file, self.bear_size)
 
@@ -56,9 +56,9 @@ class BearGrid(g.Grid):
         :return:
         """
         for i in range(4):
-            self.add_bear(i, 2 * i, 0)
+            self.add_bear(i, 0, 2 * i)
 
-    def add_bear(self, bear_ID: int, x_coord: int, y_coord: int):
+    def add_bear(self, bear_ID: int, y_coord: int, x_coord: int):
         # adds a bear portion something like
         # self.beargrid[x_coord][y_coord] = BearPortion(bearID, portion)
         bear = Bear(self.cell_size)
@@ -70,10 +70,10 @@ class BearGrid(g.Grid):
             for j in range(2):
                 self.grid[x_coord + i][y_coord + j] = BearPortion(bear_ID, i + 2 * j)
 
-    def remove_bear(self, x_coord: int, y_coord: int):
+    def remove_bear(self, y_coord: int, x_coord: int):
         pass
 
-    def check_bear_boundaries(self, x_coord: int, y_coord: int):
+    def check_bear_boundaries(self, y_coord: int, x_coord: int):
         pass
 
     def get_bear_locations(self):
