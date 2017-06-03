@@ -59,22 +59,23 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        centering_offset = 0.05 * self.cell_size
+        self.gem_size = int(0.9 * self.cell_size)
+        self.centering_offset = 0.05 * self.cell_size
         for i in range(0, self.rows):
             for j in range(0, self.columns):
-                gem = Gem(int(0.9 * self.cell_size))
-                x = self.margin + centering_offset + j * self.cell_size
-                y = self.margin + centering_offset + i * self.cell_size
-                gem.rect.left = x
-                gem.rect.top = y
-                self.grid[i][j] = gem
-                self.screen.blit(gem.image, (x, y))
+                self.addgem(i, j)
 
-    def addgem(self, gem: Gem, y_coord: int, x_coord: int):
-        pass
+    def addgem(self, y_coord: int, x_coord: int):
+        gem = Gem(self.gem_size)
+        x = self.margin + self.centering_offset + x_coord * self.cell_size
+        y = self.margin + self.centering_offset + y_coord * self.cell_size
+        gem.rect.left = x
+        gem.rect.top = y
+        self.grid[y_coord][x_coord] = gem
 
     def removegem(self, y_coord: int, x_coord: int):
-        pass
+        gem_group.remove(self.grid[y_coord][x_coord])
+        self.grid[y_coord][x_coord] = 0
 
     def get_gem(self, y_coord: int, x_coord: int):
         """
