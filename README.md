@@ -3,7 +3,10 @@ Three Match
 
 A bejeweled/candy crush clone.
 
-This game has been built for a masters project at the University of Birmingham.
+This game is in development and is being built for a masters project at the University of Birmingham.
+
+Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
+in `threematch.py` under the GLOBAL CONSTANSTS section. Recommended values are between and including 1 and 2.
 
 ---
 Style guide
