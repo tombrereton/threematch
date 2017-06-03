@@ -94,22 +94,18 @@ class GemGrid(g.Grid):
 
     def animate_swap(self, y_coord: int, x_coord: int, direction: str):
 
-        background_screen = self.screen.copy()
-        gem = self.grid[y_coord][x_coord]
-
         # if direction == 'up':
-        # self.grid[x_coord][y_coord], self.grid[x_coord][y_coord-1] = self.grid[x_coord][y_coord - 1],
-        # self.grid[x_coord][y_coord]
-        # gem_group.remove(self.grid)
         clicked_gem = self.grid[y_coord][x_coord]
         upper_gem = self.grid[y_coord - 1][x_coord]
         gem_group.remove(clicked_gem)
         gem_group.remove(upper_gem)
-        # self.grid[x_coord][y_coord], self.grid[x_coord][y_coord-1] = self.grid[x_coord][y_coord - 1],
-        # self.grid[x_coord][y_coord]
-        # self.grid[x_coord][y_coord] = 0
-        # gem_group.add(self.grid)
 
+        clicked_gem.rect.move_ip(0, -self.cell_size)
+        upper_gem.rect.move_ip(0, self.cell_size)
+        gem_group.add(clicked_gem)
+        gem_group.add(upper_gem)
+        self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
+                                                                       self.grid[y_coord][x_coord]
         # testing up animation
         # copy gem grid
         # swap gems in new grid
