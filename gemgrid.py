@@ -59,7 +59,7 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        centering_offset = self.cell_size * 1/7
+        centering_offset = self.cell_size * 1 / 7
         for i in range(0, self.rows):
             for j in range(0, self.columns):
                 gem = Gem(self.cell_size)
@@ -91,3 +91,12 @@ class GemGrid(g.Grid):
         :return:
         """
         return self.grid[x_coord][y_coord]
+
+    def animate_swap(self, x_coord: int, y_coord: int, direction: str):
+
+        background_screen = self.screen.copy()
+        gem = self.grid[x_coord][y_coord]
+
+        # if direction == 'up':
+        # self.grid[x_coord][y_coord], self.grid[x_coord][y_coord-1] = self.grid[x_coord][y_coord - 1], self.grid[x_coord][y_coord]
+        self.grid[x_coord][y_coord] = 0

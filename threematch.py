@@ -25,7 +25,7 @@ if not pygame.mixer: print('Warning, sound disabled')
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-HD_SCALE = 1  # Scale for changing the number of pixels
+HD_SCALE = 2  # Scale for changing the number of pixels
 CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
 PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
@@ -57,6 +57,7 @@ def getSpotClicked(board, x, y):
             gemRect = pygame.Rect(board.get_gem(i, j).rect)
             if gemRect.collidepoint(x, y):
                 c.MOVES_LEFT = c.MOVES_LEFT - 1
+                # board.animate_gem_swap(i, j, "up")
                 return board.get_gem(i, j).punched()
     return (None)
 
@@ -90,7 +91,7 @@ def main():
         score_text = font.render("Score: 000", 1, (10, 10, 10))
         game_over_text = ""
         game_over_text = font.render("", 1, (10, 10, 10))
-        textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT/2, centerx=WINDOW_WIDTH/2)
+        textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
         screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
@@ -112,7 +113,7 @@ def main():
             elif c.MOVES_LEFT == 0:
                 game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
                 game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
-                textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT/2, centerx=WINDOW_WIDTH/2)
+                textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
                 screen.blit(game_over_text, (textpos))
                 # going = False
             elif event.type == KEYDOWN and event.key == K_ESCAPE:

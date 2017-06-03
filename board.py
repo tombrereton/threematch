@@ -41,6 +41,9 @@ class Board(object):
         # for ice and bears
         pass
 
+    def animate_gem_swap(self, x_coord: int, y_coord: int, direction: str):
+        self.gem_grid.animate_swap(x_coord, y_coord, direction)
+
     def get_gem(self, x_coord: int, y_coord: int):
         return self.gem_grid.get_gem(x_coord, y_coord)
 
