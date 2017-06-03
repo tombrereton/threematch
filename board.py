@@ -34,13 +34,16 @@ class Board(object):
     def remove_ice(self, y_coord: int, x_coord: int):
         if self.is_ice(y_coord, x_coord):
             self.ice_grid.removeIce(y_coord, x_coord)
+            self.set_bear_portion_uncovered(y_coord, x_coord)
+            self.free_bears()
+
 
 
     def free_bears(self):
         self.bear_grid.free_bears()
 
     def set_bear_portion_uncovered(self, y_coord: int, x_coord: int):
-        if self.bear_grid[y_coord][x_coord] != 0:
+        if self.bear_grid.grid[y_coord][x_coord] != 0:
             self.bear_grid.grid[y_coord][x_coord].uncovered = True
 
     def is_bear(self, y_coord: int, x_coord: int):
