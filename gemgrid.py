@@ -59,12 +59,12 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        centering_offset = self.cell_size * 1 / 7
+        centering_offset = 0.05 * self.cell_size
         for i in range(0, self.rows):
             for j in range(0, self.columns):
-                gem = Gem(self.cell_size)
-                x = self.margin / 2 + centering_offset + j * (self.cell_size + self.cell_size / 4)
-                y = self.margin / 2 + centering_offset + i * (self.cell_size + self.cell_size / 4)
+                gem = Gem(int(0.9 * self.cell_size))
+                x = self.margin + centering_offset + j * self.cell_size
+                y = self.margin + centering_offset + i * self.cell_size
                 gem.rect.left = x
                 gem.rect.top = y
                 self.grid[i][j] = gem
