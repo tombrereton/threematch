@@ -35,6 +35,12 @@ class IceGrid(g.Grid):
                 self.addIce(i, j)
 
     def addIce(self, y_coord: int, x_coord: int):
+        """
+        Method to add ice to the grid
+        :param y_coord: y coordinate to add ice at
+        :param x_coord: x coordinate to add ice at
+        :return: None
+        """
         ice = Ice(self.cell_size)
         x = self.margin + x_coord * self.cell_size
         y = self.margin + y_coord * self.cell_size
@@ -43,6 +49,12 @@ class IceGrid(g.Grid):
         self.grid[y_coord][x_coord] = ice
 
     def removeIce(self, y_coord: int, x_coord: int):
+        """
+        Method to remove ice from the grid
+        :param y_coord: y coordinate to remove ice from
+        :param x_coord: x coordinate to remove ice from
+        :return: None
+        """
         ice_group.remove(self.grid[y_coord][x_coord])
         self.grid[y_coord][x_coord] = 0
 

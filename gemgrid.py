@@ -66,6 +66,12 @@ class GemGrid(g.Grid):
                 self.addgem(i, j)
 
     def addgem(self, y_coord: int, x_coord: int):
+        """
+        Method to add a gem to the grid
+        :param y_coord: y coordinate to add gem at
+        :param x_coord: x coordinate to add gem at
+        :return: None
+        """
         gem = Gem(self.gem_size)
         x = self.margin + self.centering_offset + x_coord * self.cell_size
         y = self.margin + self.centering_offset + y_coord * self.cell_size
@@ -74,12 +80,18 @@ class GemGrid(g.Grid):
         self.grid[y_coord][x_coord] = gem
 
     def removegem(self, y_coord: int, x_coord: int):
+        """
+        Method to remove a gem from the grid
+        :param y_coord: y coordinate to remove gem from
+        :param x_coord: x coordinate to remove gem from
+        :return: None
+        """
         gem_group.remove(self.grid[y_coord][x_coord])
         self.grid[y_coord][x_coord] = 0
 
     def get_gem(self, y_coord: int, x_coord: int):
         """
-        returns the rectange of the gem which contains the
+        returns the rectangle of the gem which contains the
         left, top coordinates
         :return:
         """

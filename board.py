@@ -23,7 +23,13 @@ class Board(object):
         self.screen = screen
 
     def is_ice(self, y_coord: int, x_coord: int):
-        return self.ice_grid.isIce(y_coord, x_coord)
+        """
+        Method to evaluate if a position contains ice
+        :param y_coord: y coordinate to check
+        :param x_coord: x coordinate to check
+        :return: True if ice, False if not
+        """
+        return self.ice_grid.grid[y_coord][x_coord] != 0
 
     def remove_ice(self, y_coord: int, x_coord: int):
         if self.is_ice(y_coord, x_coord):
@@ -38,10 +44,22 @@ class Board(object):
             self.bear_grid.grid[y_coord][x_coord].uncovered = True
 
     def is_bear(self, y_coord: int, x_coord: int):
-        pass
+        """
+        Method to evaluate if a position contains a bear
+        :param y_coord: y coordinate to check
+        :param x_coord: x coordinate to check
+        :return: True if a bear, False if not
+        """
+        return self.bear_grid.grid[y_coord][x_coord] != 0
 
     def is_bear_uncovered(self, y_coord: int, x_coord: int):
-        pass
+        """
+        Method to evaluate if a position contains a visible bear
+        :param y_coord: y coordinate to check
+        :param x_coord: x coordinate to check
+        :return: True if visible and a bear, False if not
+        """
+        return not self.is_ice(y_coord, x_coord) and self.is_bear(y_coord, x_coord)
 
     def new_board(self):
         # generates a random new board

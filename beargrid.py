@@ -119,12 +119,22 @@ class BearGrid(g.Grid):
         pass
 
     def free_bears(self):
+        """
+        Method to free all freeable bears
+        :return: None
+        """
         for i in range(self.rows - 1):
             for j in range(self.columns - 1):
                 if self.freeable(i, j):
                     self.remove_bear(i, j)
 
     def freeable(self, y_coord: int, x_coord: int):
+        """
+        Method to check if a uncovered bear exists at this location
+        :param y_coord: y coordinate to check
+        :param x_coord: x coordinate to check
+        :return: True if uncovered bear exists, False if not
+        """
         if self.grid[y_coord][x_coord] != 1 and self.grid[y_coord][x_coord].portion == 0:
             for i in range(2):
                 for j in range(2):
