@@ -76,14 +76,6 @@ class GemGrid(g.Grid):
     def removegem(self, y_coord: int, x_coord: int):
         pass
 
-    def swapgems(self, y_coord: int, x_coord: int, direction: str):
-        """
-        provide x and y coordinate and direction and
-        swap the gem at x and y with the gem in the direction
-        of 'direction'
-        """
-        pass
-
     def get_gem(self, y_coord: int, x_coord: int):
         """
         returns the rectange of the gem which contains the
@@ -92,37 +84,102 @@ class GemGrid(g.Grid):
         """
         return self.grid[y_coord][x_coord]
 
-    def animate_swap(self, y_coord: int, x_coord: int, direction: str):
+    def swap_gems(self, y_coord: int, x_coord: int, direction: str):
+        """
+        provide x and y coordinate and direction and
+        swap the gem at x and y with the gem in the direction
+        of 'direction'
+        :param y_coord:
+        :param x_coord:
+        :param direction:
+        :return:
+        """
 
-        # if direction == 'up':
-        clicked_gem = self.grid[y_coord][x_coord]
-        upper_gem = self.grid[y_coord - 1][x_coord]
-        gem_group.remove(clicked_gem)
-        gem_group.remove(upper_gem)
-
-        clicked_gem.rect.move_ip(0, -self.cell_size)
-        upper_gem.rect.move_ip(0, self.cell_size)
-        gem_group.add(clicked_gem)
-        gem_group.add(upper_gem)
-        self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
-                                                                       self.grid[y_coord][x_coord]
-        # testing up animation
-        # swap gems in new grid
-        # remove gems from gem group
-        # add new grid to gem group
-
+        if direction == 'up':
+            self.swap_up(y_coord, x_coord)
+        elif direction == 'down':
+            self.swap_down(y_coord, x_coord)
+        elif direction == 'right':
+            self.swap_right(y_coord, x_coord)
+        elif direction == 'left':
+            self.swap_left(y_coord, x_coord)
 
     def swap_up(self, y_coord: int, x_coord: int):
+        """
+        swaps the clicked gem with the gem above it
 
-        # if direction == 'up':
-        clicked_gem = self.grid[y_coord][x_coord]
-        upper_gem = self.grid[y_coord - 1][x_coord]
-        gem_group.remove(clicked_gem)
-        gem_group.remove(upper_gem)
+        :param y_coord:
+        :param x_coord:
+        :return:
+        """
+        # get gems
+        gem_clicked = self.grid[y_coord][x_coord]
+        gem_above = self.grid[y_coord - 1][x_coord]
 
-        clicked_gem.rect.move_ip(0, -self.cell_size)
-        upper_gem.rect.move_ip(0, self.cell_size)
-        gem_group.add(clicked_gem)
-        gem_group.add(upper_gem)
+        # swap gems in gem group
+        gem_clicked.rect.move_ip(0, -self.cell_size)
+        gem_above.rect.move_ip(0, self.cell_size)
+
+        # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
+                                                                       self.grid[y_coord][x_coord]
+
+    def swap_down(self, y_coord: int, x_coord: int):
+        """
+        swaps the clicked gem with the gem below it
+
+        :param y_coord:
+        :param x_coord:
+        :return:
+        """
+        # get gems
+        gem_clicked = self.grid[y_coord][x_coord]
+        gem_below = self.grid[y_coord + 1][x_coord]
+
+        # swap gems in gem group
+        gem_clicked.rect.move_ip(0, self.cell_size)
+        gem_below.rect.move_ip(0, -self.cell_size)
+
+        # swap gems in gem grid
+        self.grid[y_coord][x_coord], self.grid[y_coord + 1][x_coord] = self.grid[y_coord + 1][x_coord], \
+                                                                       self.grid[y_coord][x_coord]
+
+    def swap_right(self, y_coord: int, x_coord: int):
+        """
+        swaps the clicked gem with the gem right of it
+
+        :param y_coord:
+        :param x_coord:
+        :return:
+        """
+        # get gems
+        gem_clicked = self.grid[y_coord][x_coord]
+        gem_right = self.grid[y_coord][x_coord + 1]
+
+        # swap gems in gem group
+        gem_clicked.rect.move_ip(self.cell_size, 0)
+        gem_right.rect.move_ip(-self.cell_size, 0)
+
+        # swap gems in gem grid
+        self.grid[y_coord][x_coord], self.grid[y_coord][x_coord + 1] = self.grid[y_coord][x_coord + 1], \
+                                                                       self.grid[y_coord][x_coord]
+
+    def swap_left(self, y_coord: int, x_coord: int):
+        """
+        swaps the clicked gem with the gem left of it
+
+        :param y_coord:
+        :param x_coord:
+        :return:
+        """
+        # get gems
+        gem_clicked = self.grid[y_coord][x_coord]
+        gem_left = self.grid[y_coord][x_coord - 1]
+
+        # swap gems in gem group
+        gem_clicked.rect.move_ip(-self.cell_size, 0)
+        gem_left.rect.move_ip(self.cell_size, 0)
+
+        # swap gems in gem grid
+        self.grid[y_coord][x_coord], self.grid[y_coord][x_coord - 1] = self.grid[y_coord][x_coord - 1], \
                                                                        self.grid[y_coord][x_coord]

@@ -36,13 +36,10 @@ class Board(object):
         # create 9x9 candies on board
         pass
 
-    def swap_gems(self):
+    def swap_gems(self, y_coord: int, x_coord: int, direction: str):
         # call the gemgrid swap class but also checks
         # for ice and bears
-        pass
-
-    def animate_gem_swap(self, y_coord: int, x_coord: int, direction: str):
-        self.gem_grid.animate_swap(y_coord, x_coord, direction)
+        self.gem_grid.swap_gems(y_coord, x_coord, direction)
 
     def get_gem(self, y_coord: int, x_coord: int):
         return self.gem_grid.get_gem(y_coord, x_coord)
