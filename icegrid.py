@@ -32,9 +32,9 @@ class IceGrid(g.Grid):
         """
         for i in range(5, self.rows):
             for j in range(0, self.columns):
-                ice = Ice(self.cell_size + int(self.cell_size/4) + 4)
-                x = self.margin / 2 + j * (self.cell_size + self.cell_size / 4)
-                y = self.margin / 2 + i * (self.cell_size + self.cell_size / 4)
+                ice = Ice(self.cell_size)
+                x = self.margin + j * self.cell_size
+                y = self.margin + i * self.cell_size
                 ice.rect.left = x
                 ice.rect.top = y
                 self.grid[i][j] = ice

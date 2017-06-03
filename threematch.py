@@ -20,17 +20,18 @@ if not pygame.mixer: print('Warning, sound disabled')
 # ============================================
 # Global Constants
 # ============================================
-HD_SCALE = 1  # Scale for changing the number of pixels
+HD_SCALE = 1.4  # Scale for changing the number of pixels
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
+MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
+TEXT_AREA = int(75 * HD_SCALE)
 PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
-MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
 WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
-WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + 75
+WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + TEXT_AREA
 
 
 # FONT_SIZE = 36

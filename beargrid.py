@@ -56,8 +56,8 @@ class BearGrid(g.Grid):
         :return:
         """
         for i in range(4):
-            bear = Bear(int(1.25 * self.cell_size) + 4)
-            x = int(self.margin / 2 + i * bear.bear_size)
+            bear = Bear(self.cell_size)
+            x = int(self.margin + i * bear.bear_size)
             bear.rect.left = x
             bear.rect.top = self.margin
             # self.screen.blit(bear.image, (x, self.margin))
