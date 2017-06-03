@@ -2,6 +2,7 @@ import pygame
 
 import game_utilities as util
 import grid as g
+import random
 
 bear_group = pygame.sprite.Group()
 
@@ -36,6 +37,7 @@ class BearPortion(object):
         # for a 2x2 bear, portion = {0,1,2,3}
         # where 0 = top left, 3 = bottom right
         self.portion = portion
+        self.uncovered = False
 
 
 class BearGrid(g.Grid):
@@ -55,8 +57,12 @@ class BearGrid(g.Grid):
         adds the bears to the screen
         :return:
         """
+        self.sprites = {}
         for i in range(4):
-            self.add_bear(i, 2 * i, 0)
+            x = random.choice(range(self.columns - 1))
+            y = random.choice(range(5, self.rows - 1))
+            if self.check_bear_boundaries(x, y):
+                self.add_bear(i, x, y)
 
     def add_bear(self, bear_ID: int, x_coord: int, y_coord: int):
         # adds a bear portion something like
@@ -66,15 +72,26 @@ class BearGrid(g.Grid):
         y = int(self.margin + y_coord * self.cell_size)
         bear.rect.left = x
         bear.rect.top = y
+        self.sprites[bear_ID] = bear
         for i in range(2):
             for j in range(2):
                 self.grid[x_coord + i][y_coord + j] = BearPortion(bear_ID, i + 2 * j)
 
-    def remove_bear(self, x_coord: int, y_coord: int):
-        pass
+    def remove_bear(self, bear_ID: int, x_coord: int, y_coord: int):
+        bear = self.sprites.pop(bear_ID)
+        bear_group.remove(bear)
+        for i in range(2):
+            for j in range(2):
+                self.grid[x_coord + i][y_coord + j] = 0
 
     def check_bear_boundaries(self, x_coord: int, y_coord: int):
-        pass
+        if x_coord < self.columns - 1 and y_coord < self.rows - 1:
+            for i in range(2):
+                for j in range(2):
+                    if self.grid[x_coord + i][y_coord + j] != 0:
+                        return False
+            return True
+        return False
 
     def get_bear_locations(self):
         pass
