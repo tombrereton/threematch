@@ -34,8 +34,9 @@ compatibility.
 
 Always use self for the first argument to instance methods.
 
+**For our methods, always declare the type of the parameters, for example:**
 ```python
-def instance_method(self, arg_one):
+def instance_method(self, arg_one: int):
     ...
 ```
 
@@ -52,7 +53,7 @@ Use the function naming rules: lowercase with words separated by underscores as 
 Use one leading underscore only for non-public methods and instance variables.
 
 ```python
-def _private_method(self, arg_one):
+def _private_method(self, arg_one: str):
     ...
 ```
 

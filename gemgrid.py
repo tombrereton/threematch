@@ -70,13 +70,13 @@ class GemGrid(g.Grid):
                 self.grid[i][j] = gem
                 self.screen.blit(gem.image, (x, y))
 
-    def addgem(self, gem: Gem, x_coord: int, y_coord: int):
+    def addgem(self, gem: Gem, y_coord: int, x_coord: int):
         pass
 
-    def removegem(self, x_coord: int, y_coord: int):
+    def removegem(self, y_coord: int, x_coord: int):
         pass
 
-    def swapgems(self, x_coord: int, y_coord: int, direction: str):
+    def swapgems(self, y_coord: int, x_coord: int, direction: str):
         """
         provide x and y coordinate and direction and
         swap the gem at x and y with the gem in the direction
@@ -84,19 +84,30 @@ class GemGrid(g.Grid):
         """
         pass
 
-    def get_gem(self, x_coord: int, y_coord: int):
+    def get_gem(self, y_coord: int, x_coord: int):
         """
         returns the rectange of the gem which contains the
         left, top coordinates
         :return:
         """
-        return self.grid[x_coord][y_coord]
+        return self.grid[y_coord][x_coord]
 
-    def animate_swap(self, x_coord: int, y_coord: int, direction: str):
-
-        background_screen = self.screen.copy()
-        gem = self.grid[x_coord][y_coord]
+    def animate_swap(self, y_coord: int, x_coord: int, direction: str):
 
         # if direction == 'up':
-        # self.grid[x_coord][y_coord], self.grid[x_coord][y_coord-1] = self.grid[x_coord][y_coord - 1], self.grid[x_coord][y_coord]
-        self.grid[x_coord][y_coord] = 0
+        clicked_gem = self.grid[y_coord][x_coord]
+        upper_gem = self.grid[y_coord - 1][x_coord]
+        gem_group.remove(clicked_gem)
+        gem_group.remove(upper_gem)
+
+        clicked_gem.rect.move_ip(0, -self.cell_size)
+        upper_gem.rect.move_ip(0, self.cell_size)
+        gem_group.add(clicked_gem)
+        gem_group.add(upper_gem)
+        self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
+                                                                       self.grid[y_coord][x_coord]
+        # testing up animation
+        # copy gem grid
+        # swap gems in new grid
+        # remove gems from gem group
+        # add new grid to gem group
