@@ -107,7 +107,22 @@ class GemGrid(g.Grid):
         self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
                                                                        self.grid[y_coord][x_coord]
         # testing up animation
-        # copy gem grid
         # swap gems in new grid
         # remove gems from gem group
         # add new grid to gem group
+
+
+    def swap_up(self, y_coord: int, x_coord: int):
+
+        # if direction == 'up':
+        clicked_gem = self.grid[y_coord][x_coord]
+        upper_gem = self.grid[y_coord - 1][x_coord]
+        gem_group.remove(clicked_gem)
+        gem_group.remove(upper_gem)
+
+        clicked_gem.rect.move_ip(0, -self.cell_size)
+        upper_gem.rect.move_ip(0, self.cell_size)
+        gem_group.add(clicked_gem)
+        gem_group.add(upper_gem)
+        self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
+                                                                       self.grid[y_coord][x_coord]
