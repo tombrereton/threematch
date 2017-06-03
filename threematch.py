@@ -47,14 +47,15 @@ def getLeftTopOfTile(tile_x, tile_y):
     return (left, top)
 
 
-def getSpotClicked(board, x, y):
+def get_gem_location_from_click(board, x, y):
     # from the x & y pixel coordinates, get the x & y board coordinates
     for i in range(0, PUZZLE_ROWS):
         for j in range(0, PUZZLE_COLUMNS):
             gemRect = pygame.Rect(board.get_gem(i, j).rect)
             if gemRect.collidepoint(x, y):
-                c.MOVES_LEFT = c.MOVES_LEFT - 1
-                board.swap_gems(i, j, "up")
+                return i, j
+                # c.MOVES_LEFT = c.MOVES_LEFT - 1
+                # board.swap_gems(i, j, "up")
                 # return board.get_gem(i, j).punched()
     return (None)
 
@@ -62,6 +63,68 @@ def getSpotClicked(board, x, y):
 # ============================================
 # event loop
 # ============================================
+
+def check_events(board, game_over_text, going, screen, textpos, gem_row, gem_column):
+    """
+    This function loops of the events from the event queue.
+
+    If there are 2 clicks of neighbouring gems, it tries to swap them.
+    :param board:
+    :param game_over_text:
+    :param going:
+    :param screen:
+    :param textpos:
+    :return:
+    """
+
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            going = False
+        elif c.MOVES_LEFT == 0:
+            game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
+            game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
+            textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+            screen.blit(game_over_text, (textpos))
+            # going = False
+        elif event.type == KEYDOWN and event.key == K_ESCAPE:
+            going = False
+        elif event.type == MOUSEBUTTONDOWN:
+
+            if gem_row is None and gem_column is None:
+                gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+            else:
+                second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+
+                if (second_gem_row == gem_row - 1 and second_gem_column == gem_column):
+                    # swap up
+                    board.swap_gems(gem_row, gem_column, "up")
+                    gem_row = None
+                    gem_column = None
+
+                elif (second_gem_row == gem_row + 1 and second_gem_column == gem_column):
+                    # swap down
+                    board.swap_gems(gem_row, gem_column, "down")
+                    gem_row = None
+                    gem_column = None
+
+                elif (second_gem_row == gem_row and second_gem_column == gem_column + 1):
+                    # swap right
+                    board.swap_gems(gem_row, gem_column, "right")
+                    gem_row = None
+                    gem_column = None
+
+                elif (second_gem_row == gem_row and second_gem_column == gem_column - 1):
+                    # swap down
+                    board.swap_gems(gem_row, gem_column, "left")
+                    gem_row = None
+                    gem_column = None
+
+                else:
+                    # set gems coords to None
+                    gem_row = None
+                    gem_column = None
+
+    return game_over_text, going, textpos, gem_row, gem_column
 
 
 # ============================================
@@ -100,23 +163,19 @@ def main():
 
     clock = pygame.time.Clock()
 
+    # declare clicked gems to none
+    gem_row = None
+    gem_column = None
+
     going = True
     while going:
         clock.tick(60)
 
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                going = False
-            elif c.MOVES_LEFT == 0:
-                game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
-                game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
-                textpos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-                screen.blit(game_over_text, (textpos))
-                # going = False
-            elif event.type == KEYDOWN and event.key == K_ESCAPE:
-                going = False
-            elif event.type == MOUSEBUTTONDOWN:
-                spotx = getSpotClicked(board, event.pos[0], event.pos[1])
+        # loop over events
+        game_over_text, going, textpos, gem_row, gem_column = check_events(board, game_over_text, going, screen,
+                                                                           textpos,
+                                                                           gem_row,
+                                                                           gem_column)
 
         board.get_gem_group().update()
         board.get_ice_group().update()
@@ -129,7 +188,7 @@ def main():
         board.get_bear_group().draw(screen)
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
-        screen.blit(game_over_text, (textpos))
+        screen.blit(game_over_text, textpos)
         pygame.display.flip()
 
 
