@@ -214,7 +214,7 @@ class GemGrid(g.Grid):
                 if self.grid[i][j] == 0:
                     self.addgem(i, j)
 
-    def row_match_count(self, i: int, j: int, columns: int):
+    def row_match_count(self, i: int, j: int):
         """
         rows match count
         :param gemgrid:
@@ -223,12 +223,14 @@ class GemGrid(g.Grid):
         :param columns:
         :return:
         """
-        row_count = 0
-        while self.grid[i][j].type == self.gemgrid[i][j + row_count + 1] and row_count < columns:
+        row_count = 1
+        match_index = j + row_count
+        while match_index < self.columns and self.grid[i][j].type == self.grid[i][match_index].type:
             row_count = row_count + 1
+            match_index = match_index + 1
         return row_count
 
-    def column_match_count(self, i: int, j: int, rows: int):
+    def column_match_count(self, i: int, j: int):
         """
         columns match count
         :param gemgrid:
@@ -237,10 +239,11 @@ class GemGrid(g.Grid):
         :param rows:
         :return:
         """
-        column_count = 0
-
-        while self.gemgrid[i][j].type == self.gemgrid[i + column_count + 1][j] and column_count < rows:
+        column_count = 1
+        match_index = i + column_count
+        while match_index < self.rows and self.grid[i][j].type == self.grid[match_index][j].type:
             column_count = column_count + 1
+            match_index = match_index + 1
         return column_count
 
     def get_row_match(self, rows: int, columns: int):
@@ -256,6 +259,7 @@ class GemGrid(g.Grid):
                 row_match_count = self.row_match_count(i, j)
                 if row_match_count >= 3:
                     return i, j, row_match_count
+        return None, None, None
 
     def get_column_match(self, rows: int, columns: int):
         """
@@ -270,3 +274,4 @@ class GemGrid(g.Grid):
                 column_match_count = self.column_match_count(i, j)
                 if column_match_count >= 3:
                     return i, j, column_match_count
+        return None, None, None

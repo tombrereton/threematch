@@ -20,7 +20,7 @@ if not pygame.mixer: print('Warning, sound disabled')
 # ============================================
 # Global Constants
 # ============================================
-HD_SCALE = 1.4  # Scale for changing the number of pixels
+HD_SCALE = 3  # Scale for changing the number of pixels
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -106,31 +106,47 @@ def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, 
                 if second_gem_row == gem_row - 1 and second_gem_column == gem_column:
                     # swap up
                     board.swap_gems(gem_row, gem_column, "up")
-                    board.remove_ice(gem_row, gem_column)
+                    number_of_matches = board.check_matches(False)
+                    if number_of_matches == 0:
+                        board.swap_gems(gem_row, gem_column, "up")
+                    else:
+                        c.MOVES_LEFT = c.MOVES_LEFT - 1
+
                     gem_row = None
                     gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
                 elif second_gem_row == gem_row + 1 and second_gem_column == gem_column:
                     # swap down
                     board.swap_gems(gem_row, gem_column, "down")
+                    number_of_matches = board.check_matches(False)
+                    if number_of_matches == 0:
+                        board.swap_gems(gem_row, gem_column, "down")
+                    else:
+                        c.MOVES_LEFT = c.MOVES_LEFT - 1
                     gem_row = None
                     gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
                 elif second_gem_row == gem_row and second_gem_column == gem_column + 1:
                     # swap right
                     board.swap_gems(gem_row, gem_column, "right")
+                    number_of_matches = board.check_matches(False)
+                    if number_of_matches == 0:
+                        board.swap_gems(gem_row, gem_column, "right")
+                    else:
+                        c.MOVES_LEFT = c.MOVES_LEFT - 1
                     gem_row = None
                     gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
                 elif second_gem_row == gem_row and second_gem_column == gem_column - 1:
                     # swap down
                     board.swap_gems(gem_row, gem_column, "left")
+                    number_of_matches = board.check_matches(False)
+                    if number_of_matches == 0:
+                        board.swap_gems(gem_row, gem_column, "left")
+                    else:
+                        c.MOVES_LEFT = c.MOVES_LEFT - 1
                     gem_row = None
                     gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
 
                 else:
                     # if the second gem is not a neighbouring gem, set the gem coordinates to none
@@ -178,6 +194,9 @@ def main():
     # declare clicked gems to none
     gem_row = None
     gem_column = None
+
+    # check for matches
+    board.check_matches(True)
 
     going = True
     while going:
