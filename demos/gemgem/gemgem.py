@@ -40,7 +40,7 @@ assert NUMGEMIMAGES >= 5  # game needs at least 5 types of gems to work
 # a match is made. The .wav files are named match0.wav, match1.wav, etc.
 NUMMATCHSOUNDS = 6
 
-MOVERATE = 25  # 1 to 100, larger num means faster animations
+MOVERATE = 15  # 1 to 100, larger num means faster animations
 DEDUCTSPEED = 0.8  # reduces score by 1 point every DEDUCTSPEED seconds.
 
 #             R    G    B

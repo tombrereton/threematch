@@ -196,3 +196,60 @@ class GemGrid(g.Grid):
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord][x_coord - 1] = self.grid[y_coord][x_coord - 1], \
                                                                        self.grid[y_coord][x_coord]
+
+    def row_match_count(gemgrid: int, i: int, j: int, columns: int):
+        """
+        rows match count
+        :param gemgrid:
+        :param i:
+        :param j:
+        :param columns:
+        :return:
+        """
+        row_count = 0
+        while gemgrid[i][j].type == gemgrid[i][j + row_count + 1] and row_count < columns:
+            row_count = row_count + 1
+            return row_count
+
+    def column_match_count(gemgrid, i, j, rows: int):
+        """
+        columns match count
+        :param gemgrid:
+        :param i:
+        :param j:
+        :param rows:
+        :return:
+        """
+        column_count = 0
+
+        while gemgrid[i][j].type == gemgrid[i + column_count + 1][j] and column_count < rows:
+            column_count = column_count + 1
+            return column_count
+
+    def row_match(gemgrid, rows: int, columns: int):
+        """
+        check for matching gems in row
+        :param gemgrid:
+        :param rows:
+        :param columns:
+        :return:
+        """
+        for i in range(rows):
+            for j in range(columns):
+                row_match_count = row_match_count(gemgrid, i, j)
+                if row_match_count >= 3:
+                    return i, j, row_match_count
+
+    def column_match(gemgrid, rows: int, columns: int):
+        """
+        check for matching gems in columns
+        :param gemgrid:
+        :param rows:
+        :param columns:
+        :return:
+        """
+        for j in range(columns):
+            for i in range(rows):
+                column_match_count = column_match_count(gemgrid, i, j)
+            if column_match_count >= 3:
+                return i, j, column_match_count
