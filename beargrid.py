@@ -95,3 +95,17 @@ class BearGrid(g.Grid):
 
     def get_bear_locations(self):
         pass
+
+    def free_bears(self):
+        for i in range(self.rows - 1):
+            for j in range(self.columns - 1):
+                if self.freeable(i, j):
+                    self.remove_bear(i, j)
+
+    def freeable(self, y_coord: int, x_coord: int):
+        if self.grid[y_coord][x_coord] != 1 and self.grid[y_coord][x_coord].portion == 0:
+            for i in range(2):
+                for j in range(2):
+                    pass
+            return True
+        return False

@@ -31,20 +31,21 @@ class IceGrid(g.Grid):
         :return:
         """
         for i in range(5, self.rows):
-            for j in range(0, self.columns):
-                ice = Ice(self.cell_size)
-                x = self.margin + j * self.cell_size
-                y = self.margin + i * self.cell_size
-                ice.rect.left = x
-                ice.rect.top = y
-                self.grid[i][j] = ice
+            for j in range(self.columns):
+                self.addIce(i, j)
                 # self.screen.blit(ice.image, (x, y))
                 # self.screen.blit(ice.image,
                 #                  (self.margin/2 + i * (self.cell_size + self.cell_size / 4),
                 #                   self.margin/2 + j * (self.cell_size + self.cell_size / 4)))
 
-    def addIce(self, ice: Ice, y_coord: int, x_coord: int):
-        pass
+    def addIce(self, y_coord: int, x_coord: int):
+        ice = Ice(self.cell_size)
+        x = self.margin + x_coord * self.cell_size
+        y = self.margin + y_coord * self.cell_size
+        ice.rect.left = x
+        ice.rect.top = y
+        self.grid[y_coord][x_coord] = ice
 
     def removeIce(self, y_coord: int, x_coord: int):
-        pass
+        ice_group.remove(self.grid[y_coord][x_coord])
+        self.grid[y_coord][x_coord] = 0
