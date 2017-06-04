@@ -1,18 +1,20 @@
 import pygame
 
+import game_utilities as util
 from game_state import GameState
 from global_variables import HD_SCALE, WINDOW_HEIGHT, WINDOW_WIDTH
 
 
 class Background(object):
     def __init__(self, game_state: GameState):
-        self.background = None
         self.score_text = None
         self.game_over_text = None
         self.moves_left_text = None
         self.game_over_text_pos = None
         self.font = pygame.font.Font(None, int(24 * HD_SCALE))
         self.game_state = game_state
+        self.background = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.init_text()
 
     def set_game_over_text(self):
         game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
@@ -22,6 +24,13 @@ class Background(object):
     def set_moves_left(self):
         moves_left = self.game_state.moves_left
         self.moves_left_text = self.font.render("Moves Left: {}".format(moves_left), 1, (10, 10, 10))
+
+    def init_text(self):
+        self.set_moves_left()
+        self.score_text = self.font.render("Score: 000", 1, (10, 10, 10))
+        self.game_over_text = self.font.render("", 1, (10, 10, 10))
+        self.game_over_text_pos = self.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+
 
 
 MOVES_LEFT = 16

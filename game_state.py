@@ -40,8 +40,14 @@ class GameState(object):
             self.row = None
             self.column = None
 
+    def animate_reverse(self):
+        self.state = "animate_reverse"
+
     def check_matches(self):
         self.state = "check_matches"
+
+    def no_more_matches(self):
+        self.state = "no_more_matches"
 
     def animate_explode(self, matches: int):
         self.state = "animate_explode"

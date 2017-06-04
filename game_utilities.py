@@ -23,7 +23,7 @@ def load_background(name: str, width: int, height: int):
 
     # convert alpha makes the images transparent
     image = image.convert_alpha()
-    return image, image.get_rect()
+    return image
 
 
 def load_image(name: str, size: int, colorkey=None):

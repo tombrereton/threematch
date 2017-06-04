@@ -11,10 +11,18 @@ import pygame
 from pygame.locals import *
 
 import board as b
-import game_utilities as util
 from background import Background
 from game_state import GameState
-from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, HD_SCALE, TEST
+from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, ANIMATION_SCALE
+
+import pygame
+from pygame.locals import *
+
+import board as b
+from background import Background
+from game_state import GameState
+from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, \
+    ANIMATION_SCALE
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
@@ -172,6 +180,57 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, screen: 
     return bg, game_state, gem_row, gem_column
 
 
+def animate_loop(board: b.Board, screen, bg: Background, clock: pygame.time.Clock(), game_state: GameState):
+    """
+    This function animates the sprites then sets the game_state depending on its current states.
+    :param board:
+    :param screen:
+    :param bg:
+    :param clock:
+    :return:
+    """
+    for i in range(ANIMATION_SCALE):
+        # loop the number of times we need to animate given
+        # by ANIMATION_SCALE
+
+        # Call the update method on the sprites
+        board.get_gem_group().update()
+        board.get_ice_group().update()
+        board.get_medal_group().update()
+
+        # Draw background and text
+        bg.set_moves_left()
+        screen.blit(bg.background, (0, 0))
+        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        # Draw sprites
+        board.get_medal_group().draw(screen)
+        board.get_ice_group().draw(screen)
+        board.get_gem_group().draw(screen)
+
+        # Draw game over text
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
+        # update the entire screen
+        pygame.display.flip()
+
+        # never run quicker than 60 frames per second
+        clock.tick(60)
+
+    # change game state
+    if game_state.state == "animate_swap":
+        game_state.check_matches()
+    elif game_state.state == "animate_reverse":
+        game_state.empty()
+    elif game_state.state == "animate_explode":
+        game_state.remove_gems()
+    elif game_state.state == "animate_pull_down":
+        game_state.check_matches()
+
+    return game_state
+
+
 # ============================================
 # main
 # ============================================
@@ -184,31 +243,23 @@ def main():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Gem Island")
 
-    # background object to store background and text
+    # total moves allowed in game
     moves_left = 16
+    # game state object to store current state
     game_state = GameState(moves_left)
+    # background object to store background and text
     bg = Background(game_state)
 
     # create the background
-    background, _ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
-    background = background.convert()
-    bg.background = background
     screen.blit(bg.background, (0, 0))
 
     # Put Text On The Background
     if pygame.font:
-        font = pygame.font.Font(None, int(24 * HD_SCALE))
-
-        bg.moves_left_text = font.render("Moves Left: {}".format(game_state.moves_left), 1, (10, 10, 10))
-        bg.score_text = font.render("Score: 000", 1, (10, 10, 10))
-        bg.game_over_text = font.render("", 1, (10, 10, 10))
-        bg.game_over_text_pos = bg.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-
         screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
-    board = b.Board(screen, background, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
+    board = b.Board(screen, bg.background, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
 
     # change to test board if true
     if TEST:
@@ -232,7 +283,6 @@ def main():
     if not TEST:
         board.check_matches(True)
 
-    going = True
     while game_state.going:
         # Frames per second
         clock.tick(60)
