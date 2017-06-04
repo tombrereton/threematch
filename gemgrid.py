@@ -25,6 +25,13 @@ class Gem(pygame.sprite.Sprite):
         if self.dizzy:
             self._spin()
 
+    def explode(self):
+        """
+        if about to be removed, explode gem first
+        :return:
+        """
+        pass
+
     def _spin(self):
         "spin the gem image"
         center = self.rect.center
@@ -246,7 +253,7 @@ class GemGrid(g.Grid):
             match_index = match_index + 1
         return column_count
 
-    def get_row_match(self, rows: int, columns: int):
+    def get_row_match(self):
         """
         check for matching gems in rows
         :param gemgrid:
@@ -254,24 +261,24 @@ class GemGrid(g.Grid):
         :param columns:
         :return:
         """
-        for i in range(rows):
-            for j in range(columns):
-                row_match_count = self.row_match_count(i, j)
+        for row in range(self.rows):
+            for column in range(self.columns):
+                row_match_count = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    return i, j, row_match_count
+                    return row, column, row_match_count
         return None, None, None
 
-    def get_column_match(self, rows: int, columns: int):
+    def get_column_match(self):
         """
         check for matching gems in columns
         :param gemgrid:
-        :param rows:
+        :param row:
         :param columns:
         :return:
         """
-        for j in range(columns):
-            for i in range(rows):
-                column_match_count = self.column_match_count(i, j)
+        for column in range(self.columns):
+            for row in range(self.rows):
+                column_match_count = self.column_match_count(row, column)
                 if column_match_count >= 3:
-                    return i, j, column_match_count
+                    return row, column, column_match_count
         return None, None, None

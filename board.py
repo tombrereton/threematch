@@ -100,7 +100,7 @@ class Board(object):
         Repeats entire loop again until no more matches
         :return:
         """
-        match_count = 0
+        total_matches = 0
         find_horizontals = True
         find_verticals = True
         while find_horizontals and find_verticals:
@@ -108,11 +108,11 @@ class Board(object):
             horizontal_match_length = 0
             while horizontal_match_length is not None:
                 # check horizontal matches
-                row, column, horizontal_match_length = self.gem_grid.get_row_match(self.rows, self.columns)
+                row, column, horizontal_match_length = self.gem_grid.get_row_match()
 
                 if horizontal_match_length is not None and horizontal_match_length > 2:
                     find_verticals = True
-                    match_count = match_count + 1
+                    total_matches = total_matches + 1
                     # remove gems
                     for i in range(row, row + 1):
                         for j in range(column, column + horizontal_match_length):
@@ -130,11 +130,11 @@ class Board(object):
             vertical_match_length = 0
             while vertical_match_length is not None:
                 # check vertical matches
-                row, column, vertical_match_length = self.gem_grid.get_column_match(self.rows, self.columns)
+                row, column, vertical_match_length = self.gem_grid.get_column_match()
 
                 if vertical_match_length is not None and vertical_match_length > 2:
                     find_horizontals = True
-                    match_count = match_count + 1
+                    total_matches = total_matches + 1
                     # remove gems
                     for j in range(column, column + 1):
                         for i in range(row, row + vertical_match_length):
@@ -148,4 +148,4 @@ class Board(object):
                 # pull down new gems
                 self.gem_grid.pull_down()
                 find_verticals = False
-        return match_count
+        return total_matches
