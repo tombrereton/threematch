@@ -59,10 +59,11 @@ class Gem(pygame.sprite.Sprite):
         self.i += 1
         y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE - 1))
         x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE - 1))
-        self.rect.move_ip(x - self.rect.left, y - self.rect.top)
+        self.rect.top = y
+        self.rect.left = x
         if self.i == c.ANIMATION_SCALE - 1:
             self.i = 0
-            self.target = self.origin
+            self.origin = self.target
 
 class GemGrid(g.Grid):
     """
@@ -79,8 +80,7 @@ class GemGrid(g.Grid):
                 gem.test_gem(self.gem_size, (j % 8) + 1)
                 y = self.margin + self.centering_offset + i * self.cell_size
                 x = self.margin + self.centering_offset + j * self.cell_size
-                gem.rect.top = y
-                gem.rect.left = x
+                gem.set_rect(y, x)
                 self.grid[i][j] = gem
 
     def new_grid(self):
@@ -121,7 +121,7 @@ class GemGrid(g.Grid):
 
     def remove_all(self):
         """
-        Method to remove al gems from grid and group
+        Method to remove all gems from grid and group
         :return:
         """
         for i in range(self.rows):
@@ -170,8 +170,9 @@ class GemGrid(g.Grid):
         gem_above = self.grid[y_coord - 1][x_coord]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(0, -self.cell_size)
-        gem_above.rect.move_ip(0, self.cell_size)
+        # gem_clicked.rect.move_ip(0, -self.cell_size)
+        # gem_above.rect.move_ip(0, self.cell_size)
+        gem_above.target, gem_clicked.target = gem_clicked.target, gem_above.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
@@ -190,8 +191,9 @@ class GemGrid(g.Grid):
         gem_below = self.grid[y_coord + 1][x_coord]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(0, self.cell_size)
-        gem_below.rect.move_ip(0, -self.cell_size)
+        # gem_clicked.rect.move_ip(0, self.cell_size)
+        # gem_below.rect.move_ip(0, -self.cell_size)
+        gem_below.target, gem_clicked.target = gem_clicked.target, gem_below.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord + 1][x_coord] = self.grid[y_coord + 1][x_coord], \
@@ -210,8 +212,9 @@ class GemGrid(g.Grid):
         gem_right = self.grid[y_coord][x_coord + 1]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(self.cell_size, 0)
-        gem_right.rect.move_ip(-self.cell_size, 0)
+        # gem_clicked.rect.move_ip(self.cell_size, 0)
+        # gem_right.rect.move_ip(-self.cell_size, 0)
+        gem_right.target, gem_clicked.target = gem_clicked.target, gem_right.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord][x_coord + 1] = self.grid[y_coord][x_coord + 1], \
@@ -230,38 +233,35 @@ class GemGrid(g.Grid):
         gem_left = self.grid[y_coord][x_coord - 1]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(-self.cell_size, 0)
-        gem_left.rect.move_ip(self.cell_size, 0)
+        # gem_clicked.rect.move_ip(-self.cell_size, 0)
+        # gem_left.rect.move_ip(self.cell_size, 0)
+        gem_left.target, gem_clicked.target = gem_clicked.target, gem_left.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord][x_coord - 1] = self.grid[y_coord][x_coord - 1], \
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        done = True
-        for i in range(self.columns):
-            for j in range(self.rows - 1, 0, -1):
-                if self.grid[j][i] == 0:
-                    done = False
-                    self.grid[j][i], self.grid[j - 1][i] = self.grid[j - 1][i], 0
-                    if self.grid[j][i] != 0:
-                        y = self.margin + self.centering_offset + j * self.cell_size
-                        x = self.margin + self.centering_offset + i * self.cell_size
-                        self.grid[j][i].set_target(y, x)
-            if self.grid[0][i] == 0:
-                gem = Gem(self.gem_size)
-                y = self.margin + self.centering_offset - self.cell_size
-                x = self.margin + self.centering_offset + i * self.cell_size
-                gem.init_rect(y, x)
-                gem.set_target(y + self.cell_size, x)
-                self.grid[0][i] = gem
-        gem_group.update()
-        if not done:
-            self.pull_down()
-
-
-
-
+        done = False
+        while not done:
+            done = True
+            for i in range(self.columns):
+                for j in range(self.rows - 1, 0, -1):
+                    if self.grid[j][i] == 0:
+                        done = False
+                        self.grid[j][i], self.grid[j - 1][i] = self.grid[j - 1][i], 0
+                        if self.grid[j][i] != 0:
+                            y = self.margin + self.centering_offset + j * self.cell_size
+                            x = self.margin + self.centering_offset + i * self.cell_size
+                            self.grid[j][i].set_target(y, x)
+                if self.grid[0][i] == 0:
+                    gem = Gem(self.gem_size)
+                    y = self.margin + self.centering_offset - self.cell_size
+                    x = self.margin + self.centering_offset + i * self.cell_size
+                    gem.init_rect(y, x)
+                    gem.set_target(y + self.cell_size, x)
+                    self.grid[0][i] = gem
+            # gem_group.update()
 
     def row_match_count(self, i: int, j: int):
         """

@@ -108,7 +108,7 @@ class Board(object):
         total_matches = 0
         find_horizontals = True
         find_verticals = True
-        while find_horizontals and find_verticals:
+        while find_horizontals or find_verticals:
 
             horizontal_match_length = 0
             while horizontal_match_length is not None:
@@ -122,8 +122,8 @@ class Board(object):
                     for i in range(row, row + 1):
                         for j in range(column, column + horizontal_match_length):
                             self.gem_grid.removegem(i, j)
-                            self.get_gem_group().update()
-                            self.get_gem_group().draw(self.screen)
+                            # self.get_gem_group().update()
+                            # self.get_gem_group().draw(self.screen)
 
                             if self.is_ice(i, j) and not initial_clear:
                                 self.remove_ice(i, j)
@@ -144,8 +144,8 @@ class Board(object):
                     for j in range(column, column + 1):
                         for i in range(row, row + vertical_match_length):
                             self.gem_grid.removegem(i, j)
-                            self.get_gem_group().update()
-                            self.get_gem_group().draw(self.screen)
+                            # self.get_gem_group().update()
+                            # self.get_gem_group().draw(self.screen)
 
                             if self.is_ice(i, j) and not initial_clear:
                                 self.remove_ice(i, j)
