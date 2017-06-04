@@ -4,6 +4,7 @@ import pygame
 
 import game_utilities as util
 import grid as g
+import global_variables as c
 
 gem_group = pygame.sprite.Group()
 
@@ -17,18 +18,24 @@ class Gem(pygame.sprite.Sprite):
         self.is_bonus = False
         self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
         self.image, self.rect = util.load_image(self.gem_name, size)
-        self.dizzy = 0
-        self.target_y = 0
-        self.target_x = 0
+        self.origin = (0, 0)
+        self.target = (0, 0)
+        self.i = 0
 
     def init_rect(self, y: int, x: int):
-        self.rect.left = x
-        self.rect.top = y
+        self.set_rect(y, x)
+        self.set_origin(y, x)
         self.set_target(y, x)
 
     def set_target(self, y: int, x: int):
-        self.target_y = y
-        self.target_x = x
+        self.target = (y, x)
+
+    def set_rect(self, y: int, x: int):
+        self.rect.top = y
+        self.rect.left = x
+
+    def set_origin(self, y: int, x: int):
+        self.origin = (y, x)
 
     def test_gem(self, size: int, type: int):
         self.type = type
@@ -38,9 +45,8 @@ class Gem(pygame.sprite.Sprite):
     # Functions to test animations
 
     def update(self):
-        "walk or spin, depending on the monkeys state"
-        if self.dizzy:
-            self._spin()
+        if self.origin != self.target:
+            self.move()
 
     def explode(self):
         """
@@ -49,24 +55,14 @@ class Gem(pygame.sprite.Sprite):
         """
         pass
 
-    def _spin(self):
-        "spin the gem image"
-        center = self.rect.center
-        self.dizzy = self.dizzy + 12
-        if self.dizzy >= 360:
-            self.dizzy = 0
-            self.image = self.original
-        else:
-            rotate = pygame.transform.rotate
-            self.image = rotate(self.original, self.dizzy)
-        self.rect = self.image.get_rect(center=center)
-
-    def punched(self):
-        "this will cause the monkey to start spinning"
-        if not self.dizzy:
-            self.dizzy = 1
-            self.original = self.image
-
+    def move(self):
+        self.i += 1
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE - 1))
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE - 1))
+        self.rect.move_ip(x - self.rect.left, y - self.rect.top)
+        if self.i == c.ANIMATION_SCALE - 1:
+            self.i = 0
+            self.target = self.origin
 
 class GemGrid(g.Grid):
     """
@@ -242,19 +238,30 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        for i in range(self.rows - 1, 0, -1):
-            for j in range(self.columns):
-                if self.grid[i][j] == 0:
-                    for k in range(i - 1, -1, -1):
-                        if self.grid[k][j] != 0:
-                            self.grid[i][j], self.grid[k][j] = self.grid[k][j], 0
-                            x = self.margin + self.centering_offset + j * self.cell_size
-                            y = self.margin + self.centering_offset + i * self.cell_size
-                            self.grid[i][j].rect = pygame.Rect((x, y, self.gem_size, self.gem_size))
-        for i in range(self.rows):
-            for j in range(self.columns):
-                if self.grid[i][j] == 0:
-                    self.addgem(i, j)
+        done = True
+        for i in range(self.columns):
+            for j in range(self.rows - 1, 0, -1):
+                if self.grid[j][i] == 0:
+                    done = False
+                    self.grid[j][i], self.grid[j - 1][i] = self.grid[j - 1][i], 0
+                    if self.grid[j][i] != 0:
+                        y = self.margin + self.centering_offset + j * self.cell_size
+                        x = self.margin + self.centering_offset + i * self.cell_size
+                        self.grid[j][i].set_target(y, x)
+            if self.grid[0][i] == 0:
+                gem = Gem(self.gem_size)
+                y = self.margin + self.centering_offset - self.cell_size
+                x = self.margin + self.centering_offset + i * self.cell_size
+                gem.init_rect(y, x)
+                gem.set_target(y + self.cell_size, x)
+                self.grid[0][i] = gem
+        gem_group.update()
+        if not done:
+            self.pull_down()
+
+
+
+
 
     def row_match_count(self, i: int, j: int):
         """
