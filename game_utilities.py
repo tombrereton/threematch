@@ -57,3 +57,23 @@ def load_sound(name: str):
         print('Cannot load sound: %s' % fullname)
         raise SystemExit(str(geterror()))
     return sound
+
+
+def load_explosions(size: int):
+    explosions = []
+
+    for i in range(9):
+        name = "explosions/Explosion/explosion0{}.png".format(i)
+        fullname = os.path.join(data_dir, name)
+        try:
+            image = pygame.image.load(fullname)
+            image = pygame.transform.smoothscale(image, (size, size))
+        except pygame.error:
+            print('Cannot load image:', fullname)
+            raise SystemExit(geterror())
+
+        # convert alpha makes the images transparent
+        image = image.convert_alpha()
+        explosions.append(image)
+
+    return explosions

@@ -8,6 +8,7 @@ import grid as g
 gem_group = pygame.sprite.Group()
 
 
+
 class Gem(pygame.sprite.Sprite):
     def __init__(self, size: int):
         # call super constructor

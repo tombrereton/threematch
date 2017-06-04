@@ -13,31 +13,10 @@ from pygame.locals import *
 import board as b
 import game_utilities as util
 import global_variables as c
+from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, HD_SCALE, TEST
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
-
-# ============================================
-# Global Constants
-# ============================================
-HD_SCALE = 1  # Scale for changing the number of pixels
-TEST = False
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
-MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
-TEXT_AREA = int(75 * HD_SCALE)
-PUZZLE_ROWS = 9  # Number of rows on the board.
-PUZZLE_COLUMNS = 9  # Number of columns on the board.
-WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
-WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + TEXT_AREA
-
-
-# FONT_SIZE = 36
-# TEXT_OFFSET = MARGIN + 5
-
 
 # ============================================
 # locator functions
