@@ -13,14 +13,6 @@ from pygame.locals import *
 import board as b
 from background import Background
 from game_state import GameState
-from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, ANIMATION_SCALE
-
-import pygame
-from pygame.locals import *
-
-import board as b
-from background import Background
-from game_state import GameState
 from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, \
     ANIMATION_SCALE
 
@@ -290,8 +282,14 @@ def main():
         # loop over events
         bg, game_state, gem_row, gem_column = check_events(board, bg, game_state, screen, gem_row, gem_column)
 
+        if game_state.state in {"animate_swap", "animate_reverse", "animate_explode", "animate_pull_down"}:
+            # start animation if in animation state
+            animate_loop(board, screen, bg, clock, game_state)
+
+        # Update groups
         board.get_gem_group().update()
         board.get_ice_group().update()
+        board.get_medal_group().update()
 
         # Draw Everything
 

@@ -36,9 +36,7 @@ class GameState(object):
             self.direction = "left"
 
         else:
-            self.state = "empty"
-            self.row = None
-            self.column = None
+            self.state == "not_valid_swap"
 
     def animate_reverse(self):
         self.state = "animate_reverse"
