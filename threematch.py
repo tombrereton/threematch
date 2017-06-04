@@ -13,10 +13,13 @@ from pygame.locals import *
 import board as b
 import game_utilities as util
 import global_variables as c
+from background import Background
+from game_state import GameState
 from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, HD_SCALE, TEST
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
+
 
 # ============================================
 # locator functions
@@ -44,7 +47,7 @@ def get_gem_location_from_click(board, x, y):
 # event loop
 # ============================================
 
-def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, screen: pygame.display, text_pos: str,
+def check_events(board: b.Board, bg: Background, game_state: GameState, going: bool, screen: pygame.display,
                  gem_row: int,
                  gem_column: int):
     """
@@ -61,14 +64,19 @@ def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, 
     :return:
     """
 
+    # for event in pygame.event.get():
+
+        # if
+
     for event in pygame.event.get():
         if event.type == QUIT:
             going = False
         elif c.MOVES_LEFT == 0:
             game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
-            game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
-            text_pos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-            screen.blit(game_over_text, text_pos)
+
+            bg.game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
+            bg.game_over_text_pos = bg.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+            screen.blit(bg.game_over_text, bg.game_over_text_pos)
             # going = False
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
             going = False
@@ -133,7 +141,7 @@ def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, 
                     gem_row = None
                     gem_column = None
 
-    return game_over_text, going, text_pos, gem_row, gem_column
+    return bg, game_state, going, gem_row, gem_column
 
 
 # ============================================
@@ -148,20 +156,27 @@ def main():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Gem Island")
 
+    # background object to store background and text
+    bg = Background()
+    game_state = GameState()
+
     # create the background
     background, _ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
     background = background.convert()
-    screen.blit(background, (0, 0))
+    bg.background = background
+    screen.blit(bg.background, (0, 0))
 
     # Put Text On The Background
     if pygame.font:
         font = pygame.font.Font(None, int(24 * HD_SCALE))
-        moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
-        score_text = font.render("Score: 000", 1, (10, 10, 10))
-        game_over_text = font.render("", 1, (10, 10, 10))
-        text_pos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-        screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        bg.moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
+        bg.score_text = font.render("Score: 000", 1, (10, 10, 10))
+        bg.game_over_text = font.render("", 1, (10, 10, 10))
+        bg.game_over_text_pos = bg.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+
+        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
     board = b.Board(screen, background, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
@@ -190,24 +205,33 @@ def main():
 
     going = True
     while going:
+        # Frames per second
         clock.tick(60)
 
         # loop over events
-        game_over_text, going, text_pos, gem_row, gem_column = \
-            check_events(board, game_over_text, going, screen, text_pos, gem_row, gem_column)
+        bg, game_state, going, gem_row, gem_column = check_events(board, bg, game_state, going, screen, gem_row,
+                                                                  gem_column)
 
         board.get_gem_group().update()
         board.get_ice_group().update()
 
         # Draw Everything
-        screen.blit(background, (0, 0))
-        moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
-        screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        # Draw background and text
+        screen.blit(bg.background, (0, 0))
+        bg.moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
+        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        # Draw sprites
         board.get_medal_group().draw(screen)
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
-        screen.blit(game_over_text, text_pos)
+
+        # Draw game over text
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
+        # Show drawn objects
         pygame.display.flip()
 
 
