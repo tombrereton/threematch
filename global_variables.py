@@ -17,7 +17,7 @@ PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
 WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
 WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + TEXT_AREA
-ANIMATION_SCALE = 50
+ANIMATION_SCALE = 15
 
 # Testing
 TEST = False

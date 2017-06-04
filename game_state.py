@@ -1,4 +1,26 @@
 class GameState(object):
+    """
+    A class to represent the states it can be in, which are:
+
+    restart
+    empty
+    user_clicked
+    not_valid_swap
+    check_matches
+    check_swap
+    no_more_matches
+    remove_gems
+    animate_swap
+    animate_not_valid_swap
+    animate_reverse
+    animate_pull_down
+    animate_explode
+
+    It also stores the moves the player can make.
+
+    Future implementation: store level, rows, and columns?
+    """
+
     def __init__(self, moves_left: int):
         self.state = "empty"
         self.row = None
@@ -36,7 +58,10 @@ class GameState(object):
             self.direction = "left"
 
         else:
-            self.state == "not_valid_swap"
+            self.state = "empty"
+            self.row = None
+            self.column = None
+            self.direction = None
 
     def animate_reverse(self):
         self.state = "animate_reverse"
@@ -69,3 +94,12 @@ class GameState(object):
 
     def restart(self):
         self.state = "restart"
+
+    def not_valid_swap(self):
+        self.state = "not_valid_swap"
+
+    def move_made(self):
+        self.moves_left = self.moves_left - 1
+
+    def check_swap(self):
+        self.state = "check_swap"
