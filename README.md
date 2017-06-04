@@ -8,6 +8,10 @@ This game is in development and is being built for a masters project at the Univ
 Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
 in `threematch.py` under the GLOBAL CONSTANSTS section. Recommended values are between and including 1 and 2.
 
+<p align="center">
+  <img src="https://i.imgur.com/rHAjkpt.png">
+</p>
+
 ---
 Style guide
 ---
