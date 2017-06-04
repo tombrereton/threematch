@@ -198,12 +198,10 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        # transpose = lambda x : [[x[i][j] for i in range(len(x))] for j in range(len(x[0]))]
-        # self.grid = transpose([[j for j in i if j == 0] + [j for j in i if j != 0] for i in transpose(self.grid)])
         for i in range(self.rows - 1, 0, -1):
             for j in range(self.columns):
                 if self.grid[i][j] == 0:
-                    for k in range(i + 1, self.rows):
+                    for k in range(i - 1, -1, -1):
                         if self.grid[k][j] != 0:
                             self.grid[i][j], self.grid[k][j] = self.grid[k][j], 0
                             x = self.margin + self.centering_offset + j * self.cell_size
