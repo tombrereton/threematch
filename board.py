@@ -1,5 +1,3 @@
-import pygame
-
 import gemgrid
 import icegrid
 import medalgrid
@@ -16,11 +14,12 @@ class Board(object):
     as needed.
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+    def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
         self.medal_grid = medalgrid.MedalGrid(screen, rows, columns, cell_size, margin)
         self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size, margin)
         self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size, margin)
         self.screen = screen
+        self.background = background
         self.rows = rows
         self.columns = columns
 
@@ -64,6 +63,12 @@ class Board(object):
         :return: True if visible and a bear, False if not
         """
         return not self.is_ice(y_coord, x_coord) and self.is_medal(y_coord, x_coord)
+
+    def test_board(self):
+        self.gem_grid.test_grid()
+
+    def remove_all(self):
+        self.gem_grid.remove_all()
 
     def new_board(self):
         # generates a random new board

@@ -18,6 +18,10 @@ class Gem(pygame.sprite.Sprite):
         self.image, self.rect = util.load_image(self.gem_name, size)
         self.dizzy = 0
 
+    def test_gem(self, size: int, type: int):
+        test_gem = "stones/Stone_0{}_05.png".format(type)
+        self.image, self.rect = util.load_image(test_gem, size)
+
     # Functions to test animations
 
     def update(self):
@@ -59,6 +63,17 @@ class GemGrid(g.Grid):
     def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
         super().__init__(screen, rows, columns, cell_size, margin)
 
+    def test_grid(self):
+        for j in range(0, self.columns):
+            for i in range(0, self.rows):
+                gem = Gem(self.gem_size)
+                gem.test_gem(self.gem_size, (j % 8) + 1)
+                y = self.margin + self.centering_offset + i * self.cell_size
+                x = self.margin + self.centering_offset + j * self.cell_size
+                gem.rect.top = y
+                gem.rect.left = x
+                self.grid[i][j] = gem
+
     def new_grid(self):
         """
         override method in Grid class.
@@ -95,6 +110,16 @@ class GemGrid(g.Grid):
         """
         gem_group.remove(self.grid[y_coord][x_coord])
         self.grid[y_coord][x_coord] = 0
+
+    def remove_all(self):
+        """
+        Method to remove al gems from grid and group
+        :return:
+        """
+        for i in range(self.rows):
+            for j in range(self.columns):
+                gem_group.remove(self.grid[i][j])
+                self.grid[i][j] = 0
 
     def get_gem(self, y_coord: int, x_coord: int):
         """

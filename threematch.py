@@ -21,6 +21,7 @@ if not pygame.mixer: print('Warning, sound disabled')
 # Global Constants
 # ============================================
 HD_SCALE = 3  # Scale for changing the number of pixels
+TEST = True
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -184,7 +185,16 @@ def main():
         screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
-    board = b.Board(screen, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
+    board = b.Board(screen, background, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
+
+    # change to test board if true
+    if TEST:
+        board.remove_all()
+        board.get_gem_group().update()
+        board.get_gem_group().draw(screen)
+        board.test_board()
+        board.get_gem_group().update()
+        board.get_gem_group().draw(screen)
 
     # flip the screen after adding everything to it
     pygame.display.flip()
@@ -196,7 +206,8 @@ def main():
     gem_column = None
 
     # check for matches
-    board.check_matches(True)
+    if not TEST:
+        board.check_matches(True)
 
     going = True
     while going:
