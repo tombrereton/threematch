@@ -3,7 +3,6 @@
 # ============================================
 
 # Game variables
-MOVES_LEFT = 16
 LEVEL_1_TOTAL_MEDALS = 3
 LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5

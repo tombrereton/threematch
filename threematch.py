@@ -12,7 +12,6 @@ from pygame.locals import *
 
 import board as b
 import game_utilities as util
-import global_variables as c
 from background import Background
 from game_state import GameState
 from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, HD_SCALE, TEST
@@ -47,13 +46,15 @@ def get_gem_location_from_click(board, x, y):
 # event loop
 # ============================================
 
-def check_events(board: b.Board, bg: Background, game_state: GameState, going: bool, screen: pygame.display,
+def check_events(board: b.Board, bg: Background, game_state: GameState, screen: pygame.display,
                  gem_row: int,
                  gem_column: int):
     """
     This function loops of the events from the event queue.
 
     If there are 2 clicks of neighbouring gems, it tries to swap them.
+    :param game_state:
+    :param bg:
     :param gem_column:
     :param gem_row:
     :param board:
@@ -65,21 +66,48 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, going: b
     """
 
     # for event in pygame.event.get():
-
-        # if
+    #     if game_state.state in {"animate_swap", "animate_explode", "animate_pull_down"}:
+    #
+    #         # ignore events while animating
+    #         # do we want to set this to return None?
+    #         return bg, game_state, gem_row, gem_column
+    #
+    #     elif event.type == QUIT:
+    #         # quit
+    #         game_state.stop_going()
+    #
+    #     elif c.MOVE_LEFT == 0:
+    #         # game over
+    #         bg.set_game_over_text()
+    #         screen.blit(bg.game_over_text, bg.game_over_text_pos)
+    #
+    #     elif event.type == KEYDOWN and event.key == K_ESCAPE:
+    #         # quit
+    #         game_state.stop_going()
+    #
+    #     elif event.type == MOUSEBUTTONDOWN:
+    #
+    #         if game_state.state == "user_clicked":
+    #             # second click, if valid move, change state to animate_move
+    #             # if it is not a valid move, change state to empty
+    #             # this is done within the GameState class
+    #             second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+    #             game_state.animate_swap(second_gem_row, second_gem_row)
+    #
+    #         elif game_state.state == "empty":
+    #             # first click, get coordinates and save them to game state object
+    #             # change state to user_clicked
+    #             gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+    #             game_state.user_clicked(gem_row, gem_column)
 
     for event in pygame.event.get():
         if event.type == QUIT:
-            going = False
-        elif c.MOVES_LEFT == 0:
-            game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
-
-            bg.game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
-            bg.game_over_text_pos = bg.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+            game_state.stop_going()
+        elif game_state.moves_left == 0:
+            bg.set_game_over_text()
             screen.blit(bg.game_over_text, bg.game_over_text_pos)
-            # going = False
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
-            going = False
+            game_state.stop_going()
         elif event.type == MOUSEBUTTONDOWN:
             # get gem coordinates if user clicks
             if gem_row is None and gem_column is None:
@@ -98,7 +126,7 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, going: b
                     if number_of_matches == 0:
                         board.swap_gems(gem_row, gem_column, "up")
                     else:
-                        c.MOVES_LEFT = c.MOVES_LEFT - 1
+                        game_state.moves_left = game_state.moves_left - 1
 
                     gem_row = None
                     gem_column = None
@@ -110,7 +138,7 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, going: b
                     if number_of_matches == 0:
                         board.swap_gems(gem_row, gem_column, "down")
                     else:
-                        c.MOVES_LEFT = c.MOVES_LEFT - 1
+                        game_state.moves_left = game_state.moves_left - 1
                     gem_row = None
                     gem_column = None
 
@@ -121,7 +149,7 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, going: b
                     if number_of_matches == 0:
                         board.swap_gems(gem_row, gem_column, "right")
                     else:
-                        c.MOVES_LEFT = c.MOVES_LEFT - 1
+                        game_state.moves_left = game_state.moves_left - 1
                     gem_row = None
                     gem_column = None
 
@@ -132,7 +160,7 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, going: b
                     if number_of_matches == 0:
                         board.swap_gems(gem_row, gem_column, "left")
                     else:
-                        c.MOVES_LEFT = c.MOVES_LEFT - 1
+                        game_state.moves_left = game_state.moves_left - 1
                     gem_row = None
                     gem_column = None
 
@@ -141,7 +169,7 @@ def check_events(board: b.Board, bg: Background, game_state: GameState, going: b
                     gem_row = None
                     gem_column = None
 
-    return bg, game_state, going, gem_row, gem_column
+    return bg, game_state, gem_row, gem_column
 
 
 # ============================================
@@ -157,8 +185,9 @@ def main():
     pygame.display.set_caption("Gem Island")
 
     # background object to store background and text
-    bg = Background()
-    game_state = GameState()
+    moves_left = 16
+    game_state = GameState(moves_left)
+    bg = Background(game_state)
 
     # create the background
     background, _ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -170,7 +199,7 @@ def main():
     if pygame.font:
         font = pygame.font.Font(None, int(24 * HD_SCALE))
 
-        bg.moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
+        bg.moves_left_text = font.render("Moves Left: {}".format(game_state.moves_left), 1, (10, 10, 10))
         bg.score_text = font.render("Score: 000", 1, (10, 10, 10))
         bg.game_over_text = font.render("", 1, (10, 10, 10))
         bg.game_over_text_pos = bg.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
@@ -204,13 +233,12 @@ def main():
         board.check_matches(True)
 
     going = True
-    while going:
+    while game_state.going:
         # Frames per second
         clock.tick(60)
 
         # loop over events
-        bg, game_state, going, gem_row, gem_column = check_events(board, bg, game_state, going, screen, gem_row,
-                                                                  gem_column)
+        bg, game_state, gem_row, gem_column = check_events(board, bg, game_state, screen, gem_row, gem_column)
 
         board.get_gem_group().update()
         board.get_ice_group().update()
@@ -218,8 +246,8 @@ def main():
         # Draw Everything
 
         # Draw background and text
+        bg.set_moves_left()
         screen.blit(bg.background, (0, 0))
-        bg.moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
         screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
