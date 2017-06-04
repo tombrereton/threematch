@@ -17,8 +17,20 @@ class Gem(pygame.sprite.Sprite):
         self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
         self.image, self.rect = util.load_image(self.gem_name, size)
         self.dizzy = 0
+        self.target_y = 0
+        self.target_x = 0
+
+    def init_rect(self, y: int, x: int):
+        self.rect.left = x
+        self.rect.top = y
+        self.set_target(y, x)
+
+    def set_target(self, y: int, x: int):
+        self.target_y = y
+        self.target_x = x
 
     def test_gem(self, size: int, type: int):
+        self.type = type
         test_gem = "stones/Stone_0{}_05.png".format(type)
         self.image, self.rect = util.load_image(test_gem, size)
 
@@ -97,8 +109,7 @@ class GemGrid(g.Grid):
         gem = Gem(self.gem_size)
         x = self.margin + self.centering_offset + x_coord * self.cell_size
         y = self.margin + self.centering_offset + y_coord * self.cell_size
-        gem.rect.left = x
-        gem.rect.top = y
+        gem.init_rect(y, x)
         self.grid[y_coord][x_coord] = gem
 
     def removegem(self, y_coord: int, x_coord: int):
@@ -230,12 +241,10 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        # transpose = lambda x : [[x[i][j] for i in range(len(x))] for j in range(len(x[0]))]
-        # self.grid = transpose([[j for j in i if j == 0] + [j for j in i if j != 0] for i in transpose(self.grid)])
         for i in range(self.rows - 1, 0, -1):
             for j in range(self.columns):
                 if self.grid[i][j] == 0:
-                    for k in range(i + 1, self.rows):
+                    for k in range(i - 1, -1, -1):
                         if self.grid[k][j] != 0:
                             self.grid[i][j], self.grid[k][j] = self.grid[k][j], 0
                             x = self.margin + self.centering_offset + j * self.cell_size
