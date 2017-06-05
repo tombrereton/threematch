@@ -64,11 +64,6 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
     """
 
     for event in pygame.event.get():
-        # if game_state.state in {"animate_swap", "animate_explode", "animate_pull_down"}:
-        #
-        #     # ignore events while animating
-        #     # do we want to set this to return None?
-        #     return bg, game_state, gem_row, gem_column
 
         if event.type == QUIT:
             # quit
@@ -145,83 +140,12 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
 
     return screen, board, bg, game_state
 
-    # for event in pygame.event.get():
-    #     if event.type == QUIT:
-    #         game_state.stop_going()
-    #     elif game_state.moves_left == 0:
-    #         bg.set_game_over_text()
-    #         screen.blit(bg.game_over_text, bg.game_over_text_pos)
-    #     elif event.type == KEYDOWN and event.key == K_ESCAPE:
-    #         game_state.stop_going()
-    #     elif event.type == MOUSEBUTTONDOWN:
-    #         # get gem coordinates if user clicks
-    #         if gem_row is None and gem_column is None:
-    #             # if use has not clicked yet, get the first gem coordinates
-    #             gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
-    #
-    #         else:
-    #             # if user has already clicked, get the second gem coordinates
-    #             second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
-    #
-    #             # we check if the second gem is a neighbouring gem, swap it if so
-    #             if second_gem_row == gem_row - 1 and second_gem_column == gem_column:
-    #                 # swap up
-    #                 board.swap_gems(gem_row, gem_column, "up")
-    #                 number_of_matches = board.check_matches(False)
-    #                 if number_of_matches == 0:
-    #                     board.swap_gems(gem_row, gem_column, "up")
-    #                 else:
-    #                     game_state.moves_left = game_state.moves_left - 1
-    #
-    #                 gem_row = None
-    #                 gem_column = None
-    #
-    #             elif second_gem_row == gem_row + 1 and second_gem_column == gem_column:
-    #                 # swap down
-    #                 board.swap_gems(gem_row, gem_column, "down")
-    #                 number_of_matches = board.check_matches(False)
-    #                 if number_of_matches == 0:
-    #                     board.swap_gems(gem_row, gem_column, "down")
-    #                 else:
-    #                     game_state.moves_left = game_state.moves_left - 1
-    #                 gem_row = None
-    #                 gem_column = None
-    #
-    #             elif second_gem_row == gem_row and second_gem_column == gem_column + 1:
-    #                 # swap right
-    #                 board.swap_gems(gem_row, gem_column, "right")
-    #                 number_of_matches = board.check_matches(False)
-    #                 if number_of_matches == 0:
-    #                     board.swap_gems(gem_row, gem_column, "right")
-    #                 else:
-    #                     game_state.moves_left = game_state.moves_left - 1
-    #                 gem_row = None
-    #                 gem_column = None
-    #
-    #             elif second_gem_row == gem_row and second_gem_column == gem_column - 1:
-    #                 # swap down
-    #                 board.swap_gems(gem_row, gem_column, "left")
-    #                 number_of_matches = board.check_matches(False)
-    #                 if number_of_matches == 0:
-    #                     board.swap_gems(gem_row, gem_column, "left")
-    #                 else:
-    #                     game_state.moves_left = game_state.moves_left - 1
-    #                 gem_row = None
-    #                 gem_column = None
-    #
-    #             else:
-    #                 # if the second gem is not a neighbouring gem, set the gem coordinates to none
-    #                 gem_row = None
-    #                 gem_column = None
-    #
-    # return bg, game_state, gem_row, gem_column
-
 
 # ============================================
 # animate loop
 # ============================================
 
-def animate_loop(board: b.Board, screen, bg: Background, clock: pygame.time.Clock(), game_state: GameState):
+def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, clock: pygame.time.Clock()):
     """
     This function animates the sprites then sets the game_state depending on its current states.
 
@@ -291,7 +215,7 @@ def main():
     pygame.display.set_caption("Gem Island")
 
     # total moves allowed in game
-    moves_left = 16
+    moves_left = 26
     # game state object to store current state
     game_state = GameState(moves_left)
     # background object to store background and text
@@ -320,11 +244,8 @@ def main():
     # flip the screen after adding everything to it
     pygame.display.flip()
 
+    # Create FPS clock
     clock = pygame.time.Clock()
-
-    # declare clicked gems to none
-    gem_row = None
-    gem_column = None
 
     # check for matches
     if not TEST:
@@ -337,10 +258,10 @@ def main():
         if game_state.state in ["animate_swap", "animate_reverse", "animate_explode", "animate_pull_down",
                                 "animate_not_valid_swap"]:
             # start animation if in animation state
-            game_state = animate_loop(board, screen, bg, clock, game_state)
+            game_state = animate_loop(screen, board, bg, game_state, clock)
 
         # loop over events
-        screen, board, bg, game_state = check_events(screen, board, bg, game_state)  # Update groups
+        screen, board, bg, game_state = check_events(screen, board, bg, game_state)
 
         # Update sprites
         board.get_gem_group().update()
@@ -365,6 +286,7 @@ def main():
 
         # Show drawn objects
         pygame.display.flip()
+
 
 if __name__ == '__main__':
     main()
