@@ -37,38 +37,31 @@ class GameState(object):
 
     def animate_swap(self, second_row: int, second_column: int):
 
-        try:
-            if second_row == self.row - 1 and second_column == self.column:
-                # swap up
-                self.state = "animate_swap"
-                self.direction = "up"
+        if second_row == self.row - 1 and second_column == self.column:
+            # swap up
+            self.state = "animate_swap"
+            self.direction = "up"
 
-            elif second_row == self.row + 1 and second_column == self.column:
-                # swap down
-                self.state = "animate_swap"
-                self.direction = "down"
+        elif second_row == self.row + 1 and second_column == self.column:
+            # swap down
+            self.state = "animate_swap"
+            self.direction = "down"
 
-            elif second_row == self.row and second_column == self.column + 1:
-                # swap right
-                self.state = "animate_swap"
-                self.direction = "right"
+        elif second_row == self.row and second_column == self.column + 1:
+            # swap right
+            self.state = "animate_swap"
+            self.direction = "right"
 
-            elif second_row == self.row and second_column == self.column - 1:
-                # swap left
-                self.state = "animate_swap"
-                self.direction = "left"
+        elif second_row == self.row and second_column == self.column - 1:
+            # swap left
+            self.state = "animate_swap"
+            self.direction = "left"
 
-            else:
-                self.state = "empty"
-                self.row = None
-                self.column = None
-                self.direction = None
-        except TypeError:
+        else:
             self.state = "empty"
             self.row = None
             self.column = None
             self.direction = None
-
 
     def animate_reverse(self):
         self.state = "animate_reverse"

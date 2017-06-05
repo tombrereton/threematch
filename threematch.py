@@ -138,7 +138,10 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
                 # first click, get coordinates and save them to game state object
                 # change state to user_clicked
                 gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
-                game_state.user_clicked(gem_row, gem_column)
+                if gem_row is None or gem_column is None:
+                    game_state.empty()
+                else:
+                    game_state.user_clicked(gem_row, gem_column)
 
     return screen, board, bg, game_state
 
