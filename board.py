@@ -1,5 +1,3 @@
-import pygame
-
 import gemgrid
 import icegrid
 import medalgrid
@@ -16,11 +14,14 @@ class Board(object):
     as needed.
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+    def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
         self.medal_grid = medalgrid.MedalGrid(screen, rows, columns, cell_size, margin)
         self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size, margin)
         self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size, margin)
         self.screen = screen
+        self.background = background
+        self.rows = rows
+        self.columns = columns
 
     def is_ice(self, y_coord: int, x_coord: int):
         """
@@ -63,6 +64,12 @@ class Board(object):
         """
         return not self.is_ice(y_coord, x_coord) and self.is_medal(y_coord, x_coord)
 
+    def test_board(self):
+        self.gem_grid.test_grid()
+
+    def remove_all(self):
+        self.gem_grid.remove_all()
+
     def new_board(self):
         # generates a random new board
         # create 9x9 candies on board
@@ -84,3 +91,66 @@ class Board(object):
 
     def get_medal_group(self):
         return medalgrid.medal_group
+
+    def check_matches(self, initial_clear: bool):
+        """
+        Finds the location of the horizontal matches.
+        Deletes the gems if match greater than 2
+        Pulls down new gems
+        Repeats until no horizontal matches
+        Finds the location of the vertical matches.
+        Deletes the gems if match greater than 2
+        Pulls down new gems
+        Repeats until no horizontal matches
+        Repeats entire loop again until no more matches
+        :return:
+        """
+        total_matches = 0
+        find_horizontals = True
+        find_verticals = True
+        while find_horizontals or find_verticals:
+
+            horizontal_match_length = 0
+            while horizontal_match_length is not None:
+                # check horizontal matches
+                row, column, horizontal_match_length = self.gem_grid.get_row_match()
+
+                if horizontal_match_length is not None and horizontal_match_length > 2:
+                    find_verticals = True
+                    total_matches = total_matches + 1
+                    # remove gems
+                    for i in range(row, row + 1):
+                        for j in range(column, column + horizontal_match_length):
+                            self.gem_grid.removegem(i, j)
+                            # self.get_gem_group().update()
+                            # self.get_gem_group().draw(self.screen)
+
+                            if self.is_ice(i, j) and not initial_clear:
+                                self.remove_ice(i, j)
+
+                # pull down new gems
+                self.gem_grid.pull_down()
+                find_horizontals = False
+
+            vertical_match_length = 0
+            while vertical_match_length is not None:
+                # check vertical matches
+                row, column, vertical_match_length = self.gem_grid.get_column_match()
+
+                if vertical_match_length is not None and vertical_match_length > 2:
+                    find_horizontals = True
+                    total_matches = total_matches + 1
+                    # remove gems
+                    for j in range(column, column + 1):
+                        for i in range(row, row + vertical_match_length):
+                            self.gem_grid.removegem(i, j)
+                            # self.get_gem_group().update()
+                            # self.get_gem_group().draw(self.screen)
+
+                            if self.is_ice(i, j) and not initial_clear:
+                                self.remove_ice(i, j)
+
+                # pull down new gems
+                self.gem_grid.pull_down()
+                find_verticals = False
+        return total_matches

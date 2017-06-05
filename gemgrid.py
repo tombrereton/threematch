@@ -4,8 +4,10 @@ import pygame
 
 import game_utilities as util
 import grid as g
+import global_variables as c
 
 gem_group = pygame.sprite.Group()
+
 
 
 class Gem(pygame.sprite.Sprite):
@@ -16,33 +18,52 @@ class Gem(pygame.sprite.Sprite):
         self.is_bonus = False
         self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
         self.image, self.rect = util.load_image(self.gem_name, size)
-        self.dizzy = 0
+        self.origin = (0, 0)
+        self.target = (0, 0)
+        self.i = 0
+
+    def init_rect(self, y: int, x: int):
+        self.set_rect(y, x)
+        self.set_origin(y, x)
+        self.set_target(y, x)
+
+    def set_target(self, y: int, x: int):
+        self.target = (y, x)
+
+    def set_rect(self, y: int, x: int):
+        self.rect.top = y
+        self.rect.left = x
+
+    def set_origin(self, y: int, x: int):
+        self.origin = (y, x)
+
+    def test_gem(self, size: int, type: int):
+        self.type = type
+        test_gem = "stones/Stone_0{}_05.png".format(type)
+        self.image, self.rect = util.load_image(test_gem, size)
 
     # Functions to test animations
 
     def update(self):
-        "walk or spin, depending on the monkeys state"
-        if self.dizzy:
-            self._spin()
+        if self.origin != self.target:
+            self.move()
 
-    def _spin(self):
-        "spin the gem image"
-        center = self.rect.center
-        self.dizzy = self.dizzy + 12
-        if self.dizzy >= 360:
-            self.dizzy = 0
-            self.image = self.original
-        else:
-            rotate = pygame.transform.rotate
-            self.image = rotate(self.original, self.dizzy)
-        self.rect = self.image.get_rect(center=center)
+    def explode(self):
+        """
+        if about to be removed, explode gem first
+        :return:
+        """
+        pass
 
-    def punched(self):
-        "this will cause the monkey to start spinning"
-        if not self.dizzy:
-            self.dizzy = 1
-            self.original = self.image
-
+    def move(self):
+        self.i += 1
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE - 1))
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE - 1))
+        self.rect.top = y
+        self.rect.left = x
+        if self.i == c.ANIMATION_SCALE - 1:
+            self.i = 0
+            self.origin = self.target
 
 class GemGrid(g.Grid):
     """
@@ -51,6 +72,16 @@ class GemGrid(g.Grid):
 
     def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
         super().__init__(screen, rows, columns, cell_size, margin)
+
+    def test_grid(self):
+        for j in range(0, self.columns):
+            for i in range(0, self.rows):
+                gem = Gem(self.gem_size)
+                gem.test_gem(self.gem_size, (j % 8) + 1)
+                y = self.margin + self.centering_offset + i * self.cell_size
+                x = self.margin + self.centering_offset + j * self.cell_size
+                gem.set_rect(y, x)
+                self.grid[i][j] = gem
 
     def new_grid(self):
         """
@@ -75,8 +106,7 @@ class GemGrid(g.Grid):
         gem = Gem(self.gem_size)
         x = self.margin + self.centering_offset + x_coord * self.cell_size
         y = self.margin + self.centering_offset + y_coord * self.cell_size
-        gem.rect.left = x
-        gem.rect.top = y
+        gem.init_rect(y, x)
         self.grid[y_coord][x_coord] = gem
 
     def removegem(self, y_coord: int, x_coord: int):
@@ -88,6 +118,16 @@ class GemGrid(g.Grid):
         """
         gem_group.remove(self.grid[y_coord][x_coord])
         self.grid[y_coord][x_coord] = 0
+
+    def remove_all(self):
+        """
+        Method to remove all gems from grid and group
+        :return:
+        """
+        for i in range(self.rows):
+            for j in range(self.columns):
+                gem_group.remove(self.grid[i][j])
+                self.grid[i][j] = 0
 
     def get_gem(self, y_coord: int, x_coord: int):
         """
@@ -130,8 +170,9 @@ class GemGrid(g.Grid):
         gem_above = self.grid[y_coord - 1][x_coord]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(0, -self.cell_size)
-        gem_above.rect.move_ip(0, self.cell_size)
+        # gem_clicked.rect.move_ip(0, -self.cell_size)
+        # gem_above.rect.move_ip(0, self.cell_size)
+        gem_above.target, gem_clicked.target = gem_clicked.target, gem_above.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord - 1][x_coord] = self.grid[y_coord - 1][x_coord], \
@@ -150,8 +191,9 @@ class GemGrid(g.Grid):
         gem_below = self.grid[y_coord + 1][x_coord]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(0, self.cell_size)
-        gem_below.rect.move_ip(0, -self.cell_size)
+        # gem_clicked.rect.move_ip(0, self.cell_size)
+        # gem_below.rect.move_ip(0, -self.cell_size)
+        gem_below.target, gem_clicked.target = gem_clicked.target, gem_below.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord + 1][x_coord] = self.grid[y_coord + 1][x_coord], \
@@ -170,8 +212,9 @@ class GemGrid(g.Grid):
         gem_right = self.grid[y_coord][x_coord + 1]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(self.cell_size, 0)
-        gem_right.rect.move_ip(-self.cell_size, 0)
+        # gem_clicked.rect.move_ip(self.cell_size, 0)
+        # gem_right.rect.move_ip(-self.cell_size, 0)
+        gem_right.target, gem_clicked.target = gem_clicked.target, gem_right.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord][x_coord + 1] = self.grid[y_coord][x_coord + 1], \
@@ -190,31 +233,37 @@ class GemGrid(g.Grid):
         gem_left = self.grid[y_coord][x_coord - 1]
 
         # swap gems in gem group
-        gem_clicked.rect.move_ip(-self.cell_size, 0)
-        gem_left.rect.move_ip(self.cell_size, 0)
+        # gem_clicked.rect.move_ip(-self.cell_size, 0)
+        # gem_left.rect.move_ip(self.cell_size, 0)
+        gem_left.target, gem_clicked.target = gem_clicked.target, gem_left.target
 
         # swap gems in gem grid
         self.grid[y_coord][x_coord], self.grid[y_coord][x_coord - 1] = self.grid[y_coord][x_coord - 1], \
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        # transpose = lambda x : [[x[i][j] for i in range(len(x))] for j in range(len(x[0]))]
-        # self.grid = transpose([[j for j in i if j == 0] + [j for j in i if j != 0] for i in transpose(self.grid)])
-        for i in range(self.rows - 1, 0, -1):
-            for j in range(self.columns):
-                if self.grid[i][j] == 0:
-                    for k in range(i + 1, self.rows):
-                        if self.grid[k][j] != 0:
-                            self.grid[i][j], self.grid[k][j] = self.grid[k][j], 0
-                            x = self.margin + self.centering_offset + j * self.cell_size
-                            y = self.margin + self.centering_offset + i * self.cell_size
-                            self.grid[i][j].rect = pygame.Rect((x, y, self.gem_size, self.gem_size))
-        for i in range(self.rows):
-            for j in range(self.columns):
-                if self.grid[i][j] == 0:
-                    self.addgem(i, j)
+        done = False
+        while not done:
+            done = True
+            for i in range(self.columns):
+                for j in range(self.rows - 1, 0, -1):
+                    if self.grid[j][i] == 0:
+                        done = False
+                        self.grid[j][i], self.grid[j - 1][i] = self.grid[j - 1][i], 0
+                        if self.grid[j][i] != 0:
+                            y = self.margin + self.centering_offset + j * self.cell_size
+                            x = self.margin + self.centering_offset + i * self.cell_size
+                            self.grid[j][i].set_target(y, x)
+                if self.grid[0][i] == 0:
+                    gem = Gem(self.gem_size)
+                    y = self.margin + self.centering_offset - self.cell_size
+                    x = self.margin + self.centering_offset + i * self.cell_size
+                    gem.init_rect(y, x)
+                    gem.set_target(y + self.cell_size, x)
+                    self.grid[0][i] = gem
+            # gem_group.update()
 
-    def row_match_count(self, i: int, j: int, columns: int):
+    def row_match_count(self, i: int, j: int):
         """
         rows match count
         :param gemgrid:
@@ -223,12 +272,14 @@ class GemGrid(g.Grid):
         :param columns:
         :return:
         """
-        row_count = 0
-        while self.grid[i][j].type == self.gemgrid[i][j + row_count + 1] and row_count < columns:
+        row_count = 1
+        match_index = j + row_count
+        while match_index < self.columns and self.grid[i][j].type == self.grid[i][match_index].type:
             row_count = row_count + 1
+            match_index = match_index + 1
         return row_count
 
-    def column_match_count(self, i: int, j: int, rows: int):
+    def column_match_count(self, i: int, j: int):
         """
         columns match count
         :param gemgrid:
@@ -237,13 +288,14 @@ class GemGrid(g.Grid):
         :param rows:
         :return:
         """
-        column_count = 0
-
-        while self.gemgrid[i][j].type == self.gemgrid[i + column_count + 1][j] and column_count < rows:
+        column_count = 1
+        match_index = i + column_count
+        while match_index < self.rows and self.grid[i][j].type == self.grid[match_index][j].type:
             column_count = column_count + 1
+            match_index = match_index + 1
         return column_count
 
-    def get_row_match(self, rows: int, columns: int):
+    def get_row_match(self):
         """
         check for matching gems in rows
         :param gemgrid:
@@ -251,22 +303,24 @@ class GemGrid(g.Grid):
         :param columns:
         :return:
         """
-        for i in range(rows):
-            for j in range(columns):
-                row_match_count = self.row_match_count(i, j)
+        for row in range(self.rows):
+            for column in range(self.columns):
+                row_match_count = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    return i, j, row_match_count
+                    return row, column, row_match_count
+        return None, None, None
 
-    def get_column_match(self, rows: int, columns: int):
+    def get_column_match(self):
         """
         check for matching gems in columns
         :param gemgrid:
-        :param rows:
+        :param row:
         :param columns:
         :return:
         """
-        for j in range(columns):
-            for i in range(rows):
-                column_match_count = self.column_match_count(i, j)
+        for column in range(self.columns):
+            for row in range(self.rows):
+                column_match_count = self.column_match_count(row, column)
                 if column_match_count >= 3:
-                    return i, j, column_match_count
+                    return row, column, column_match_count
+        return None, None, None

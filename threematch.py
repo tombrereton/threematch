@@ -11,31 +11,13 @@ import pygame
 from pygame.locals import *
 
 import board as b
-import game_utilities as util
-import global_variables as c
+from background import Background
+from game_state import GameState
+from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, \
+    ANIMATION_SCALE
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
-
-# ============================================
-# Global Constants
-# ============================================
-HD_SCALE = 1.4  # Scale for changing the number of pixels
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
-MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
-TEXT_AREA = int(75 * HD_SCALE)
-PUZZLE_ROWS = 9  # Number of rows on the board.
-PUZZLE_COLUMNS = 9  # Number of columns on the board.
-WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
-WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + TEXT_AREA
-
-
-# FONT_SIZE = 36
-# TEXT_OFFSET = MARGIN + 5
 
 
 # ============================================
@@ -64,13 +46,13 @@ def get_gem_location_from_click(board, x, y):
 # event loop
 # ============================================
 
-def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, screen: pygame.display, text_pos: str,
-                 gem_row: int,
-                 gem_column: int):
+def check_events(screen: pygame.display, board: b.Board, bg: Background, game_state: GameState):
     """
     This function loops of the events from the event queue.
 
     If there are 2 clicks of neighbouring gems, it tries to swap them.
+    :param game_state:
+    :param bg:
     :param gem_column:
     :param gem_row:
     :param board:
@@ -82,62 +64,142 @@ def check_events(board: b.Board, game_over_text: pygame.font.Font, going: bool, 
     """
 
     for event in pygame.event.get():
+
         if event.type == QUIT:
-            going = False
-        elif c.MOVES_LEFT == 0:
-            game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
-            game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
-            text_pos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-            screen.blit(game_over_text, text_pos)
-            # going = False
+            # quit
+            game_state.stop_going()
+
+        elif game_state.moves_left == 0:
+            # game over
+            bg.set_game_over_text()
+            screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
-            going = False
-        elif event.type == MOUSEBUTTONDOWN:
-            # get gem coordinates if user clicks
-            if gem_row is None and gem_column is None:
-                # if use has not clicked yet, get the first gem coordinates
-                gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+            # quit
+            game_state.stop_going()
 
+        elif game_state.state == "remove_gems":
+            # Gems have been exploded, remove the exploded gems
+
+            # Then set state to animate pull down
+            game_state.animate_pull_down()
+
+        elif game_state.state == "check_matches":
+            # A valid swap, check for matches
+            # if we have more than 3 matches, explode gems
+            # else set state to empty
+            number_of_matches = board.check_matches(False)
+
+            if number_of_matches > 0:
+                game_state.animate_explode(number_of_matches)
             else:
-                # if user has already clicked, get the second gem coordinates
+                game_state.empty()
+
+        elif game_state.state == "check_swap":
+            # Check matches from the animate_swap state
+            # if we have more than 3 matches, explode gems
+            # else set state to empty
+            number_of_matches = board.check_matches(False)
+
+            if number_of_matches > 0:
+                # move made if valid swap
+                game_state.move_made()
+                game_state.animate_explode(number_of_matches)
+            else:
+                # Swap back if no match
+                game_state.animate_reverse()
+                row = game_state.row
+                column = game_state.column
+                direction = game_state.direction
+                board.swap_gems(row, column, direction)
+
+        elif event.type == MOUSEBUTTONDOWN:
+
+            if game_state.state == "user_clicked":
+                # second click, if valid move, change state to animate_move
+                # if it is not a valid move, change state to empty
+                # this is done within the GameState class
                 second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+                game_state.animate_swap(second_gem_row, second_gem_column)
 
-                # we check if the second gem is a neighbouring gem, swap it if so
-                if second_gem_row == gem_row - 1 and second_gem_column == gem_column:
-                    # swap up
-                    board.swap_gems(gem_row, gem_column, "up")
-                    board.remove_ice(gem_row, gem_column)
-                    gem_row = None
-                    gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
+                if game_state.state == "animate_swap":
+                    # move gems if clicked on valid positions
+                    row = game_state.row
+                    column = game_state.column
+                    direction = game_state.direction
+                    board.swap_gems(row, column, direction)
 
-                elif second_gem_row == gem_row + 1 and second_gem_column == gem_column:
-                    # swap down
-                    board.swap_gems(gem_row, gem_column, "down")
-                    gem_row = None
-                    gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
-
-                elif second_gem_row == gem_row and second_gem_column == gem_column + 1:
-                    # swap right
-                    board.swap_gems(gem_row, gem_column, "right")
-                    gem_row = None
-                    gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
-
-                elif second_gem_row == gem_row and second_gem_column == gem_column - 1:
-                    # swap down
-                    board.swap_gems(gem_row, gem_column, "left")
-                    gem_row = None
-                    gem_column = None
-                    c.MOVES_LEFT = c.MOVES_LEFT - 1
-
+            elif game_state.state == "empty":
+                # first click, get coordinates and save them to game state object
+                # change state to user_clicked
+                gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+                if gem_row is None or gem_column is None:
+                    game_state.empty()
                 else:
-                    # if the second gem is not a neighbouring gem, set the gem coordinates to none
-                    gem_row = None
-                    gem_column = None
+                    game_state.user_clicked(gem_row, gem_column)
 
-    return game_over_text, going, text_pos, gem_row, gem_column
+    return screen, board, bg, game_state
+
+
+# ============================================
+# animate loop
+# ============================================
+
+def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, clock: pygame.time.Clock()):
+    """
+    This function animates the sprites then sets the game_state depending on its current states.
+
+    Future implementation: change the number of loops depending on the animation. This
+    would require changing the respective update method to suit.
+    :param game_state:
+    :param board:
+    :param screen:
+    :param bg:
+    :param clock:
+    :return:
+    """
+    for i in range(ANIMATION_SCALE):
+        # loop the number of times we need to animate given
+        # by ANIMATION_SCALE
+
+        # Call the update method on the sprites
+        board.get_gem_group().update()
+        board.get_ice_group().update()
+        board.get_medal_group().update()
+
+        # Draw background and text
+        bg.set_moves_left()
+        screen.blit(bg.background, (0, 0))
+        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        # Draw sprites
+        board.get_medal_group().draw(screen)
+        board.get_ice_group().draw(screen)
+        board.get_gem_group().draw(screen)
+
+        # Draw game over text
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
+        # update the entire screen
+        pygame.display.flip()
+
+        # never run quicker than 60 frames per second
+        clock.tick(60)
+
+    # change game state
+    if game_state.state == "animate_swap":
+        game_state.check_swap()
+    if game_state.state == "animate_not_valid_swap":
+        game_state.not_valid_swap()
+    elif game_state.state == "animate_reverse":
+        game_state.empty()
+    elif game_state.state == "animate_explode":
+        game_state.remove_gems()
+    elif game_state.state == "animate_pull_down":
+        game_state.check_matches()
+
+    return game_state
 
 
 # ============================================
@@ -152,53 +214,77 @@ def main():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Gem Island")
 
+    # total moves allowed in game
+    moves_left = 26
+    # game state object to store current state
+    game_state = GameState(moves_left)
+    # background object to store background and text
+    bg = Background(game_state)
+
     # create the background
-    background, _ = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
-    background = background.convert()
-    screen.blit(background, (0, 0))
+    screen.blit(bg.background, (0, 0))
 
     # Put Text On The Background
     if pygame.font:
-        font = pygame.font.Font(None, int(24 * HD_SCALE))
-        moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
-        score_text = font.render("Score: 000", 1, (10, 10, 10))
-        game_over_text = font.render("", 1, (10, 10, 10))
-        text_pos = game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
-        screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
-    board = b.Board(screen, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
+    board = b.Board(screen, bg.background, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
+
+    # change to test board if true
+    if TEST:
+        board.remove_all()
+        board.get_gem_group().update()
+        board.get_gem_group().draw(screen)
+        board.test_board()
+        board.get_gem_group().update()
+        board.get_gem_group().draw(screen)
 
     # flip the screen after adding everything to it
     pygame.display.flip()
 
+    # Create FPS clock
     clock = pygame.time.Clock()
 
-    # declare clicked gems to none
-    gem_row = None
-    gem_column = None
+    # check for matches
+    if not TEST:
+        board.check_matches(True)
 
-    going = True
-    while going:
+    while game_state.going:
+        # Frames per second
         clock.tick(60)
 
-        # loop over events
-        game_over_text, going, text_pos, gem_row, gem_column = \
-            check_events(board, game_over_text, going, screen, text_pos, gem_row, gem_column)
+        if game_state.state in ["animate_swap", "animate_reverse", "animate_explode", "animate_pull_down",
+                                "animate_not_valid_swap"]:
+            # start animation if in animation state
+            game_state = animate_loop(screen, board, bg, game_state, clock)
 
+        # loop over events
+        screen, board, bg, game_state = check_events(screen, board, bg, game_state)
+
+        # Update sprites
         board.get_gem_group().update()
         board.get_ice_group().update()
+        board.get_medal_group().update()
 
         # Draw Everything
-        screen.blit(background, (0, 0))
-        moves_left_text = font.render("Moves Left: {}".format(c.MOVES_LEFT), 1, (10, 10, 10))
-        screen.blit(moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        screen.blit(score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        # Draw background and text
+        bg.set_moves_left()
+        screen.blit(bg.background, (0, 0))
+        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+
+        # Draw sprites
         board.get_medal_group().draw(screen)
         board.get_ice_group().draw(screen)
         board.get_gem_group().draw(screen)
-        screen.blit(game_over_text, text_pos)
+
+        # Draw game over text
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
+        # Show drawn objects
         pygame.display.flip()
 
 
