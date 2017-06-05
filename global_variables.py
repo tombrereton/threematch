@@ -9,7 +9,7 @@ LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
 
 # GUI variables
-HD_SCALE = 1.4  # Scale for changing the number of pixels
+HD_SCALE = 3  # Scale for changing the number of pixels
 CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
 MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
 TEXT_AREA = int(75 * HD_SCALE)
