@@ -3,6 +3,25 @@ Three Match
 
 A bejeweled/candy crush clone.
 
+Dependencies are python3 and pygame. Install pygame with:
+```python
+pip3 install pygame
+```
+
+Or if python3 is default
+```python
+pip install pygame
+```
+
+Run the on mac and linux with:
+```python
+python3 ~/threematch/threematch.py
+```
+
+For windows, you should be able to double click on threematch.py to run it.
+
+---
+
 This game is in development and is being built for a masters project at the University of Birmingham.
 
 Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
