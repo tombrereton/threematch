@@ -33,4 +33,3 @@ class Background(object):
 
 
 
-MOVES_LEFT = 16

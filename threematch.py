@@ -14,7 +14,7 @@ import board as b
 from background import Background
 from game_state import GameState
 from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, \
-    ANIMATION_SCALE
+    ANIMATION_SCALE, MOVES_LEFT
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
@@ -48,7 +48,7 @@ def get_gem_location_from_click(board, x, y):
 
 def check_events(screen: pygame.display, board: b.Board, bg: Background, game_state: GameState):
     """
-    This function loops of the events from the event queue.
+    This function loops of the events from the event queue and changes the game state.
 
     If there are 2 clicks of neighbouring gems, it tries to swap them.
     :param game_state:
@@ -118,7 +118,7 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             if game_state.state == "user_clicked":
                 # second click, if valid move, change state to animate_move
                 # if it is not a valid move, change state to empty
-                # this is done within the GameState class
+                # the GameState class works out if it is a valid move
                 second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
                 game_state.animate_swap(second_gem_row, second_gem_column)
 
@@ -190,7 +190,7 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
     # change game state
     if game_state.state == "animate_swap":
         game_state.check_swap()
-    if game_state.state == "animate_not_valid_swap":
+    elif game_state.state == "animate_not_valid_swap":
         game_state.not_valid_swap()
     elif game_state.state == "animate_reverse":
         game_state.empty()
@@ -214,10 +214,8 @@ def main():
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Gem Island")
 
-    # total moves allowed in game
-    moves_left = 26
     # game state object to store current state
-    game_state = GameState(moves_left)
+    game_state = GameState(MOVES_LEFT)
     # background object to store background and text
     bg = Background(game_state)
 

@@ -7,6 +7,7 @@ LEVEL_1_TOTAL_MEDALS = 3
 LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
+MOVES_LEFT = 1
 
 # GUI variables
 HD_SCALE = 3  # Scale for changing the number of pixels
@@ -18,6 +19,7 @@ PUZZLE_COLUMNS = 9  # Number of columns on the board.
 WINDOW_WIDTH = PUZZLE_COLUMNS * CELL_SIZE + 2 * MARGIN
 WINDOW_HEIGHT = PUZZLE_ROWS * CELL_SIZE + 2 * MARGIN + TEXT_AREA
 ANIMATION_SCALE = 20
+
 
 # Testing
 TEST = False
