@@ -129,7 +129,9 @@ class Board(object):
                                 self.remove_ice(i, j)
 
                 # pull down new gems
-                self.gem_grid.pull_down()
+                repeat = True
+                while repeat:
+                     repeat = self.gem_grid.pull_down()
                 find_horizontals = False
 
             vertical_match_length = 0
@@ -151,6 +153,8 @@ class Board(object):
                                 self.remove_ice(i, j)
 
                 # pull down new gems
-                self.gem_grid.pull_down()
+                repeat = True
+                while repeat:
+                    repeat = self.gem_grid.pull_down()
                 find_verticals = False
         return total_matches

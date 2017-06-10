@@ -242,26 +242,24 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        done = False
-        while not done:
-            done = True
-            for i in range(self.columns):
-                for j in range(self.rows - 1, 0, -1):
-                    if self.grid[j][i] == 0:
-                        done = False
-                        self.grid[j][i], self.grid[j - 1][i] = self.grid[j - 1][i], 0
-                        if self.grid[j][i] != 0:
-                            y = self.margin + self.centering_offset + j * self.cell_size
-                            x = self.margin + self.centering_offset + i * self.cell_size
-                            self.grid[j][i].set_target(y, x)
-                if self.grid[0][i] == 0:
-                    gem = Gem(self.gem_size)
-                    y = self.margin + self.centering_offset - self.cell_size
-                    x = self.margin + self.centering_offset + i * self.cell_size
-                    gem.init_rect(y, x)
-                    gem.set_target(y + self.cell_size, x)
-                    self.grid[0][i] = gem
-            # gem_group.update()
+        repeat = False
+        for i in range(self.columns):
+            for j in range(self.rows - 1, 0, -1):
+                if self.grid[j][i] == 0:
+                    repeat = True
+                    self.grid[j][i], self.grid[j - 1][i] = self.grid[j - 1][i], 0
+                    if self.grid[j][i] != 0:
+                        y = self.margin + self.centering_offset + j * self.cell_size
+                        x = self.margin + self.centering_offset + i * self.cell_size
+                        self.grid[j][i].set_target(y, x)
+            if self.grid[0][i] == 0:
+                gem = Gem(self.gem_size)
+                y = self.margin + self.centering_offset - self.cell_size
+                x = self.margin + self.centering_offset + i * self.cell_size
+                gem.init_rect(y, x)
+                gem.set_target(y + self.cell_size, x)
+                self.grid[0][i] = gem
+        return repeat
 
     def row_match_count(self, i: int, j: int):
         """
