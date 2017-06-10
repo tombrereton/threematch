@@ -1,4 +1,5 @@
 import random
+from time import time
 
 import pygame
 
@@ -13,7 +14,7 @@ class Gem(pygame.sprite.Sprite):
     def __init__(self, size: int):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
-        self.type = random.randint(1, 8)
+        self.type = random.randint(1, 3)
         self.bonus_type = 1
         self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
         self.image, self.rect = util.load_image(self.gem_name, size)
@@ -242,6 +243,7 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
+        board_pull = time()
         repeat = False
         for i in range(self.columns):
             for j in range(self.rows - 1, 0, -1):
@@ -259,6 +261,7 @@ class GemGrid(g.Grid):
                 gem.init_rect(y, x)
                 gem.set_target(y + self.cell_size, x)
                 self.grid[0][i] = gem
+        print(f'board_pull: {time() - board_pull}')
         return repeat
 
     def row_match_count(self, i: int, j: int):

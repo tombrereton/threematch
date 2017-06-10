@@ -94,6 +94,8 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             else:
                 game_state.animate_pull_down()
 
+            pygame.event.clear()
+
         elif game_state.state == "check_matches":
             # TODO: change this state so that it checks for matches after pull down
             # A valid swap, check for matches
@@ -114,6 +116,8 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             else:
                 game_state.empty()
 
+            pygame.event.clear()
+
         elif game_state.state == "check_swap":
             # Check matches from the animate_swap state
             # if we have more than 3 matches, explode gems
@@ -121,13 +125,13 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # number_of_matches = board.check_matches(False)
             time1 = time()
             match_list = board.find_matches()
-            print(f"check_swap: {time() - time1}")
             number_of_matches = len(match_list)
 
             if number_of_matches > 0:
                 # move made if valid swap
                 game_state.move_made()
                 game_state.animate_explode(number_of_matches, match_list)
+                print(f"check_swap: {time() - time1}")
             else:
                 # Swap back if no match
                 game_state.animate_reverse()
@@ -135,6 +139,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
                 column = game_state.column
                 direction = game_state.direction
                 board.swap_gems(row, column, direction)
+                print(f"check_swap: {time() - time1}")
+
+            pygame.event.clear()
 
         elif event.type == MOUSEBUTTONDOWN:
 
@@ -281,12 +288,16 @@ def main():
 
     while game_state.going:
         # Frames per second
-        # clock.tick(60)
+        # clock.tick(1)
+        pygame.time.wait(1)
+
+        main_loop = time()
 
         if game_state.state in ["animate_swap", "animate_reverse", "animate_explode", "animate_pull_down",
                                 "animate_not_valid_swap", "animate_pull_down_repeat"]:
             # start animation if in animation state
             game_state = animate_loop(screen, board, bg, game_state, clock)
+            pygame.event.clear()
 
         elif game_state.state == "pull_down":
 
@@ -299,9 +310,14 @@ def main():
             else:
                 game_state.animate_pull_down()
 
+            pygame.event.clear()
         else:
             # loop over events
             screen, board, bg, game_state = check_events(screen, board, bg, game_state)
+
+        main_time = time() - main_loop
+        if main_time > 0.1:
+            print(f'MAIN_TIME: {main_time}')
 
 
 if __name__ == '__main__':

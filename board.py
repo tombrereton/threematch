@@ -1,3 +1,5 @@
+from time import time
+
 import gemgrid
 import icegrid
 import medalgrid
@@ -167,6 +169,7 @@ class Board(object):
         :return:
         """
 
+        find_match = time()
         matches = []
 
         horizontals = self.gem_grid.get_row_match_2()
@@ -176,6 +179,7 @@ class Board(object):
 
         matches = list(set(matches))
 
+        print(f'find_matches: {time() - find_match}')
         return matches
 
     def remove_gems(self, match_list: list):
@@ -188,8 +192,13 @@ class Board(object):
         :param match_list:
         :return:
         """
+
+        board_remove = time()
         for i, j, k, l in (match_list):
             self.gem_grid.removegem(i, j)
 
+        print(f'board_remove: {time() - board_remove}')
+
     def pull_gems_down(self):
+
         return self.gem_grid.pull_down()
