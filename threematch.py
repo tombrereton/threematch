@@ -69,6 +69,11 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # quit
             game_state.stop_going()
 
+        elif game_state.medals_left == 0:
+            # win
+            bg.set_game_over_text(True)
+            screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
         elif game_state.moves_left == 0:
             # game over
             bg.set_game_over_text()
