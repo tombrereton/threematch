@@ -131,7 +131,7 @@ class Board(object):
                 # pull down new gems
                 repeat = True
                 while repeat:
-                     repeat = self.gem_grid.pull_down()
+                    repeat = self.gem_grid.pull_down()
                 find_horizontals = False
 
             vertical_match_length = 0
@@ -158,3 +158,20 @@ class Board(object):
                     repeat = self.gem_grid.pull_down()
                 find_verticals = False
         return total_matches
+
+    def find_matches(self):
+        """
+        find all the matches and returns a list of
+        tuples where each tuples comprises:
+        (row, column, type, bonus_type)
+        :return:
+        """
+
+        matches = []
+
+        matches = matches + self.gem_grid.get_row_match_2()
+        matches = matches + self.gem_grid.get_column_match_2()
+
+        matches = list(set(matches))
+
+        return matches
