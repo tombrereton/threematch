@@ -7,6 +7,8 @@ asset credit:
 1001.com
 """
 
+from time import time
+
 import pygame
 from pygame.locals import *
 
@@ -62,7 +64,6 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
     :param text_pos:
     :return:
     """
-
     for event in pygame.event.get():
 
         if event.type == QUIT:
@@ -78,23 +79,14 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # quit
             game_state.stop_going()
 
-        elif game_state.state == "pull_down":
-
-            # Pull the gems downs
-            repeat_pull_down = board.pull_gems_down()
-
-            # Then set state to animate pull down
-            if repeat_pull_down:
-                game_state.animate_pull_down_repeat()
-            else:
-                game_state.animate_pull_down()
-
         elif game_state.state == "remove_gems":
             # Gems have been exploded, remove the exploded gems
             board.remove_gems(game_state.match_list)
 
             # Pull the gems downs
+            time3 = time()
             repeat_pull_down = board.pull_gems_down()
+            print(f'remove_gems: {time() - time3}')
 
             # Then set state to animate pull down
             if repeat_pull_down:
@@ -111,7 +103,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # number_of_matches = board.check_matches(False)
 
             # get list of gem tuples
+            time2 = time()
             match_list = board.find_matches()
+            print(f'check_matches: {time() - time2}')
             number_of_matches = len(match_list)
 
             if number_of_matches > 0:
@@ -125,7 +119,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # if we have more than 3 matches, explode gems
             # else set state to empty
             # number_of_matches = board.check_matches(False)
+            time1 = time()
             match_list = board.find_matches()
+            print(f"check_swap: {time() - time1}")
             number_of_matches = len(match_list)
 
             if number_of_matches > 0:
@@ -185,6 +181,7 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
     :param clock:
     :return:
     """
+    time_animate = time()
     if game_state.state != "animate_explode":
         for i in range(ANIMATION_SCALE):
             # loop the number of times we need to animate given
@@ -229,6 +226,7 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
     elif game_state.state == "animate_pull_down_repeat":
         game_state.pull_down()
 
+    print(f'animate: {time() - time_animate}')
     return game_state
 
 
@@ -279,41 +277,31 @@ def main():
     if not TEST:
         board.check_matches(True)
 
+    animate_loop(screen, board, bg, game_state, clock)
+
     while game_state.going:
         # Frames per second
-        clock.tick(60)
+        # clock.tick(60)
 
         if game_state.state in ["animate_swap", "animate_reverse", "animate_explode", "animate_pull_down",
                                 "animate_not_valid_swap", "animate_pull_down_repeat"]:
             # start animation if in animation state
             game_state = animate_loop(screen, board, bg, game_state, clock)
 
-        # loop over events
-        screen, board, bg, game_state = check_events(screen, board, bg, game_state)
+        elif game_state.state == "pull_down":
 
-        # Update sprites
-        board.get_gem_group().update()
-        board.get_ice_group().update()
-        board.get_medal_group().update()
+            # Pull the gems downs
+            repeat_pull_down = board.pull_gems_down()
 
-        # Draw Everything
+            # Then set state to animate pull down
+            if repeat_pull_down:
+                game_state.animate_pull_down_repeat()
+            else:
+                game_state.animate_pull_down()
 
-        # Draw background and text
-        bg.set_moves_left()
-        screen.blit(bg.background, (0, 0))
-        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
-
-        # Draw sprites
-        board.get_medal_group().draw(screen)
-        board.get_ice_group().draw(screen)
-        board.get_gem_group().draw(screen)
-
-        # Draw game over text
-        screen.blit(bg.game_over_text, bg.game_over_text_pos)
-
-        # Show drawn objects
-        pygame.display.flip()
+        else:
+            # loop over events
+            screen, board, bg, game_state = check_events(screen, board, bg, game_state)
 
 
 if __name__ == '__main__':
