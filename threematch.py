@@ -78,20 +78,45 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # quit
             game_state.stop_going()
 
-        elif game_state.state == "remove_gems":
-            # Gems have been exploded, remove the exploded gems
+        elif game_state.state == "pull_down":
+
+            # Pull the gems downs
+            repeat_pull_down = board.pull_gems_down()
 
             # Then set state to animate pull down
-            game_state.animate_pull_down()
+            if repeat_pull_down:
+                game_state.animate_pull_down_repeat()
+            else:
+                game_state.animate_pull_down()
+
+        elif game_state.state == "remove_gems":
+            # Gems have been exploded, remove the exploded gems
+            board.remove_gems(game_state.match_list)
+
+            # Pull the gems downs
+            repeat_pull_down = board.pull_gems_down()
+
+            # Then set state to animate pull down
+            if repeat_pull_down:
+                game_state.animate_pull_down_repeat()
+            else:
+                game_state.animate_pull_down()
 
         elif game_state.state == "check_matches":
+            # TODO: change this state so that it checks for matches after pull down
             # A valid swap, check for matches
             # if we have more than 3 matches, explode gems
             # else set state to empty
-            number_of_matches = board.check_matches(False)
+
+            # number_of_matches = board.check_matches(False)
+
+            # get list of gem tuples
+            match_list = board.find_matches()
+            number_of_matches = len(match_list)
 
             if number_of_matches > 0:
-                game_state.animate_explode(number_of_matches)
+                # if list length is greater than 0 pass into game_state
+                game_state.animate_explode(number_of_matches, match_list)
             else:
                 game_state.empty()
 
@@ -99,12 +124,14 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # Check matches from the animate_swap state
             # if we have more than 3 matches, explode gems
             # else set state to empty
-            number_of_matches = board.check_matches(False)
+            # number_of_matches = board.check_matches(False)
+            match_list = board.find_matches()
+            number_of_matches = len(match_list)
 
             if number_of_matches > 0:
                 # move made if valid swap
                 game_state.move_made()
-                game_state.animate_explode(number_of_matches)
+                game_state.animate_explode(number_of_matches, match_list)
             else:
                 # Swap back if no match
                 game_state.animate_reverse()
@@ -158,34 +185,35 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
     :param clock:
     :return:
     """
-    for i in range(ANIMATION_SCALE):
-        # loop the number of times we need to animate given
-        # by ANIMATION_SCALE
+    if game_state.state != "animate_explode":
+        for i in range(ANIMATION_SCALE):
+            # loop the number of times we need to animate given
+            # by ANIMATION_SCALE
 
-        # Call the update method on the sprites
-        board.get_gem_group().update()
-        board.get_ice_group().update()
-        board.get_medal_group().update()
+            # Call the update method on the sprites
+            board.get_gem_group().update()
+            board.get_ice_group().update()
+            board.get_medal_group().update()
 
-        # Draw background and text
-        bg.set_moves_left()
-        screen.blit(bg.background, (0, 0))
-        screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+            # Draw background and text
+            bg.set_moves_left()
+            screen.blit(bg.background, (0, 0))
+            screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+            screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
-        # Draw sprites
-        board.get_medal_group().draw(screen)
-        board.get_ice_group().draw(screen)
-        board.get_gem_group().draw(screen)
+            # Draw sprites
+            board.get_medal_group().draw(screen)
+            board.get_ice_group().draw(screen)
+            board.get_gem_group().draw(screen)
 
-        # Draw game over text
-        screen.blit(bg.game_over_text, bg.game_over_text_pos)
+            # Draw game over text
+            screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
-        # update the entire screen
-        pygame.display.flip()
+            # update the entire screen
+            pygame.display.flip()
 
-        # never run quicker than 60 frames per second
-        clock.tick(60)
+            # never run quicker than 60 frames per second
+            clock.tick(60)
 
     # change game state
     if game_state.state == "animate_swap":
@@ -198,6 +226,8 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
         game_state.remove_gems()
     elif game_state.state == "animate_pull_down":
         game_state.check_matches()
+    elif game_state.state == "animate_pull_down_repeat":
+        game_state.pull_down()
 
     return game_state
 
@@ -254,7 +284,7 @@ def main():
         clock.tick(60)
 
         if game_state.state in ["animate_swap", "animate_reverse", "animate_explode", "animate_pull_down",
-                                "animate_not_valid_swap"]:
+                                "animate_not_valid_swap", "animate_pull_down_repeat"]:
             # start animation if in animation state
             game_state = animate_loop(screen, board, bg, game_state, clock)
 

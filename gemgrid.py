@@ -318,8 +318,8 @@ class GemGrid(g.Grid):
         :return:
         """
         matches = []
-        column = 0
         for row in range(self.rows):
+            column = 0
             while column < self.columns:
                 row_match_count = self.row_match_count(row, column)
                 if row_match_count >= 3:
@@ -328,6 +328,9 @@ class GemGrid(g.Grid):
 
                     # add row_match_count to column to avoid duplicates
                     column = column + row_match_count
+
+                else:
+                    column = column + 1
 
         # return dictionary after looping over all row matches
         return matches
@@ -356,8 +359,8 @@ class GemGrid(g.Grid):
         :return:
         """
         matches = []
-        row = 0
         for column in range(self.columns):
+            row = 0
             while row < self.rows:
                 column_match_count = self.column_match_count(row, column)
                 if column_match_count >= 3:
@@ -366,6 +369,8 @@ class GemGrid(g.Grid):
 
                     # add column_match_count to column to avoid duplicates
                     row = row + column_match_count
+                else:
+                    row = row + 1
 
         # return dictionary after looping over all row matches
         return matches

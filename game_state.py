@@ -10,10 +10,12 @@ class GameState(object):
     check_swap
     no_more_matches
     remove_gems
+    pull_down
     animate_swap
     animate_not_valid_swap
     animate_reverse
     animate_pull_down
+    animate_pull_down_repeat
     animate_explode
 
     It also stores the moves the player can make.
@@ -29,6 +31,7 @@ class GameState(object):
         self.matches = 0
         self.going = True
         self.moves_left = moves_left
+        self.match_list = []
 
     def user_clicked(self, row: int, column: int):
         self.state = "user_clicked"
@@ -72,15 +75,22 @@ class GameState(object):
     def no_more_matches(self):
         self.state = "no_more_matches"
 
-    def animate_explode(self, matches: int):
+    def animate_explode(self, matches: int, match_list: list):
         self.state = "animate_explode"
         self.matches = matches
+        self.match_list = match_list
 
     def remove_gems(self):
         self.state = "remove_gems"
 
     def animate_pull_down(self):
         self.state = "animate_pull_down"
+
+    def animate_pull_down_repeat(self):
+        self.state = "animate_pull_down_repeat"
+
+    def pull_down(self):
+        self.state = "pull_down"
 
     def empty(self):
         self.state = "empty"
@@ -103,3 +113,5 @@ class GameState(object):
 
     def check_swap(self):
         self.state = "check_swap"
+
+

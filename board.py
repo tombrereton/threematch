@@ -169,9 +169,27 @@ class Board(object):
 
         matches = []
 
-        matches = matches + self.gem_grid.get_row_match_2()
-        matches = matches + self.gem_grid.get_column_match_2()
+        horizontals = self.gem_grid.get_row_match_2()
+        verticals = self.gem_grid.get_column_match_2()
+
+        matches = matches + horizontals + verticals
 
         matches = list(set(matches))
 
         return matches
+
+    def remove_gems(self, match_list: list):
+        """
+        A list of matched gems is passed in.
+
+        The gems are remove from the board.
+
+        The board will now have empty elements (equal to 0).
+        :param match_list:
+        :return:
+        """
+        for i, j, k, l in (match_list):
+            self.gem_grid.removegem(i, j)
+
+    def pull_gems_down(self):
+        return self.gem_grid.pull_down()
