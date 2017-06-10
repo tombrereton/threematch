@@ -3,8 +3,8 @@ import random
 import pygame
 
 import game_utilities as util
-import grid as g
 import global_variables as c
+import grid as g
 
 gem_group = pygame.sprite.Group()
 
@@ -14,7 +14,7 @@ class Gem(pygame.sprite.Sprite):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.type = random.randint(1, 8)
-        self.is_bonus = False
+        self.bonus_type = 1
         self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
         self.image, self.rect = util.load_image(self.gem_name, size)
         self.origin = (0, 0)
@@ -63,6 +63,7 @@ class Gem(pygame.sprite.Sprite):
         if self.i == c.ANIMATION_SCALE - 1:
             self.i = 0
             self.origin = self.target
+
 
 class GemGrid(g.Grid):
     """
@@ -305,7 +306,31 @@ class GemGrid(g.Grid):
                 row_match_count = self.row_match_count(row, column)
                 if row_match_count >= 3:
                     return row, column, row_match_count
+
         return None, None, None
+
+    def get_row_match_2(self):
+        """
+        check for matching gems in rows
+        :param gemgrid:
+        :param rows:
+        :param columns:
+        :return:
+        """
+        matches = []
+        column = 0
+        for row in range(self.rows):
+            while column < self.columns:
+                row_match_count = self.row_match_count(row, column)
+                if row_match_count >= 3:
+                    # append matches to dictionary
+                    matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
+
+                    # add row_match_count to column to avoid duplicates
+                    column = column + row_match_count
+
+        # return dictionary after looping over all row matches
+        return matches
 
     def get_column_match(self):
         """
@@ -321,3 +346,50 @@ class GemGrid(g.Grid):
                 if column_match_count >= 3:
                     return row, column, column_match_count
         return None, None, None
+
+    def get_column_match_2(self):
+        """
+        check for matching gems in columns
+        :param gemgrid:
+        :param row:
+        :param columns:
+        :return:
+        """
+        matches = []
+        row = 0
+        for column in range(self.columns):
+            while row < self.rows:
+                column_match_count = self.column_match_count(row, column)
+                if column_match_count >= 3:
+                    # append matches to dictionary
+                    matches = matches + self.get_coord_list(row, column, 0, column_match_count)
+
+                    # add column_match_count to column to avoid duplicates
+                    row = row + column_match_count
+
+        # return dictionary after looping over all row matches
+        return matches
+
+    def get_coord_list(self, y_coord: int, x_coord: int, row_matches: int, col_matches: int):
+        matches = []
+
+        for column in range(x_coord, x_coord + row_matches):
+            matches.append((self.get_gem_info(y_coord, column)))
+
+        for row in range(y_coord, y_coord + col_matches):
+            # TODO check if this correctly appends a tuple
+            matches.append((self.get_gem_info(row, x_coord)))
+
+        return matches
+
+    def get_gem_info(self, y_coord: int, x_coord: int):
+        """
+        Return the coordinates of the gem, along with its
+        type and bonus type. This information is returned
+        as a dictionary
+        :param y_coord:
+        :param x_coord:
+        :return:
+        """
+
+        return y_coord, x_coord, self.grid[y_coord][x_coord].type, self.grid[y_coord][x_coord].bonus_type
