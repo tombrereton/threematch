@@ -14,7 +14,7 @@ import board as b
 from background import Background
 from game_state import GameState
 from global_variables import CELL_SIZE, MARGIN, PUZZLE_ROWS, PUZZLE_COLUMNS, WINDOW_WIDTH, WINDOW_HEIGHT, TEST, \
-    ANIMATION_SCALE, MOVES_LEFT
+    ANIMATION_SCALE, MOVES_LEFT, LEVEL_1_TOTAL_MEDALS
 
 if not pygame.font: print('Warning, fonts disabled')
 if not pygame.mixer: print('Warning, sound disabled')
@@ -69,6 +69,11 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # quit
             game_state.stop_going()
 
+        elif game_state.medals_left == 0:
+            # win
+            bg.set_game_over_text(True)
+            screen.blit(bg.game_over_text, bg.game_over_text_pos)
+
         elif game_state.moves_left == 0:
             # game over
             bg.set_game_over_text()
@@ -88,18 +93,21 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # A valid swap, check for matches
             # if we have more than 3 matches, explode gems
             # else set state to empty
-            number_of_matches = board.check_matches(False)
+            number_of_matches, medals_freed = board.check_matches(False)
 
             if number_of_matches > 0:
                 game_state.animate_explode(number_of_matches)
             else:
                 game_state.empty()
 
+            if medals_freed > 0:
+                game_state.medal_freed(medals_freed)
+
         elif game_state.state == "check_swap":
             # Check matches from the animate_swap state
             # if we have more than 3 matches, explode gems
             # else set state to empty
-            number_of_matches = board.check_matches(False)
+            number_of_matches, medals_freed = board.check_matches(False)
 
             if number_of_matches > 0:
                 # move made if valid swap
@@ -112,6 +120,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
                 column = game_state.column
                 direction = game_state.direction
                 board.swap_gems(row, column, direction)
+
+            if medals_freed > 0:
+                game_state.medal_freed(medals_freed)
 
         elif event.type == MOUSEBUTTONDOWN:
 
@@ -169,8 +180,10 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
 
         # Draw background and text
         bg.set_moves_left()
+        bg.set_medals_left()
         screen.blit(bg.background, (0, 0))
         screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.medals_left_text, (10, WINDOW_HEIGHT - MARGIN * 7 / 6))
         screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
         # Draw sprites
@@ -215,7 +228,7 @@ def main():
     pygame.display.set_caption("Gem Island")
 
     # game state object to store current state
-    game_state = GameState(MOVES_LEFT)
+    game_state = GameState(MOVES_LEFT, LEVEL_1_TOTAL_MEDALS)
     # background object to store background and text
     bg = Background(game_state)
 
@@ -225,6 +238,7 @@ def main():
     # Put Text On The Background
     if pygame.font:
         screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.medals_left_text, (10, WINDOW_HEIGHT - MARGIN * 7 / 6))
         screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
@@ -272,6 +286,7 @@ def main():
         bg.set_moves_left()
         screen.blit(bg.background, (0, 0))
         screen.blit(bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        screen.blit(bg.medals_left_text, (10, WINDOW_HEIGHT - MARGIN * 7 / 6))
         screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
         # Draw sprites
