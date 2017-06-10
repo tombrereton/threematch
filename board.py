@@ -38,10 +38,11 @@ class Board(object):
 
             if self.is_medal(y_coord, x_coord):
                 self.set_medals_portion_uncovered(y_coord, x_coord)
-                self.free_medals()
+                return self.free_medals()
+        return 0
 
     def free_medals(self):
-        self.medal_grid.free_medals()
+        return self.medal_grid.free_medals()
 
     def set_medals_portion_uncovered(self, y_coord: int, x_coord: int):
         self.medal_grid.grid[y_coord][x_coord].uncovered = True
@@ -106,6 +107,7 @@ class Board(object):
         :return:
         """
         total_matches = 0
+        medals_freed = 0
         find_horizontals = True
         find_verticals = True
         while find_horizontals or find_verticals:
@@ -126,7 +128,7 @@ class Board(object):
                             # self.get_gem_group().draw(self.screen)
 
                             if self.is_ice(i, j) and not initial_clear:
-                                self.remove_ice(i, j)
+                                medals_freed += self.remove_ice(i, j)
 
                 # pull down new gems
                 repeat = True
@@ -150,11 +152,11 @@ class Board(object):
                             # self.get_gem_group().draw(self.screen)
 
                             if self.is_ice(i, j) and not initial_clear:
-                                self.remove_ice(i, j)
+                                medals_freed += self.remove_ice(i, j)
 
                 # pull down new gems
                 repeat = True
                 while repeat:
                     repeat = self.gem_grid.pull_down()
                 find_verticals = False
-        return total_matches
+        return total_matches, medals_freed

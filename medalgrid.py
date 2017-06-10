@@ -123,11 +123,14 @@ class MedalGrid(g.Grid):
         Method to free all freeable medals
         :return: None
         """
+        freed = 0
         for i in range(self.rows - 1):
             for j in range(self.columns - 1):
                 if self.freeable(i, j):
                     medal_id = self.grid[i][j].medal_id
                     self.remove_medal(medal_id, i, j)
+                    freed += 1
+        return freed
 
     def freeable(self, y_coord: int, x_coord: int):
         """
