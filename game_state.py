@@ -23,7 +23,7 @@ class GameState(object):
     Future implementation: store level, rows, and columns?
     """
 
-    def __init__(self, moves_left: int):
+    def __init__(self, moves_left: int, medals_left: int):
         self.state = "empty"
         self.row = 0
         self.column = None
@@ -31,6 +31,7 @@ class GameState(object):
         self.matches = 0
         self.going = True
         self.moves_left = moves_left
+        self.medals_left = medals_left
         self.match_list = []
 
     def user_clicked(self, row: int, column: int):
@@ -110,6 +111,9 @@ class GameState(object):
 
     def move_made(self):
         self.moves_left = self.moves_left - 1
+
+    def medal_freed(self, number_found: int):
+        self.medals_left -= number_found
 
     def check_swap(self):
         self.state = "check_swap"

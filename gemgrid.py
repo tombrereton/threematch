@@ -10,17 +10,24 @@ import grid as g
 gem_group = pygame.sprite.Group()
 
 
+names = ['stones/Stone_0{}_05.png']
 class Gem(pygame.sprite.Sprite):
     def __init__(self, size: int):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
+        self.gem_size = size
         self.type = random.randint(1, 3)
         self.bonus_type = 1
-        self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
-        self.image, self.rect = util.load_image(self.gem_name, size)
+        # self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
+        # self.image, self.rect = util.load_image(self.gem_name, size)
+        self.image, self.rect = None, None
+        self.update_image()
         self.origin = (0, 0)
         self.target = (0, 0)
         self.i = 0
+
+    def update_image(self):
+        self.image, self.rect = util.load_image(names[self.bonus_type - 1].format(self.type), self.gem_size)
 
     def init_rect(self, y: int, x: int):
         self.set_rect(y, x)
