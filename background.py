@@ -17,9 +17,12 @@ class Background(object):
         self.background = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
         self.init_text()
 
-    def set_game_over_text(self):
+    def set_game_over_text(self, win: bool = False):
         game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
-        self.game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
+        if win:
+            self.game_over_text = game_over_font.render("You Win!", 1, (10, 10, 10))
+        else:
+            self.game_over_text = game_over_font.render("Game Over", 1, (10, 10, 10))
         self.game_over_text_pos = self.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
 
     def set_moves_left(self):
