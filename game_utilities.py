@@ -44,6 +44,26 @@ def load_image(name: str, size: int, colorkey=None):
     return image, image.get_rect()
 
 
+def load_explosion(foreground: str, background: str, size: int):
+    fullname_1 = os.path.join(data_dir, foreground)
+    fullname_2 = os.path.join(data_dir, background)
+    try:
+        fore = pygame.image.load(fullname_1)
+        fore = pygame.transform.smoothscale(fore, (size, size))
+        fore = fore.convert_alpha()
+        back = pygame.image.load(fullname_2)
+        back = pygame.transform.smoothscale(back, (size, size))
+        back = back.convert_alpha()
+        merged = back.copy()
+        merged.blit(fore, (0, 0))
+    except pygame.error:
+        print('Cannot load image:', fullname_1)
+        raise SystemExit(geterror())
+
+    # convert alpha makes the images transparent
+    return merged
+
+
 def load_image_only(name: str, size: int, colorkey=None):
     fullname = os.path.join(data_dir, name)
     try:

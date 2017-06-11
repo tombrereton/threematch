@@ -250,5 +250,18 @@ class Board(object):
         return medals_freed
 
     def pull_gems_down(self):
+        """
+        Pulls gems down.
+        :return:
+        """
 
         return self.gem_grid.pull_down()
+
+    def explode_gems(self, match_list: list):
+        """
+        Tells matched gems to explode
+        :param match_list:
+        :return:
+        """
+        for row, column, type, bonus_type in match_list:
+            self.gem_grid.grid[row][column].is_exploding = True
