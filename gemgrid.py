@@ -17,16 +17,17 @@ class Gem(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
         self.type = random.randint(0, 5)
-        self.bonus_type = 1
+        self.bonus_type = 0
         self.image_list = image_list
-        self.image = self.image_list[0][self.type]
+        self.image = self.image_list[self.bonus_type][self.type]
         self.rect = self.image.get_rect()
         self.origin = (0, 0)
         self.target = (0, 0)
         self.i = 0
 
-    def update_image(self):
-        self.image, self.rect = util.load_image(names[self.bonus_type - 1].format(self.type), self.gem_size)
+    def update_bonus_type(self, new_bonus_type: int):
+        self.bonus_type = new_bonus_type
+        self.image = self.image_list[self.bonus_type][self.type]
 
     def init_rect(self, y: int, x: int):
         self.set_rect(y, x)
@@ -179,8 +180,6 @@ class GemGrid(Grid):
         gem_above = self.grid[y_coord - 1][x_coord]
 
         # swap gems in gem group
-        # gem_clicked.rect.move_ip(0, -self.cell_size)
-        # gem_above.rect.move_ip(0, self.cell_size)
         gem_above.target, gem_clicked.target = gem_clicked.target, gem_above.target
 
         # swap gems in gem grid
@@ -200,8 +199,6 @@ class GemGrid(Grid):
         gem_below = self.grid[y_coord + 1][x_coord]
 
         # swap gems in gem group
-        # gem_clicked.rect.move_ip(0, self.cell_size)
-        # gem_below.rect.move_ip(0, -self.cell_size)
         gem_below.target, gem_clicked.target = gem_clicked.target, gem_below.target
 
         # swap gems in gem grid

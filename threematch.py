@@ -98,6 +98,10 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         # Gems have been exploded, remove the exploded gems
         medals_freed = board.remove_gems(game_state.match_list)
 
+        # add bonuses if needed
+        bonus_list = game_state.bonus_list
+        medals_freed += board.update_bonus(bonus_list)
+
         # if medals freed, update counter on screen
         if medals_freed > 0:
             game_state.medal_freed(medals_freed)

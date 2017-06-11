@@ -176,11 +176,12 @@ class Board(object):
         matches = horizontals + verticals
         matches = list(set(matches))
 
-        # merge bonuses, if duplicates in list make a T-type bonus
+        # merge bonuses
         bonuses = horiz_bonus + vert_bonus
         t_match = set(horiz_bonus).intersection(vert_bonus)
 
         if len(t_match) > 0:
+            # If duplicates in list make a T-type bonus
             bonuses.remove(t_match)
             for i, j, k, l in t_match:
                 bonuses.append((self.gem_grid.get_gem_info(i, j, 3)))
@@ -216,6 +217,29 @@ class Board(object):
             if self.is_ice(i, j):
                 # remove ice if present in cell
                 medals_freed += self.remove_ice(i, j)
+
+        return medals_freed
+
+    def update_bonus(self, bonus_list: list):
+        """
+        A list of bonus gems is passed in.
+
+        The gems are turned into the correct bonus types.
+
+        Ice will also be removed
+        :param bonus_list:
+        :return:
+        """
+        medals_freed = 0
+
+        if len(bonus_list) > 0:
+            for row, column, type, bonus_type in bonus_list:
+                # update gem to bonus
+                self.gem_grid.grid[row][column].update_bonus_type(bonus_type)
+
+                if self.is_ice(row, column):
+                    # remove ice if present in cell
+                    medals_freed += self.remove_ice(row, column)
 
         return medals_freed
 
