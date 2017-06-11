@@ -316,7 +316,7 @@ class GemGrid(Grid):
 
         return None, None, None
 
-    def get_row_match_2(self):
+    def get_row_match_2(self, swap_locations: list):
         """
         check for matching gems in rows
         :param gemgrid:
@@ -325,13 +325,17 @@ class GemGrid(Grid):
         :return:
         """
         matches = []
+        bonuses = []
         for row in range(self.rows):
             column = 0
             while column < self.columns:
                 row_match_count = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    # append matches to dictionary
-                    matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
+                    if row_match_count == 4:
+                        self.row_match_4_bonus(bonuses, column, matches, row, swap_locations)
+                    else:
+                        # append matches to dictionary
+                        matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
 
                     # add row_match_count to column to avoid duplicates
                     column = column + row_match_count
@@ -340,7 +344,36 @@ class GemGrid(Grid):
                     column = column + 1
 
         # return dictionary after looping over all row matches
-        return matches
+        return matches, bonuses
+
+    def row_match_4_bonus(self, bonuses, column, matches, row, swap_locations):
+        """
+        Determines the locations of any bonuses for a match 4
+        :param bonuses:
+        :param column:
+        :param matches:
+        :param row:
+        :param swap_locations:
+        :return:
+        """
+        bonus = None
+        for i in range(column, column + 4):
+            # add swap location to bonus list
+            if (row, i) == swap_locations[0]:
+                bonus = self.get_gem_info(row, i, 1)
+                bonuses.append(bonus)
+            elif (row, i) == swap_locations[1]:
+                bonus = self.get_gem_info(row, i, 1)
+                bonuses.append(bonus)
+            else:
+                # if not swap location, add to match list
+                gem = self.get_gem_info(row, i)
+                matches.append(gem)
+        if bonus is None:
+            # if swap location doesnt match, add first point
+            matches.pop(0)
+            bonus = self.get_gem_info(row, column, 1)
+            bonuses.append(bonus)
 
     def get_column_match(self):
         """
@@ -357,22 +390,27 @@ class GemGrid(Grid):
                     return row, column, column_match_count
         return None, None, None
 
-    def get_column_match_2(self):
+    def get_column_match_2(self, swap_locations: list):
         """
         check for matching gems in columns
-        :param gemgrid:
-        :param row:
-        :param columns:
+        :param swap_locations:
         :return:
         """
         matches = []
+        bonuses = []
         for column in range(self.columns):
             row = 0
             while row < self.rows:
                 column_match_count = self.column_match_count(row, column)
                 if column_match_count >= 3:
-                    # append matches to dictionary
-                    matches = matches + self.get_coord_list(row, column, 0, column_match_count)
+
+                    if column_match_count == 4:
+                        # get bonuses for 4 in a row
+                        self.column_match_4_bonus(bonuses, column, matches, row, swap_locations)
+
+                    else:
+                        # append matches to dictionary
+                        matches = matches + self.get_coord_list(row, column, 0, column_match_count)
 
                     # add column_match_count to column to avoid duplicates
                     row = row + column_match_count
@@ -380,7 +418,37 @@ class GemGrid(Grid):
                     row = row + 1
 
         # return dictionary after looping over all row matches
-        return matches
+        return matches, bonuses
+
+    def column_match_4_bonus(self, bonuses, column, matches, row, swap_locations):
+        """
+        Determines location for bonuses and normal matches
+        :param bonuses:
+        :param column:
+        :param matches:
+        :param row:
+        :param swap_locations:
+        :return:
+        """
+
+        bonus = None
+        for i in range(row, row + 4):
+            # add swap location to bonus list
+            if (i, column) == swap_locations[0]:
+                bonus = self.get_gem_info(i, column, 1)
+                bonuses.append(bonus)
+            elif (i, column) == swap_locations[1]:
+                bonus = self.get_gem_info(i, column, 1)
+                bonuses.append(bonus)
+            else:
+                # if not swap location, add to match list
+                gem = self.get_gem_info(i, column)
+                matches.append(gem)
+        if bonus is None:
+            # if swap location doesnt match, add first point
+            matches.pop(0)
+            bonus = self.get_gem_info(row, column, 1)
+            bonuses.append(bonus)
 
     def get_coord_list(self, y_coord: int, x_coord: int, row_matches: int, col_matches: int):
         matches = []
@@ -393,14 +461,18 @@ class GemGrid(Grid):
 
         return matches
 
-    def get_gem_info(self, y_coord: int, x_coord: int):
+    def get_gem_info(self, y_coord: int, x_coord: int, new_bonus=None):
         """
         Return the coordinates of the gem, along with its
         type and bonus type. This information is returned
-        as a dictionary
+        as a tuple. The structure is:
+        (row, column, type, bonus_type)
+        :param new_bonus:
         :param y_coord:
         :param x_coord:
         :return:
         """
-
-        return y_coord, x_coord, self.grid[y_coord][x_coord].type, self.grid[y_coord][x_coord].bonus_type
+        if new_bonus is None:
+            return y_coord, x_coord, self.grid[y_coord][x_coord].type, self.grid[y_coord][x_coord].bonus_type
+        else:
+            return y_coord, x_coord, self.grid[y_coord][x_coord].type, new_bonus

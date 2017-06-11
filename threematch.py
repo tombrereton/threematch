@@ -124,12 +124,12 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         # else set state to empty
 
         # get list of gem tuples
-        match_list = board.find_matches()
+        match_list, bonus_list = board.find_matches(game_state.get_swaps())
         number_of_matches = len(match_list)
 
         if number_of_matches > 0:
             # if list length is greater than 0 pass into game_state
-            game_state.animate_explode(number_of_matches, match_list)
+            game_state.animate_explode(number_of_matches, match_list, bonus_list)
         else:
             game_state.empty()
 
@@ -140,13 +140,13 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         # if we have more than 3 matches, explode gems
         # else set state to empty
 
-        match_list = board.find_matches()
+        match_list, bonus_list = board.find_matches(game_state.get_swaps())
         number_of_matches = len(match_list)
 
         if number_of_matches > 0:
             # move made if valid swap
             game_state.move_made()
-            game_state.animate_explode(number_of_matches, match_list)
+            game_state.animate_explode(number_of_matches, match_list, bonus_list)
         else:
             # Swap back if no match
             game_state.animate_reverse()

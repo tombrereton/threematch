@@ -26,13 +26,16 @@ class GameState(object):
     def __init__(self, moves_left: int, medals_left: int):
         self.state = "empty"
         self.row = 0
-        self.column = None
+        self.column = 0
+        self.second_row = 0
+        self.second_column = 0
         self.direction = None
         self.matches = 0
         self.going = True
         self.moves_left = moves_left
         self.medals_left = medals_left
         self.match_list = []
+        self.bonus_list = []
 
     def user_clicked(self, row: int, column: int):
         self.state = "user_clicked"
@@ -40,6 +43,9 @@ class GameState(object):
         self.column = column
 
     def animate_swap(self, second_row: int, second_column: int):
+
+        self.second_row = second_row
+        self.second_column = second_column
 
         if second_row == self.row - 1 and second_column == self.column:
             # swap up
@@ -65,6 +71,8 @@ class GameState(object):
             self.state = "empty"
             self.row = None
             self.column = None
+            self.second_row = None
+            self.second_column = None
             self.direction = None
 
     def animate_reverse(self):
@@ -76,10 +84,11 @@ class GameState(object):
     def no_more_matches(self):
         self.state = "no_more_matches"
 
-    def animate_explode(self, matches: int, match_list: list):
+    def animate_explode(self, matches: int, match_list: list, bonus_list: list):
         self.state = "animate_explode"
         self.matches = matches
         self.match_list = match_list
+        self.bonus_list = bonus_list
 
     def remove_gems(self):
         self.state = "remove_gems"
@@ -118,4 +127,11 @@ class GameState(object):
     def check_swap(self):
         self.state = "check_swap"
 
-
+    def get_swaps(self):
+        """
+        returns the 2 locations from the swap
+        as a list of tuples
+        :return:
+        """
+        swap_loc = [(self.row, self.column), (self.second_row, self.second_column)]
+        return swap_loc
