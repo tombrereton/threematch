@@ -276,10 +276,12 @@ class GemGrid(Grid):
         """
         row_count = 1
         match_index = j + row_count
+        bonus_type = 0
         while match_index < self.columns and self.grid[i][j].type == self.grid[i][match_index].type:
+            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[i][match_index].bonus_type)
             row_count = row_count + 1
             match_index = match_index + 1
-        return row_count
+        return row_count, bonus_type
 
     def column_match_count(self, i: int, j: int):
         """
@@ -292,10 +294,12 @@ class GemGrid(Grid):
         """
         column_count = 1
         match_index = i + column_count
+        bonus_type = 0
         while match_index < self.rows and self.grid[i][j].type == self.grid[match_index][j].type:
+            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[match_index][j].bonus_type)
             column_count = column_count + 1
             match_index = match_index + 1
-        return column_count
+        return column_count, bonus_type
 
     def get_row_match(self):
         """
@@ -307,7 +311,7 @@ class GemGrid(Grid):
         """
         for row in range(self.rows):
             for column in range(self.columns):
-                row_match_count = self.row_match_count(row, column)
+                row_match_count, _ = self.row_match_count(row, column)
                 if row_match_count >= 3:
                     return row, column, row_match_count
 
@@ -326,9 +330,14 @@ class GemGrid(Grid):
         for row in range(self.rows):
             column = 0
             while column < self.columns:
-                row_match_count = self.row_match_count(row, column)
+                row_match_count, bonus_type = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    if row_match_count == 4:
+                    if bonus_type == 1:
+                        # if bonus of type 1, remove row
+                        for col in range(self.columns):
+                            matches.append(self.get_gem_info(row, col))
+
+                    elif row_match_count == 4:
                         self.row_match_4_bonus(bonuses, column, matches, row, swap_locations)
                     else:
                         # append matches to dictionary
@@ -382,7 +391,7 @@ class GemGrid(Grid):
         """
         for column in range(self.columns):
             for row in range(self.rows):
-                column_match_count = self.column_match_count(row, column)
+                column_match_count, _ = self.column_match_count(row, column)
                 if column_match_count >= 3:
                     return row, column, column_match_count
         return None, None, None
@@ -398,10 +407,14 @@ class GemGrid(Grid):
         for column in range(self.columns):
             row = 0
             while row < self.rows:
-                column_match_count = self.column_match_count(row, column)
+                column_match_count, bonus_type = self.column_match_count(row, column)
                 if column_match_count >= 3:
+                    if bonus_type == 1:
+                        # if bonus of type 1, remove column
+                        for r in range(self.rows):
+                            matches.append(self.get_gem_info(r, column))
 
-                    if column_match_count == 4:
+                    elif column_match_count == 4:
                         # get bonuses for 4 in a row
                         self.column_match_4_bonus(bonuses, column, matches, row, swap_locations)
 

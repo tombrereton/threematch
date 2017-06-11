@@ -211,12 +211,13 @@ class Board(object):
         """
 
         medals_freed = 0
-        for i, j, k, l in match_list:
-            self.gem_grid.remove_gem(i, j)
+        for row, column, type, bonus_type in match_list:
 
-            if self.is_ice(i, j):
+            self.gem_grid.remove_gem(row, column)
+
+            if self.is_ice(row, column):
                 # remove ice if present in cell
-                medals_freed += self.remove_ice(i, j)
+                medals_freed += self.remove_ice(row, column)
 
         return medals_freed
 
@@ -234,6 +235,11 @@ class Board(object):
 
         if len(bonus_list) > 0:
             for row, column, type, bonus_type in bonus_list:
+
+                # add gem if empty, but why empty?
+                if self.gem_grid.grid[row][column] == 0:
+                    self.gem_grid.add_gem(row, column)
+
                 # update gem to bonus
                 self.gem_grid.grid[row][column].update_bonus_type(bonus_type)
 
