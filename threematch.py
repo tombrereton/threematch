@@ -130,6 +130,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         if number_of_matches > 0:
             # if list length is greater than 0 pass into game_state
             game_state.animate_explode(number_of_matches, match_list, bonus_list)
+
+            # set gems to explode
+            board.explode_gems(match_list)
         else:
             game_state.empty()
 
@@ -147,6 +150,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # move made if valid swap
             game_state.move_made()
             game_state.animate_explode(number_of_matches, match_list, bonus_list)
+            
+            # set gems to explode
+            board.explode_gems(match_list)
         else:
             # Swap back if no match
             game_state.animate_reverse()

@@ -3,7 +3,7 @@ import random
 import pygame
 
 import game_utilities as util
-from global_variables import GEM_SIZE, ANIMATION_SCALE
+from global_variables import GEM_SIZE, ANIMATION_SCALE, EXPLOSION_FRAMES
 from grid import Grid
 
 gem_group = pygame.sprite.Group()
@@ -12,13 +12,16 @@ names = ['stones/Stone_0{}_05.png']
 
 
 class Gem(pygame.sprite.Sprite):
-    def __init__(self, size: int, image_list: list):
+    def __init__(self, size: int, image_list: list, explosions: list):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
         self.type = random.randint(0, 5)
         self.bonus_type = 0
         self.image_list = image_list
+        self.explosions = explosions
+        self.explosion_step = 0
+        self.is_exploding = False
         self.image = self.image_list[self.bonus_type][self.type]
         self.rect = self.image.get_rect()
         self.origin = (0, 0)
@@ -53,14 +56,22 @@ class Gem(pygame.sprite.Sprite):
 
     def update(self):
         if self.origin != self.target:
+            # move gem
             self.move()
+
+        elif self.is_exploding:
+            # explode gem
+            self.explode()
 
     def explode(self):
         """
         if about to be removed, explode gem first
         :return:
         """
-        pass
+        self.image = self.explosions[self.explosion_step]
+        self.explosion_step += 1
+        if self.explosion_step > EXPLOSION_FRAMES - 1:
+            self.is_exploding = False
 
     def move(self):
         self.i += 1
@@ -81,6 +92,7 @@ class GemGrid(Grid):
     def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
         self.background = background
         self.gem_images = background.gem_images
+        self.explosions = background.explosions
         self.gem_size = GEM_SIZE
         self.centering_offset = 0.05 * self.gem_size
         super().__init__(screen, rows, columns, cell_size, margin)
@@ -88,7 +100,7 @@ class GemGrid(Grid):
     def test_grid(self):
         for j in range(0, self.columns):
             for i in range(0, self.rows):
-                gem = Gem(self.gem_size, self.gem_images)
+                gem = Gem(self.gem_size, self.gem_images, self.explosions)
                 gem.test_gem(self.gem_size, (j % 8) + 1)
                 y = self.margin + self.centering_offset + i * self.cell_size
                 x = self.margin + self.centering_offset + j * self.cell_size
@@ -113,7 +125,7 @@ class GemGrid(Grid):
         :param x_coord: x coordinate to add gem at
         :return: None
         """
-        gem = Gem(self.gem_size, self.gem_images)
+        gem = Gem(self.gem_size, self.gem_images, self.explosions)
         x = self.margin + self.centering_offset + x_coord * self.cell_size
         y = self.margin + self.centering_offset + y_coord * self.cell_size
         gem.init_rect(y, x)
@@ -257,7 +269,7 @@ class GemGrid(Grid):
                         x = self.margin + self.centering_offset + i * self.cell_size
                         self.grid[j][i].set_target(y, x)
             if self.grid[0][i] == 0:
-                gem = Gem(self.gem_size, self.gem_images)
+                gem = Gem(self.gem_size, self.gem_images, self.explosions)
                 y = self.margin + self.centering_offset - self.cell_size
                 x = self.margin + self.centering_offset + i * self.cell_size
                 gem.init_rect(int(y), int(x))
