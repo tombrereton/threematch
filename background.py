@@ -14,6 +14,7 @@ class Background(object):
         self.medals_left_text = None
         self.game_over_text_pos = None
         self.gem_images = []
+        self.explosions = []
         self.font = pygame.font.Font(None, int(24 * HD_SCALE))
         self.game_state = game_state
         self.background = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -57,3 +58,9 @@ class Background(object):
                 image = util.load_image_only(name, GEM_SIZE)
                 type_list.append(image)
             self.gem_images.append(type_list)
+
+    def init_explosions(self):
+        for i in range(10):
+            name = f'explosions/black_smoke/blackSmoke0{i}.png'
+            image = util.load_image_only(name, GEM_SIZE)
+            self.explosions.append(image)

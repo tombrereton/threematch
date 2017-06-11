@@ -73,10 +73,6 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         bg.set_game_over_text(True)
         screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
-    elif game_state.moves_left == 0:
-        # game over
-        bg.set_game_over_text()
-        screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
     elif event.type == KEYDOWN and event.key == K_ESCAPE:
         # quit
@@ -187,6 +183,11 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
                 game_state.empty()
             else:
                 game_state.user_clicked(gem_row, gem_column)
+
+    elif game_state.moves_left == 0:
+        # game over
+        bg.set_game_over_text()
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
     return screen, board, bg, game_state
 
