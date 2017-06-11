@@ -9,19 +9,24 @@ import grid as g
 
 gem_group = pygame.sprite.Group()
 
-
 names = ['stones/Stone_0{}_05.png']
+
+
 class Gem(pygame.sprite.Sprite):
-    def __init__(self, size: int):
+    def __init__(self, size: int, image_list: list):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
-        self.type = random.randint(1, 3)
+        self.type = random.randint(0, 7)
         self.bonus_type = 1
         # self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
         # self.image, self.rect = util.load_image(self.gem_name, size)
-        self.image, self.rect = None, None
-        self.update_image()
+        self.image_list = image_list
+        self.image = self.image_list[self.type]
+        self.rect = self.image.get_rect()
+
+        # self.image, self.rect = None, None
+        # self.update_image()
         self.origin = (0, 0)
         self.target = (0, 0)
         self.i = 0
@@ -64,11 +69,14 @@ class Gem(pygame.sprite.Sprite):
 
     def move(self):
         self.i += 1
-        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE - 1))
-        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE - 1))
+        # y_diff = self.target[0] - self.origin[0]
+        # y_step = y_diff / (c.ANIMATION_SCALE - 1)
+
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE ))
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE ))
         self.rect.top = y
         self.rect.left = x
-        if self.i == c.ANIMATION_SCALE - 1:
+        if self.i == c.ANIMATION_SCALE :
             self.i = 0
             self.origin = self.target
 
@@ -81,10 +89,16 @@ class GemGrid(g.Grid):
     def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
         super().__init__(screen, rows, columns, cell_size, margin)
 
+    def init_gem_images(self):
+        for i in range(1, 9):
+            name = f'stones/Stone_0{i}_05.png'
+            image = util.load_image_only(name, self.gem_size)
+            self.gem_images.append(image)
+
     def test_grid(self):
         for j in range(0, self.columns):
             for i in range(0, self.rows):
-                gem = Gem(self.gem_size)
+                gem = Gem(self.gem_size, self.gem_images)
                 gem.test_gem(self.gem_size, (j % 8) + 1)
                 y = self.margin + self.centering_offset + i * self.cell_size
                 x = self.margin + self.centering_offset + j * self.cell_size
@@ -98,7 +112,9 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
+        self.gem_images = []
         self.gem_size = int(0.9 * self.cell_size)
+        self.init_gem_images()
         self.centering_offset = 0.05 * self.cell_size
         for i in range(0, self.rows):
             for j in range(0, self.columns):
@@ -111,7 +127,7 @@ class GemGrid(g.Grid):
         :param x_coord: x coordinate to add gem at
         :return: None
         """
-        gem = Gem(self.gem_size)
+        gem = Gem(self.gem_size, self.gem_images)
         x = self.margin + self.centering_offset + x_coord * self.cell_size
         y = self.margin + self.centering_offset + y_coord * self.cell_size
         gem.init_rect(y, x)
@@ -262,7 +278,7 @@ class GemGrid(g.Grid):
                         x = self.margin + self.centering_offset + i * self.cell_size
                         self.grid[j][i].set_target(y, x)
             if self.grid[0][i] == 0:
-                gem = Gem(self.gem_size)
+                gem = Gem(self.gem_size, self.gem_images)
                 y = self.margin + self.centering_offset - self.cell_size
                 x = self.margin + self.centering_offset + i * self.cell_size
                 gem.init_rect(y, x)

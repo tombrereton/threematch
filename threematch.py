@@ -64,124 +64,125 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
     :param text_pos:
     :return:
     """
-    for event in pygame.event.get():
+    # for event in pygame.event.get():
+    event = pygame.event.poll()
 
-        if event.type == QUIT:
-            # quit
-            game_state.stop_going()
+    if event.type == QUIT:
+        # quit
+        game_state.stop_going()
 
-        elif game_state.medals_left == 0:
-            # win
-            bg.set_game_over_text(True)
-            screen.blit(bg.game_over_text, bg.game_over_text_pos)
+    elif game_state.medals_left == 0:
+        # win
+        bg.set_game_over_text(True)
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
-        elif game_state.moves_left == 0:
-            # game over
-            bg.set_game_over_text()
-            screen.blit(bg.game_over_text, bg.game_over_text_pos)
+    elif game_state.moves_left == 0:
+        # game over
+        bg.set_game_over_text()
+        screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
-        elif event.type == KEYDOWN and event.key == K_ESCAPE:
-            # quit
-            game_state.stop_going()
+    elif event.type == KEYDOWN and event.key == K_ESCAPE:
+        # quit
+        game_state.stop_going()
 
-        elif game_state.state == "remove_gems":
-            # Gems have been exploded, remove the exploded gems
-            board.remove_gems(game_state.match_list)
+    elif game_state.state == "remove_gems":
+        # Gems have been exploded, remove the exploded gems
+        board.remove_gems(game_state.match_list)
 
-            # Pull the gems downs
-            time3 = time()
-            repeat_pull_down = board.pull_gems_down()
-            print(f'remove_gems: {time() - time3}')
+        # Pull the gems downs
+        time3 = time()
+        repeat_pull_down = board.pull_gems_down()
+        print(f'remove_gems: {time() - time3}')
 
-            # Then set state to animate pull down
-            if repeat_pull_down:
-                game_state.animate_pull_down_repeat()
-            else:
-                game_state.animate_pull_down()
+        # Then set state to animate pull down
+        if repeat_pull_down:
+            game_state.animate_pull_down_repeat()
+        else:
+            game_state.animate_pull_down()
 
-            pygame.event.clear()
+        pygame.event.clear()
 
-        elif game_state.state == "check_matches":
-            # TODO: change this state so that it checks for matches after pull down
-            # A valid swap, check for matches
-            # if we have more than 3 matches, explode gems
-            # else set state to empty
-            #_, medals_freed = board.check_matches(False)
+    elif game_state.state == "check_matches":
+        # TODO: change this state so that it checks for matches after pull down
+        # A valid swap, check for matches
+        # if we have more than 3 matches, explode gems
+        # else set state to empty
+        #_, medals_freed = board.check_matches(False)
 
-            # number_of_matches = board.check_matches(False)
+        # number_of_matches = board.check_matches(False)
 
-            # get list of gem tuples
-            time2 = time()
-            match_list = board.find_matches()
-            print(f'check_matches: {time() - time2}')
-            number_of_matches = len(match_list)
+        # get list of gem tuples
+        time2 = time()
+        match_list = board.find_matches()
+        print(f'check_matches: {time() - time2}')
+        number_of_matches = len(match_list)
 
-            if number_of_matches > 0:
-                # if list length is greater than 0 pass into game_state
-                game_state.animate_explode(number_of_matches, match_list)
-            else:
-                game_state.empty()
+        if number_of_matches > 0:
+            # if list length is greater than 0 pass into game_state
+            game_state.animate_explode(number_of_matches, match_list)
+        else:
+            game_state.empty()
 
-            medals_freed = 0
-            if medals_freed > 0:
-                game_state.medal_freed(medals_freed)
+        medals_freed = 0
+        if medals_freed > 0:
+            game_state.medal_freed(medals_freed)
 
-            pygame.event.clear()
+        pygame.event.clear()
 
-        elif game_state.state == "check_swap":
-            # Check matches from the animate_swap state
-            # if we have more than 3 matches, explode gems
-            # else set state to empty
-            # number_of_matches = board.check_matches(False)
-            time1 = time()
-            match_list = board.find_matches()
-            number_of_matches = len(match_list)
-            #number_of_matches, medals_freed = board.check_matches(False)
+    elif game_state.state == "check_swap":
+        # Check matches from the animate_swap state
+        # if we have more than 3 matches, explode gems
+        # else set state to empty
+        # number_of_matches = board.check_matches(False)
+        time1 = time()
+        match_list = board.find_matches()
+        number_of_matches = len(match_list)
+        #number_of_matches, medals_freed = board.check_matches(False)
 
-            if number_of_matches > 0:
-                # move made if valid swap
-                game_state.move_made()
-                game_state.animate_explode(number_of_matches, match_list)
-                print(f"check_swap: {time() - time1}")
-            else:
-                # Swap back if no match
-                game_state.animate_reverse()
+        if number_of_matches > 0:
+            # move made if valid swap
+            game_state.move_made()
+            game_state.animate_explode(number_of_matches, match_list)
+            print(f"check_swap: {time() - time1}")
+        else:
+            # Swap back if no match
+            game_state.animate_reverse()
+            row = game_state.row
+            column = game_state.column
+            direction = game_state.direction
+            board.swap_gems(row, column, direction)
+            print(f"check_swap: {time() - time1}")
+
+        pygame.event.clear()
+
+        medals_freed = 0
+        if medals_freed > 0:
+            game_state.medal_freed(medals_freed)
+
+    elif event.type == MOUSEBUTTONDOWN:
+
+        if game_state.state == "user_clicked":
+            # second click, if valid move, change state to animate_move
+            # if it is not a valid move, change state to empty
+            # the GameState class works out if it is a valid move
+            second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+            game_state.animate_swap(second_gem_row, second_gem_column)
+
+            if game_state.state == "animate_swap":
+                # move gems if clicked on valid positions
                 row = game_state.row
                 column = game_state.column
                 direction = game_state.direction
                 board.swap_gems(row, column, direction)
-                print(f"check_swap: {time() - time1}")
 
-            pygame.event.clear()
-
-            medals_freed = 0
-            if medals_freed > 0:
-                game_state.medal_freed(medals_freed)
-
-        elif event.type == MOUSEBUTTONDOWN:
-
-            if game_state.state == "user_clicked":
-                # second click, if valid move, change state to animate_move
-                # if it is not a valid move, change state to empty
-                # the GameState class works out if it is a valid move
-                second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
-                game_state.animate_swap(second_gem_row, second_gem_column)
-
-                if game_state.state == "animate_swap":
-                    # move gems if clicked on valid positions
-                    row = game_state.row
-                    column = game_state.column
-                    direction = game_state.direction
-                    board.swap_gems(row, column, direction)
-
-            elif game_state.state == "empty":
-                # first click, get coordinates and save them to game state object
-                # change state to user_clicked
-                gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
-                if gem_row is None or gem_column is None:
-                    game_state.empty()
-                else:
-                    game_state.user_clicked(gem_row, gem_column)
+        elif game_state.state == "empty":
+            # first click, get coordinates and save them to game state object
+            # change state to user_clicked
+            gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
+            if gem_row is None or gem_column is None:
+                game_state.empty()
+            else:
+                game_state.user_clicked(gem_row, gem_column)
 
     return screen, board, bg, game_state
 
@@ -233,6 +234,9 @@ def animate_loop(screen, board: b.Board, bg: Background, game_state: GameState, 
             # update the entire screen
             pygame.display.flip()
 
+            # pump events
+            pygame.event.pump()
+
             # never run quicker than 60 frames per second
             clock.tick(60)
 
@@ -271,6 +275,10 @@ def main():
     # background object to store background and text
     bg = Background(game_state)
 
+    # allowed events in event queue
+    pygame.event.set_allowed(MOUSEBUTTONDOWN)
+    pygame.event.set_blocked(MOUSEMOTION)
+
     # create the background
     screen.blit(bg.background, (0, 0))
 
@@ -307,7 +315,7 @@ def main():
     while game_state.going:
         # Frames per second
         # clock.tick(1)
-        pygame.time.wait(1)
+        # pygame.time.wait(1)
 
         main_loop = time()
 
@@ -336,6 +344,8 @@ def main():
         main_time = time() - main_loop
         if main_time > 0.1:
             print(f'MAIN_TIME: {main_time}')
+
+        pygame.event.pump()
 
 
 if __name__ == '__main__':
