@@ -1,5 +1,3 @@
-from time import time
-
 import gemgrid
 import icegrid
 import medalgrid
@@ -180,27 +178,6 @@ class Board(object):
 
         return matches
 
-    def find_matches(self):
-        """
-        find all the matches and returns a list of
-        tuples where each tuples comprises:
-        (row, column, type, bonus_type)
-        :return:
-        """
-
-        find_match = time()
-        matches = []
-
-        horizontals = self.gem_grid.get_row_match_2()
-        verticals = self.gem_grid.get_column_match_2()
-
-        matches = matches + horizontals + verticals
-
-        matches = list(set(matches))
-
-        print(f'find_matches: {time() - find_match}')
-        return matches
-
     def remove_gems(self, match_list: list):
         """
         A list of matched gems is passed in.
@@ -212,11 +189,14 @@ class Board(object):
         :return:
         """
 
-        board_remove = time()
+        medals_freed = 0
         for i, j, k, l in (match_list):
             self.gem_grid.removegem(i, j)
 
-        print(f'board_remove: {time() - board_remove}')
+            if self.is_ice(i, j):
+                medals_freed += self.remove_ice(i, j)
+
+        return medals_freed
 
     def pull_gems_down(self):
 
