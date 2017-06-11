@@ -1,11 +1,10 @@
 import random
-from time import time
 
 import pygame
 
 import game_utilities as util
-import global_variables as c
-import grid as g
+from global_variables import GEM_SIZE, ANIMATION_SCALE
+from grid import Grid
 
 gem_group = pygame.sprite.Group()
 
@@ -17,16 +16,11 @@ class Gem(pygame.sprite.Sprite):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
-        self.type = random.randint(0, 7)
+        self.type = random.randint(0, 5)
         self.bonus_type = 1
-        # self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
-        # self.image, self.rect = util.load_image(self.gem_name, size)
         self.image_list = image_list
-        self.image = self.image_list[self.type]
+        self.image = self.image_list[0][self.type]
         self.rect = self.image.get_rect()
-
-        # self.image, self.rect = None, None
-        # self.update_image()
         self.origin = (0, 0)
         self.target = (0, 0)
         self.i = 0
@@ -69,31 +63,26 @@ class Gem(pygame.sprite.Sprite):
 
     def move(self):
         self.i += 1
-        # y_diff = self.target[0] - self.origin[0]
-        # y_step = y_diff / (c.ANIMATION_SCALE - 1)
-
-        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE ))
-        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE ))
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (ANIMATION_SCALE))
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (ANIMATION_SCALE))
         self.rect.top = y
         self.rect.left = x
-        if self.i == c.ANIMATION_SCALE :
+        if self.i == ANIMATION_SCALE:
             self.i = 0
             self.origin = self.target
 
 
-class GemGrid(g.Grid):
+class GemGrid(Grid):
     """
     Sub class of Grid
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+    def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
+        self.background = background
+        self.gem_images = background.gem_images
+        self.gem_size = GEM_SIZE
+        self.centering_offset = 0.05 * self.gem_size
         super().__init__(screen, rows, columns, cell_size, margin)
-
-    def init_gem_images(self):
-        for i in range(1, 9):
-            name = f'stones/Stone_0{i}_05.png'
-            image = util.load_image_only(name, self.gem_size)
-            self.gem_images.append(image)
 
     def test_grid(self):
         for j in range(0, self.columns):
@@ -112,15 +101,11 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        self.gem_images = []
-        self.gem_size = int(0.9 * self.cell_size)
-        self.init_gem_images()
-        self.centering_offset = 0.05 * self.cell_size
         for i in range(0, self.rows):
             for j in range(0, self.columns):
-                self.addgem(i, j)
+                self.add_gem(i, j)
 
-    def addgem(self, y_coord: int, x_coord: int):
+    def add_gem(self, y_coord: int, x_coord: int):
         """
         Method to add a gem to the grid
         :param y_coord: y coordinate to add gem at
@@ -133,7 +118,7 @@ class GemGrid(g.Grid):
         gem.init_rect(y, x)
         self.grid[y_coord][x_coord] = gem
 
-    def removegem(self, y_coord: int, x_coord: int):
+    def remove_gem(self, y_coord: int, x_coord: int):
         """
         Method to remove a gem from the grid
         :param y_coord: y coordinate to remove gem from
@@ -257,8 +242,6 @@ class GemGrid(g.Grid):
         gem_left = self.grid[y_coord][x_coord - 1]
 
         # swap gems in gem group
-        # gem_clicked.rect.move_ip(-self.cell_size, 0)
-        # gem_left.rect.move_ip(self.cell_size, 0)
         gem_left.target, gem_clicked.target = gem_clicked.target, gem_left.target
 
         # swap gems in gem grid
@@ -266,7 +249,6 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        board_pull = time()
         repeat = False
         for i in range(self.columns):
             for j in range(self.rows - 1, 0, -1):
@@ -281,10 +263,9 @@ class GemGrid(g.Grid):
                 gem = Gem(self.gem_size, self.gem_images)
                 y = self.margin + self.centering_offset - self.cell_size
                 x = self.margin + self.centering_offset + i * self.cell_size
-                gem.init_rect(y, x)
-                gem.set_target(y + self.cell_size, x)
+                gem.init_rect(int(y), int(x))
+                gem.set_target(int(y + self.cell_size), int(x))
                 self.grid[0][i] = gem
-        print(f'board_pull: {time() - board_pull}')
         return repeat
 
     def row_match_count(self, i: int, j: int):
@@ -408,7 +389,6 @@ class GemGrid(g.Grid):
             matches.append((self.get_gem_info(y_coord, column)))
 
         for row in range(y_coord, y_coord + col_matches):
-            # TODO check if this correctly appends a tuple
             matches.append((self.get_gem_info(row, x_coord)))
 
         return matches

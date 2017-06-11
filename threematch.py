@@ -98,8 +98,13 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         # Gems have been exploded, remove the exploded gems
         medals_freed = board.remove_gems(game_state.match_list)
 
+        # if medals freed, update counter on screen
         if medals_freed > 0:
             game_state.medal_freed(medals_freed)
+
+        # update score
+        points = board.get_points(game_state.match_list)
+        bg.update_score(points)
 
         # Pull the gems downs
         repeat_pull_down = board.pull_gems_down()
@@ -152,20 +157,9 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
 
         pygame.event.clear()
 
-    elif event.type == MOUSEBUTTONUP and game_state.state == "user_clicked":
-        # End of a drag, try to move gems
+    elif event.type in [MOUSEBUTTONDOWN, MOUSEBUTTONUP]:
 
-        second_gem_row, second_gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
-        game_state.animate_swap(second_gem_row, second_gem_column)
-
-        if game_state.state == "animate_swap":
-            # move gems if clicked on valid positions
-            row = game_state.row
-            column = game_state.column
-            direction = game_state.direction
-            board.swap_gems(row, column, direction)
-
-    elif event.type == MOUSEBUTTONDOWN:
+        # TODO: change so both drag and click work
 
         if game_state.state == "user_clicked":
             # second click, if valid move, change state to animate_move
@@ -181,7 +175,7 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
                 direction = game_state.direction
                 board.swap_gems(row, column, direction)
 
-        elif game_state.state == "empty":
+        elif game_state.state == "empty" and event.type == MOUSEBUTTONDOWN:
             # first click, get coordinates and save them to game state object
             # change state to user_clicked
             gem_row, gem_column = get_gem_location_from_click(board, event.pos[0], event.pos[1])
@@ -292,7 +286,7 @@ def main():
         screen.blit(bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
 
     # create the board
-    board = b.Board(screen, bg.background, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
+    board = b.Board(screen, bg, PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN)
 
     # change to test board if true
     if TEST:

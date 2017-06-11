@@ -7,11 +7,12 @@ LEVEL_1_TOTAL_MEDALS = 1
 LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
-MOVES_LEFT = 36
+MOVES_LEFT = 20
 
 # GUI variables
 HD_SCALE = 1  # Scale for changing the number of pixels
 CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
+GEM_SIZE = int(0.9 * CELL_SIZE)
 MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).
 TEXT_AREA = int(75 * HD_SCALE)
 PUZZLE_ROWS = 9  # Number of rows on the board.

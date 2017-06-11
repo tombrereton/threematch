@@ -17,7 +17,7 @@ class Board(object):
     def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
         self.medal_grid = medalgrid.MedalGrid(screen, rows, columns, cell_size, margin)
         self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size, margin)
-        self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size, margin)
+        self.gem_grid = gemgrid.GemGrid(screen, background, rows, columns, cell_size, margin)
         self.screen = screen
         self.background = background
         self.rows = rows
@@ -123,7 +123,7 @@ class Board(object):
                     # remove gems
                     for i in range(row, row + 1):
                         for j in range(column, column + horizontal_match_length):
-                            self.gem_grid.removegem(i, j)
+                            self.gem_grid.remove_gem(i, j)
                             # self.get_gem_group().update()
                             # self.get_gem_group().draw(self.screen)
 
@@ -147,7 +147,7 @@ class Board(object):
                     # remove gems
                     for j in range(column, column + 1):
                         for i in range(row, row + vertical_match_length):
-                            self.gem_grid.removegem(i, j)
+                            self.gem_grid.remove_gem(i, j)
                             # self.get_gem_group().update()
                             # self.get_gem_group().draw(self.screen)
 
@@ -178,6 +178,18 @@ class Board(object):
 
         return matches
 
+    def get_points(self, match_list: list):
+        """
+        Takes in match list. Adds points based on
+        the number of gems.
+
+        Future implementation: multipliers for combos
+        :param match_list:
+        :return:
+        """
+        return 100 * len(match_list)
+
+
     def remove_gems(self, match_list: list):
         """
         A list of matched gems is passed in.
@@ -191,7 +203,7 @@ class Board(object):
 
         medals_freed = 0
         for i, j, k, l in (match_list):
-            self.gem_grid.removegem(i, j)
+            self.gem_grid.remove_gem(i, j)
 
             if self.is_ice(i, j):
                 medals_freed += self.remove_ice(i, j)
