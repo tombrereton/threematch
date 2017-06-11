@@ -1,11 +1,10 @@
 import random
-from time import time
 
 import pygame
 
 import game_utilities as util
-import global_variables as c
-import grid as g
+from global_variables import GEM_SIZE, ANIMATION_SCALE
+from grid import Grid
 
 gem_group = pygame.sprite.Group()
 
@@ -17,22 +16,18 @@ class Gem(pygame.sprite.Sprite):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
-        self.type = random.randint(0, 7)
-        self.bonus_type = 1
-        # self.gem_name = "stones/Stone_0{}_05.png".format(self.type)
-        # self.image, self.rect = util.load_image(self.gem_name, size)
+        self.type = random.randint(0, 5)
+        self.bonus_type = 0
         self.image_list = image_list
-        self.image = self.image_list[self.type]
+        self.image = self.image_list[self.bonus_type][self.type]
         self.rect = self.image.get_rect()
-
-        # self.image, self.rect = None, None
-        # self.update_image()
         self.origin = (0, 0)
         self.target = (0, 0)
         self.i = 0
 
-    def update_image(self):
-        self.image, self.rect = util.load_image(names[self.bonus_type - 1].format(self.type), self.gem_size)
+    def update_bonus_type(self, new_bonus_type: int):
+        self.bonus_type = new_bonus_type
+        self.image = self.image_list[self.bonus_type][self.type]
 
     def init_rect(self, y: int, x: int):
         self.set_rect(y, x)
@@ -69,31 +64,26 @@ class Gem(pygame.sprite.Sprite):
 
     def move(self):
         self.i += 1
-        # y_diff = self.target[0] - self.origin[0]
-        # y_step = y_diff / (c.ANIMATION_SCALE - 1)
-
-        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (c.ANIMATION_SCALE ))
-        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (c.ANIMATION_SCALE ))
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (ANIMATION_SCALE))
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (ANIMATION_SCALE))
         self.rect.top = y
         self.rect.left = x
-        if self.i == c.ANIMATION_SCALE :
+        if self.i == ANIMATION_SCALE:
             self.i = 0
             self.origin = self.target
 
 
-class GemGrid(g.Grid):
+class GemGrid(Grid):
     """
     Sub class of Grid
     """
 
-    def __init__(self, screen: pygame.display, rows: int, columns: int, cell_size: int, margin: int):
+    def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
+        self.background = background
+        self.gem_images = background.gem_images
+        self.gem_size = GEM_SIZE
+        self.centering_offset = 0.05 * self.gem_size
         super().__init__(screen, rows, columns, cell_size, margin)
-
-    def init_gem_images(self):
-        for i in range(1, 9):
-            name = f'stones/Stone_0{i}_05.png'
-            image = util.load_image_only(name, self.gem_size)
-            self.gem_images.append(image)
 
     def test_grid(self):
         for j in range(0, self.columns):
@@ -112,15 +102,11 @@ class GemGrid(g.Grid):
         adds the gems to the screen
         :return:
         """
-        self.gem_images = []
-        self.gem_size = int(0.9 * self.cell_size)
-        self.init_gem_images()
-        self.centering_offset = 0.05 * self.cell_size
         for i in range(0, self.rows):
             for j in range(0, self.columns):
-                self.addgem(i, j)
+                self.add_gem(i, j)
 
-    def addgem(self, y_coord: int, x_coord: int):
+    def add_gem(self, y_coord: int, x_coord: int):
         """
         Method to add a gem to the grid
         :param y_coord: y coordinate to add gem at
@@ -133,7 +119,7 @@ class GemGrid(g.Grid):
         gem.init_rect(y, x)
         self.grid[y_coord][x_coord] = gem
 
-    def removegem(self, y_coord: int, x_coord: int):
+    def remove_gem(self, y_coord: int, x_coord: int):
         """
         Method to remove a gem from the grid
         :param y_coord: y coordinate to remove gem from
@@ -194,8 +180,6 @@ class GemGrid(g.Grid):
         gem_above = self.grid[y_coord - 1][x_coord]
 
         # swap gems in gem group
-        # gem_clicked.rect.move_ip(0, -self.cell_size)
-        # gem_above.rect.move_ip(0, self.cell_size)
         gem_above.target, gem_clicked.target = gem_clicked.target, gem_above.target
 
         # swap gems in gem grid
@@ -215,8 +199,6 @@ class GemGrid(g.Grid):
         gem_below = self.grid[y_coord + 1][x_coord]
 
         # swap gems in gem group
-        # gem_clicked.rect.move_ip(0, self.cell_size)
-        # gem_below.rect.move_ip(0, -self.cell_size)
         gem_below.target, gem_clicked.target = gem_clicked.target, gem_below.target
 
         # swap gems in gem grid
@@ -257,8 +239,6 @@ class GemGrid(g.Grid):
         gem_left = self.grid[y_coord][x_coord - 1]
 
         # swap gems in gem group
-        # gem_clicked.rect.move_ip(-self.cell_size, 0)
-        # gem_left.rect.move_ip(self.cell_size, 0)
         gem_left.target, gem_clicked.target = gem_clicked.target, gem_left.target
 
         # swap gems in gem grid
@@ -266,7 +246,6 @@ class GemGrid(g.Grid):
                                                                        self.grid[y_coord][x_coord]
 
     def pull_down(self):
-        board_pull = time()
         repeat = False
         for i in range(self.columns):
             for j in range(self.rows - 1, 0, -1):
@@ -281,10 +260,9 @@ class GemGrid(g.Grid):
                 gem = Gem(self.gem_size, self.gem_images)
                 y = self.margin + self.centering_offset - self.cell_size
                 x = self.margin + self.centering_offset + i * self.cell_size
-                gem.init_rect(y, x)
-                gem.set_target(y + self.cell_size, x)
+                gem.init_rect(int(y), int(x))
+                gem.set_target(int(y + self.cell_size), int(x))
                 self.grid[0][i] = gem
-        print(f'board_pull: {time() - board_pull}')
         return repeat
 
     def row_match_count(self, i: int, j: int):
@@ -298,10 +276,12 @@ class GemGrid(g.Grid):
         """
         row_count = 1
         match_index = j + row_count
+        bonus_type = 0
         while match_index < self.columns and self.grid[i][j].type == self.grid[i][match_index].type:
+            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[i][match_index].bonus_type)
             row_count = row_count + 1
             match_index = match_index + 1
-        return row_count
+        return row_count, bonus_type
 
     def column_match_count(self, i: int, j: int):
         """
@@ -314,10 +294,12 @@ class GemGrid(g.Grid):
         """
         column_count = 1
         match_index = i + column_count
+        bonus_type = 0
         while match_index < self.rows and self.grid[i][j].type == self.grid[match_index][j].type:
+            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[match_index][j].bonus_type)
             column_count = column_count + 1
             match_index = match_index + 1
-        return column_count
+        return column_count, bonus_type
 
     def get_row_match(self):
         """
@@ -329,13 +311,13 @@ class GemGrid(g.Grid):
         """
         for row in range(self.rows):
             for column in range(self.columns):
-                row_match_count = self.row_match_count(row, column)
+                row_match_count, _ = self.row_match_count(row, column)
                 if row_match_count >= 3:
                     return row, column, row_match_count
 
         return None, None, None
 
-    def get_row_match_2(self):
+    def get_row_match_2(self, swap_locations: list):
         """
         check for matching gems in rows
         :param gemgrid:
@@ -344,13 +326,22 @@ class GemGrid(g.Grid):
         :return:
         """
         matches = []
+        bonuses = []
         for row in range(self.rows):
             column = 0
             while column < self.columns:
-                row_match_count = self.row_match_count(row, column)
+                row_match_count, bonus_type = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    # append matches to dictionary
-                    matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
+                    if bonus_type == 1:
+                        # if bonus of type 1, remove row
+                        for col in range(self.columns):
+                            matches.append(self.get_gem_info(row, col))
+
+                    elif row_match_count == 4:
+                        self.row_match_4_bonus(bonuses, column, matches, row, swap_locations)
+                    else:
+                        # append matches to dictionary
+                        matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
 
                     # add row_match_count to column to avoid duplicates
                     column = column + row_match_count
@@ -359,7 +350,36 @@ class GemGrid(g.Grid):
                     column = column + 1
 
         # return dictionary after looping over all row matches
-        return matches
+        return matches, bonuses
+
+    def row_match_4_bonus(self, bonuses, column, matches, row, swap_locations):
+        """
+        Determines the locations of any bonuses for a match 4
+        :param bonuses:
+        :param column:
+        :param matches:
+        :param row:
+        :param swap_locations:
+        :return:
+        """
+        bonus = None
+        for i in range(column, column + 4):
+            # add swap location to bonus list
+            if (row, i) == swap_locations[0]:
+                bonus = self.get_gem_info(row, i, 1)
+                bonuses.append(bonus)
+            elif (row, i) == swap_locations[1]:
+                bonus = self.get_gem_info(row, i, 1)
+                bonuses.append(bonus)
+            else:
+                # if not swap location, add to match list
+                gem = self.get_gem_info(row, i)
+                matches.append(gem)
+        if bonus is None:
+            # if swap location doesnt match, add first point
+            matches.pop(0)
+            bonus = self.get_gem_info(row, column, 1)
+            bonuses.append(bonus)
 
     def get_column_match(self):
         """
@@ -371,27 +391,36 @@ class GemGrid(g.Grid):
         """
         for column in range(self.columns):
             for row in range(self.rows):
-                column_match_count = self.column_match_count(row, column)
+                column_match_count, _ = self.column_match_count(row, column)
                 if column_match_count >= 3:
                     return row, column, column_match_count
         return None, None, None
 
-    def get_column_match_2(self):
+    def get_column_match_2(self, swap_locations: list):
         """
         check for matching gems in columns
-        :param gemgrid:
-        :param row:
-        :param columns:
+        :param swap_locations:
         :return:
         """
         matches = []
+        bonuses = []
         for column in range(self.columns):
             row = 0
             while row < self.rows:
-                column_match_count = self.column_match_count(row, column)
+                column_match_count, bonus_type = self.column_match_count(row, column)
                 if column_match_count >= 3:
-                    # append matches to dictionary
-                    matches = matches + self.get_coord_list(row, column, 0, column_match_count)
+                    if bonus_type == 1:
+                        # if bonus of type 1, remove column
+                        for r in range(self.rows):
+                            matches.append(self.get_gem_info(r, column))
+
+                    elif column_match_count == 4:
+                        # get bonuses for 4 in a row
+                        self.column_match_4_bonus(bonuses, column, matches, row, swap_locations)
+
+                    else:
+                        # append matches to dictionary
+                        matches = matches + self.get_coord_list(row, column, 0, column_match_count)
 
                     # add column_match_count to column to avoid duplicates
                     row = row + column_match_count
@@ -399,7 +428,37 @@ class GemGrid(g.Grid):
                     row = row + 1
 
         # return dictionary after looping over all row matches
-        return matches
+        return matches, bonuses
+
+    def column_match_4_bonus(self, bonuses, column, matches, row, swap_locations):
+        """
+        Determines location for bonuses and normal matches
+        :param bonuses:
+        :param column:
+        :param matches:
+        :param row:
+        :param swap_locations:
+        :return:
+        """
+
+        bonus = None
+        for i in range(row, row + 4):
+            # add swap location to bonus list
+            if (i, column) == swap_locations[0]:
+                bonus = self.get_gem_info(i, column, 1)
+                bonuses.append(bonus)
+            elif (i, column) == swap_locations[1]:
+                bonus = self.get_gem_info(i, column, 1)
+                bonuses.append(bonus)
+            else:
+                # if not swap location, add to match list
+                gem = self.get_gem_info(i, column)
+                matches.append(gem)
+        if bonus is None:
+            # if swap location doesnt match, add first point
+            matches.pop(0)
+            bonus = self.get_gem_info(row, column, 1)
+            bonuses.append(bonus)
 
     def get_coord_list(self, y_coord: int, x_coord: int, row_matches: int, col_matches: int):
         matches = []
@@ -408,19 +467,22 @@ class GemGrid(g.Grid):
             matches.append((self.get_gem_info(y_coord, column)))
 
         for row in range(y_coord, y_coord + col_matches):
-            # TODO check if this correctly appends a tuple
             matches.append((self.get_gem_info(row, x_coord)))
 
         return matches
 
-    def get_gem_info(self, y_coord: int, x_coord: int):
+    def get_gem_info(self, y_coord: int, x_coord: int, new_bonus=None):
         """
         Return the coordinates of the gem, along with its
         type and bonus type. This information is returned
-        as a dictionary
+        as a tuple. The structure is:
+        (row, column, type, bonus_type)
+        :param new_bonus:
         :param y_coord:
         :param x_coord:
         :return:
         """
-
-        return y_coord, x_coord, self.grid[y_coord][x_coord].type, self.grid[y_coord][x_coord].bonus_type
+        if new_bonus is None:
+            return y_coord, x_coord, self.grid[y_coord][x_coord].type, self.grid[y_coord][x_coord].bonus_type
+        else:
+            return y_coord, x_coord, self.grid[y_coord][x_coord].type, new_bonus

@@ -1,5 +1,3 @@
-from time import time
-
 import gemgrid
 import icegrid
 import medalgrid
@@ -19,7 +17,7 @@ class Board(object):
     def __init__(self, screen, background, rows: int, columns: int, cell_size: int, margin: int):
         self.medal_grid = medalgrid.MedalGrid(screen, rows, columns, cell_size, margin)
         self.ice_grid = icegrid.IceGrid(screen, rows, columns, cell_size, margin)
-        self.gem_grid = gemgrid.GemGrid(screen, rows, columns, cell_size, margin)
+        self.gem_grid = gemgrid.GemGrid(screen, background, rows, columns, cell_size, margin)
         self.screen = screen
         self.background = background
         self.rows = rows
@@ -125,7 +123,7 @@ class Board(object):
                     # remove gems
                     for i in range(row, row + 1):
                         for j in range(column, column + horizontal_match_length):
-                            self.gem_grid.removegem(i, j)
+                            self.gem_grid.remove_gem(i, j)
                             # self.get_gem_group().update()
                             # self.get_gem_group().draw(self.screen)
 
@@ -149,7 +147,7 @@ class Board(object):
                     # remove gems
                     for j in range(column, column + 1):
                         for i in range(row, row + vertical_match_length):
-                            self.gem_grid.removegem(i, j)
+                            self.gem_grid.remove_gem(i, j)
                             # self.get_gem_group().update()
                             # self.get_gem_group().draw(self.screen)
 
@@ -163,43 +161,43 @@ class Board(object):
                 find_verticals = False
         return total_matches, medals_freed
 
-    def find_matches(self):
+    def find_matches(self, swap_locations: list):
         """
         find all the matches and returns a list of
-        tuples where each tuples comprises:
+        matches and where each tuples comprises:
         (row, column, type, bonus_type)
         :return:
         """
 
-        matches = []
+        horizontals, horiz_bonus = self.gem_grid.get_row_match_2(swap_locations)
+        verticals, vert_bonus = self.gem_grid.get_column_match_2(swap_locations)
 
-        matches = matches + self.gem_grid.get_row_match_2()
-        matches = matches + self.gem_grid.get_column_match_2()
-
+        # merge matches and remove duplicates
+        matches = horizontals + verticals
         matches = list(set(matches))
 
-        return matches
+        # merge bonuses
+        bonuses = horiz_bonus + vert_bonus
+        t_match = set(horiz_bonus).intersection(vert_bonus)
 
-    def find_matches(self):
+        if len(t_match) > 0:
+            # If duplicates in list make a T-type bonus
+            bonuses.remove(t_match)
+            for i, j, k, l in t_match:
+                bonuses.append((self.gem_grid.get_gem_info(i, j, 3)))
+
+        return matches, bonuses
+
+    def get_points(self, match_list: list):
         """
-        find all the matches and returns a list of
-        tuples where each tuples comprises:
-        (row, column, type, bonus_type)
+        Takes in match list. Adds points based on
+        the number of gems.
+
+        Future implementation: multipliers for combos
+        :param match_list:
         :return:
         """
-
-        find_match = time()
-        matches = []
-
-        horizontals = self.gem_grid.get_row_match_2()
-        verticals = self.gem_grid.get_column_match_2()
-
-        matches = matches + horizontals + verticals
-
-        matches = list(set(matches))
-
-        print(f'find_matches: {time() - find_match}')
-        return matches
+        return 100 * len(match_list)
 
     def remove_gems(self, match_list: list):
         """
@@ -212,11 +210,44 @@ class Board(object):
         :return:
         """
 
-        board_remove = time()
-        for i, j, k, l in (match_list):
-            self.gem_grid.removegem(i, j)
+        medals_freed = 0
+        for row, column, type, bonus_type in match_list:
 
-        print(f'board_remove: {time() - board_remove}')
+            self.gem_grid.remove_gem(row, column)
+
+            if self.is_ice(row, column):
+                # remove ice if present in cell
+                medals_freed += self.remove_ice(row, column)
+
+        return medals_freed
+
+    def update_bonus(self, bonus_list: list):
+        """
+        A list of bonus gems is passed in.
+
+        The gems are turned into the correct bonus types.
+
+        Ice will also be removed
+        :param bonus_list:
+        :return:
+        """
+        medals_freed = 0
+
+        if len(bonus_list) > 0:
+            for row, column, type, bonus_type in bonus_list:
+
+                # add gem if empty, but why empty?
+                if self.gem_grid.grid[row][column] == 0:
+                    self.gem_grid.add_gem(row, column)
+
+                # update gem to bonus
+                self.gem_grid.grid[row][column].update_bonus_type(bonus_type)
+
+                if self.is_ice(row, column):
+                    # remove ice if present in cell
+                    medals_freed += self.remove_ice(row, column)
+
+        return medals_freed
 
     def pull_gems_down(self):
 
