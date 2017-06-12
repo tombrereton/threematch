@@ -2,9 +2,14 @@
 background image credit:
 Designed by Freepik
 http://www.freepik.com
+Stone background:
+<a href="http://www.freepik.com/free-vector/cartoon-stone-texture_976364.htm">Designed by Freepik</a>
+Ground:
+https://raventale.itch.io/parallax-background
 
 asset credit:
-1001.com
+Gems: 1001.com
+Explosions: www.kenney.nl
 """
 
 import pygame
