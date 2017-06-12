@@ -49,7 +49,7 @@ class Gem(pygame.sprite.Sprite):
 
     def test_gem(self, size: int, type: int):
         self.type = type
-        test_gem = "stones/Stone_0{}_05.png".format(type)
+        test_gem = "stones/Stone_0{}_01.png".format(type)
         self.image, self.rect = util.load_image(test_gem, size)
 
     # Functions to test animations
@@ -101,7 +101,7 @@ class GemGrid(Grid):
         for j in range(0, self.columns):
             for i in range(0, self.rows):
                 gem = Gem(self.gem_size, self.gem_images, self.explosions)
-                gem.test_gem(self.gem_size, (j % 8) + 1)
+                gem.test_gem(self.gem_size, (j % 6) + 1)
                 y = self.margin + self.centering_offset + i * self.cell_size
                 x = self.margin + self.centering_offset + j * self.cell_size
                 gem.set_rect(y, x)

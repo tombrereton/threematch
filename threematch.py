@@ -73,7 +73,6 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         bg.set_game_over_text(True)
         screen.blit(bg.game_over_text, bg.game_over_text_pos)
 
-
     elif event.type == KEYDOWN and event.key == K_ESCAPE:
         # quit
         game_state.stop_going()
@@ -118,7 +117,6 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
         pygame.event.clear()
 
     elif game_state.state == "check_matches":
-        # TODO: return bonus list
         # A valid swap, check for matches
         # if we have more than 3 matches, explode gems
         # else set state to empty
@@ -150,7 +148,7 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             # move made if valid swap
             game_state.move_made()
             game_state.animate_explode(number_of_matches, match_list, bonus_list)
-            
+
             # set gems to explode
             board.explode_gems(match_list)
         else:
@@ -314,7 +312,7 @@ def main():
     # Create FPS clock
     clock = pygame.time.Clock()
 
-    # check for matches
+    # check for matches if not test game
     if not TEST:
         board.check_matches(True)
 
