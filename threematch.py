@@ -10,6 +10,10 @@ https://raventale.itch.io/parallax-background
 asset credit:
 Gems: 1001.com
 Explosions: www.kenney.nl
+
+Pygames:
+http://pygame.org/project-Gemgem+(Bejeweled+clone)-1922-.html
+https://github.com/dgkanatsios/MatchThreeGame
 """
 
 import pygame

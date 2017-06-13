@@ -178,11 +178,11 @@ class Board(object):
 
         # merge bonuses
         bonuses = horiz_bonus + vert_bonus
-        t_match = set(horiz_bonus).intersection(vert_bonus)
+        t_match = list(set(horizontals).intersection(verticals))
 
         if len(t_match) > 0:
             # If duplicates in list make a T-type bonus
-            bonuses.remove(t_match)
+            matches = [value for value in matches if value not in t_match]
             for i, j, k, l in t_match:
                 bonuses.append((self.gem_grid.get_gem_info(i, j, 3)))
 
