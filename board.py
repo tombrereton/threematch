@@ -169,8 +169,8 @@ class Board(object):
         :return:
         """
 
-        horizontals, horiz_bonus = self.gem_grid.get_row_match_2(swap_locations)
-        verticals, vert_bonus = self.gem_grid.get_column_match_2(swap_locations)
+        horizontals, horiz_bonus = self.gem_grid.get_row_match_3(swap_locations)
+        verticals, vert_bonus = self.gem_grid.get_column_match_3(swap_locations)
 
         # merge matches and remove duplicates
         matches = horizontals + verticals
@@ -178,26 +178,32 @@ class Board(object):
 
         # merge bonuses
         bonuses = horiz_bonus + vert_bonus
-        t_match = set(horiz_bonus).intersection(vert_bonus)
+        t_match = list(set(horizontals).intersection(verticals))
 
         if len(t_match) > 0:
+            t_match = [value for value in t_match if value[-1] == 0]
+
             # If duplicates in list make a T-type bonus
-            bonuses.remove(t_match)
+            matches = [value for value in matches if value not in t_match]
             for i, j, k, l in t_match:
                 bonuses.append((self.gem_grid.get_gem_info(i, j, 3)))
 
         return matches, bonuses
 
-    def get_points(self, match_list: list):
+    def get_points(self, match_list: list, bonus_list: list, medals_freed: int, cascade: int):
         """
         Takes in match list. Adds points based on
         the number of gems.
 
         Future implementation: multipliers for combos
         :param match_list:
+        :param bonus_list:
+        :param medals_freed:
+        :param cascade:
         :return:
         """
-        return 100 * len(match_list)
+        bonus_removed = len([0 for y, x, t, bt in match_list if bt is not 0])
+        return 100 * cascade * (len(match_list) + len(bonus_list) + 2 * bonus_removed + 5 * medals_freed)
 
     def remove_gems(self, match_list: list):
         """

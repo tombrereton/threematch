@@ -17,7 +17,7 @@ class Background(object):
         self.explosions = []
         self.font = pygame.font.Font(None, int(24 * HD_SCALE))
         self.game_state = game_state
-        self.background = util.load_background("background.jpg", WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.background = util.load_background("stone_light_2.jpg", "ground.png", WINDOW_WIDTH, WINDOW_HEIGHT)
 
         # initialise text and images
         self.init_text()
@@ -68,3 +68,6 @@ class Background(object):
             fore = f'explosions/explosion/explosion0{i}.png'
             image = util.load_explosion(fore, back, GEM_SIZE)
             self.explosions.append(image)
+
+    # def init_background(self):
+        # self.background = util
