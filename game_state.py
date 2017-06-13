@@ -36,7 +36,7 @@ class GameState(object):
         self.medals_left = medals_left
         self.match_list = []
         self.bonus_list = []
-        self.cascade = 1
+        self.cascade = 0
 
     def user_clicked(self, row: int, column: int):
         self.state = "user_clicked"
@@ -90,17 +90,16 @@ class GameState(object):
         self.matches = matches
         self.match_list = match_list
         self.bonus_list = bonus_list
-        self.cascade = 1
 
     def remove_gems(self):
         self.state = "remove_gems"
+        self.cascade += 1
 
     def animate_pull_down(self):
         self.state = "animate_pull_down"
 
     def animate_pull_down_repeat(self):
         self.state = "animate_pull_down_repeat"
-        self.cascade += 1
 
     def pull_down(self):
         self.state = "pull_down"
@@ -111,6 +110,7 @@ class GameState(object):
         self.column = None
         self.direction = None
         self.matches = 0
+        self.cascade = 0
 
     def stop_going(self):
         self.going = False
