@@ -16,7 +16,7 @@ class Gem(pygame.sprite.Sprite):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
-        self.type = random.randint(0, 5)
+        self.type = random.randint(0, 2)
         self.bonus_type = 0
         self.image_list = image_list
         self.explosions = explosions
@@ -288,12 +288,22 @@ class GemGrid(Grid):
         """
         row_count = 1
         match_index = j + row_count
-        bonus_type = 0
+        used_bonus_list = []
+
+        # add first gem if it is a bonus
+        if self.grid[i][j].bonus_type > 0:
+            used_bonus_list.append((self.get_gem_info(i, j)))
+
+        # check if its a match
         while match_index < self.columns and self.grid[i][j].type == self.grid[i][match_index].type:
-            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[i][match_index].bonus_type)
+
+            # if bonus, add to used bonus list
+            if self.grid[i][match_index].bonus_type > 0:
+                used_bonus_list.append(self.get_gem_info(i, match_index))
+
             row_count = row_count + 1
             match_index = match_index + 1
-        return row_count, bonus_type
+        return row_count, used_bonus_list
 
     def column_match_count(self, i: int, j: int):
         """
@@ -306,12 +316,21 @@ class GemGrid(Grid):
         """
         column_count = 1
         match_index = i + column_count
-        bonus_type = 0
+        used_bonus_list = []
+
+        # add first gem if it is a bonus
+        if self.grid[i][j].bonus_type > 0:
+            used_bonus_list.append((self.get_gem_info(i, j)))
+
         while match_index < self.rows and self.grid[i][j].type == self.grid[match_index][j].type:
-            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[match_index][j].bonus_type)
+
+            # if bonus, add to used bonus list
+            if self.grid[match_index][j].bonus_type > 0:
+                used_bonus_list.append(self.get_gem_info(match_index, j))
+
             column_count = column_count + 1
             match_index = match_index + 1
-        return column_count, bonus_type
+        return column_count, used_bonus_list
 
     def get_row_match(self):
         """
@@ -332,6 +351,7 @@ class GemGrid(Grid):
     def get_row_match_2(self, swap_locations: list):
         """
         check for matching gems in rows
+        :param swap_locations:
         :param gemgrid:
         :param rows:
         :param columns:
@@ -342,12 +362,25 @@ class GemGrid(Grid):
         for row in range(self.rows):
             column = 0
             while column < self.columns:
-                row_match_count, bonus_type = self.row_match_count(row, column)
+                row_match_count, used_bonus_list = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    if bonus_type == 1:
-                        # if bonus of type 1, remove row
-                        for col in range(self.columns):
-                            matches.append(self.get_gem_info(row, col))
+
+                    if len(used_bonus_list) > 0:
+
+                        for r, c, type, bonus_type in used_bonus_list:
+                            if bonus_type == 3:
+                                # append matches to dictionary
+                                matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
+
+                                # diamond bonus, remove 9 surrounding gems
+                                for i in range(r - 1, (r + 2) % self.rows):
+                                    for j in range(c - 1, (c + 2) % self.columns):
+                                        matches.append(self.get_gem_info(i, j))
+
+                            if bonus_type == 1:
+                                # if bonus of type 1, remove row
+                                for col in range(self.columns):
+                                    matches.append(self.get_gem_info(row, col))
 
                     elif row_match_count == 4:
                         self.row_match_4_bonus(bonuses, column, matches, row, swap_locations)
@@ -419,12 +452,26 @@ class GemGrid(Grid):
         for column in range(self.columns):
             row = 0
             while row < self.rows:
-                column_match_count, bonus_type = self.column_match_count(row, column)
+                column_match_count, used_bonus_list = self.column_match_count(row, column)
                 if column_match_count >= 3:
-                    if bonus_type == 1:
-                        # if bonus of type 1, remove column
-                        for r in range(self.rows):
-                            matches.append(self.get_gem_info(r, column))
+
+                    if len(used_bonus_list) > 0:
+
+                        for r, c, type, bonus_type in used_bonus_list:
+
+                            if bonus_type == 3:
+                                # append matches to dictionary
+                                matches = matches + self.get_coord_list(row, column, 0, column_match_count)
+
+                                # diamond bonus, remove 9 surrounding gems
+                                for i in range(r - 1, (r + 2) % self.rows):
+                                    for j in range(c - 1, (c + 2) % self.columns):
+                                        matches.append(self.get_gem_info(i, j))
+
+                            if bonus_type == 1:
+                                # if bonus of type 1, remove column
+                                for r in range(self.rows):
+                                    matches.append(self.get_gem_info(r, column))
 
                     elif column_match_count == 4:
                         # get bonuses for 4 in a row
