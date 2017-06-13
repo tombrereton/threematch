@@ -188,16 +188,20 @@ class Board(object):
 
         return matches, bonuses
 
-    def get_points(self, match_list: list):
+    def get_points(self, match_list: list, bonus_list: list, medals_freed: int, cascade: int):
         """
         Takes in match list. Adds points based on
         the number of gems.
 
         Future implementation: multipliers for combos
         :param match_list:
+        :param bonus_list:
+        :param medals_freed:
+        :param cascade:
         :return:
         """
-        return 100 * len(match_list)
+        bonus_removed = len([0 for y, x, t, bt in match_list if bt is not 0])
+        return 100 * cascade * (len(match_list) + len(bonus_list) + 2 * bonus_removed + 5 * medals_freed)
 
     def remove_gems(self, match_list: list):
         """
