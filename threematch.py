@@ -111,7 +111,7 @@ def check_events(screen: pygame.display, board: b.Board, bg: Background, game_st
             game_state.medal_freed(medals_freed)
 
         # update score
-        points = board.get_points(game_state.match_list)
+        points = board.get_points(game_state.match_list, game_state.bonus_list, medals_freed, game_state.cascade)
         bg.update_score(points)
 
         # Pull the gems downs
