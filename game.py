@@ -186,8 +186,7 @@ class Board:
         self.swapped_gems.append(self.get_gem_info(gem1_row, gem1_col))
         self.swapped_gems.append(self.get_gem_info(gem2_row, gem2_col))
 
-        self.gem_grid.grid[gem1_row][gem1_col], self.gem_grid.grid[gem2_row][gem2_col] = \
-            self.gem_grid.grid[gem2_row][gem2_col], self.gem_grid.grid[gem1_row][gem1_col]
+        self.game_state = "input_received"
 
     def swap_gems(self):
 
@@ -223,12 +222,14 @@ class Board:
         Returns an UpdateBag and processes what action to take.
         :return:
         """
-        update_bag = None
+        update_bag = UpdateBag([], [], [], [], [], [], [])
 
         # if waiting for input, block
+        if self.game_state == "waiting_for_input":
+            return update_bag
 
         # if input received state, return swap movements, make swap, and try to find matches
-        if self.game_state == "input_received":
+        elif self.game_state == "input_received":
 
             # if adjacent swap, continue
             if self.check_swap():
@@ -247,6 +248,7 @@ class Board:
                     self.bonus_list = bonus_list
                     self.ice_removed = ice_list
                     self.medals_removed = medals_list
+                    self.move_made()
                     self.game_state = "matches_found"
                 else:
                     self.swap_gems()
@@ -354,7 +356,7 @@ class Board:
         h, h_from_bonus, h_bonuses = self.find_horizontal_matches()
         v, v_from_bonus, v_bonuses = self.find_vertical_matches()
 
-        # merge lists but not matches from bonuses to avoid
+        # merge all lists but matches from bonuses to avoid
         # lots of T-type bonuses
         matches = h + v
         bonuses = h_bonuses + v_bonuses
@@ -364,7 +366,8 @@ class Board:
 
         if len(t_match) > 0:
 
-            # if gem in t_match and matches, remove it and make it a T-type bonuses
+            # if gem in t_match and matches, remove it from matches
+            # and make it a T-type bonuses
             matches = [gem for gem in matches if gem not in t_match]
             for row, column, gem_type, bonus_type, activation in t_match:
                 bonuses.append(self.get_gem_info(row, column, 3))
@@ -657,37 +660,40 @@ class Board:
     def pull_gems_down(self):
         repeat = False
 
-        grid = self.gem_grid.grid
-        for i in range(self.columns):
-            for j in range(self.rows - 1, 0, -1):
-                if grid[j][i] == 0:
-                    # empty cell, therefore swap j,i with j-1,i
-                    repeat = True
-                    grid[j][i], grid[j - 1][i] = grid[j - 1][i], 0
-                    if grid[j][i] != 0:
-                        y = self.margin + self.centering_offset + j * self.cell_size
-                        x = self.margin + self.centering_offset + i * self.cell_size
-                        grid[j][i].set_target(y, x)
-            if grid[0][i] == 0:
-                gem = self.new_gem()
-                y = self.margin + self.centering_offset - self.cell_size
-                x = self.margin + self.centering_offset + i * self.cell_size
-                gem.init_rect(int(y), int(x))
-                gem.set_target(int(y + self.cell_size), int(x))
-                grid[0][i] = gem
+        # grid = self.gem_grid.grid
+        # for i in range(self.columns):
+        #     for j in range(self.rows - 1, 0, -1):
+        #         if grid[j][i] == 0:
+        #             # empty cell, therefore swap j,i with j-1,i
+        #             repeat = True
+        #             grid[j][i], grid[j - 1][i] = grid[j - 1][i], 0
+        #             if grid[j][i] != 0:
+        #                 y = self.margin + self.centering_offset + j * self.cell_size
+        #                 x = self.margin + self.centering_offset + i * self.cell_size
+        #                 grid[j][i].set_target(y, x)
+        #     if grid[0][i] == 0:
+        #         gem = self.new_gem()
+        #         y = self.margin + self.centering_offset - self.cell_size
+        #         x = self.margin + self.centering_offset + i * self.cell_size
+        #         gem.init_rect(int(y), int(x))
+        #         gem.set_target(int(y + self.cell_size), int(x))
+        #         grid[0][i] = gem
         return repeat
 
+    def move_made(self):
+        self.moves -= 1
+
     def remove_ice(self):
-        pass
+        return []
 
     def remove_medals(self):
-        pass
+        return []
 
     def get_movements(self):
-        pass
+        return []
 
     def get_additions(self):
-        pass
+        return []
 
 
 # ============================================
@@ -710,7 +716,13 @@ def main():
     swap_locations = [(1, 2), (2, 2)]
     b.set_swap_locations(swap_locations)
 
-    print(b.get_update())
+    state = b.get_update()
+    print("State 1:")
+    print(state)
+
+    state2 = b.get_update()
+    print("\nState 2:")
+    print(state2)
 
 
 if __name__ == '__main__':

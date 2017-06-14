@@ -14,17 +14,18 @@ class UpdateBag:
         self.info = info
 
     def __str__(self):
-        print("Matches:")
-        print(self.matches)
-        print("Bonuses:")
-        print(self.bonuses)
-        print("Additions:")
-        print(self.additions)
-        print("Movements:")
-        print(self.movements)
-        print("Ice:")
-        print(self.ice)
-        print("Medals:")
-        print(self.medals)
-        print("Info:")
-        print(self.info)
+        return "Matches:\n" \
+               "{}\n" \
+               "Bonuses:\n" \
+               "{}\n" \
+               "Additions:\n" \
+               "{}\n" \
+               "Movements:\n" \
+               "{}\n" \
+               "Ice:\n" \
+               "{}\n" \
+               "Medals:\n" \
+               "{}\n" \
+               "Info:\n" \
+               "{}".format(self.matches, self.bonuses, self.additions,
+                           self.movements, self.ice, self.medals, self.info)
