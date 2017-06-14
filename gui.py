@@ -510,11 +510,8 @@ class GUI:
         self.draw()
 
     def move(self, moving_gems: list):
-        for y1, x1, y2, x2 in moving_gems:
-            o1 = self.gem_grid.grid[y1][x1].origin
-            o2 = self.gem_grid.grid[y2][x2].origin
-            self.gem_grid.grid[y1][x1].set_target(*o2)
-            self.gem_grid.grid[y2][x2].set_target(*o1)
+        for coord1, coord2 in moving_gems:
+            self.gem_grid.grid[coord1[0]][coord1[1]].set_target(*self.gem_grid.grid_to_pixel(*coord2))
         self.animate_loop()
 
     def change(self, removals: list, bonuses: list, additions: list, moving_gems: list, ice_broken: list, medals_freed: list, text_info: tuple):
@@ -544,7 +541,7 @@ if __name__ == '__main__':
     gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [], [], [], ())
     time.sleep(1)
     gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [], [], [], ())
-    swaps = [(i, j, i, j + 1) for j in range(0, PUZZLE_COLUMNS - 1, 2) for i in range(PUZZLE_ROWS)]
+    swaps = [[(i, j), (i, j + 1)] for j in range(PUZZLE_COLUMNS) for i in range(PUZZLE_ROWS)]
     gui.change([], [], [], swaps, [], [], ())
     time.sleep(1)
     gui.change([], [], [], [], [(i, j, -1) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))], [], ())
