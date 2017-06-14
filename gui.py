@@ -510,8 +510,14 @@ class GUI:
         self.draw()
 
     def move(self, moving_gems: list):
+        temp = []
         for coord1, coord2 in moving_gems:
-            self.gem_grid.grid[coord1[0]][coord1[1]].set_target(*self.gem_grid.grid_to_pixel(*coord2))
+            gem = self.gem_grid.grid[coord1[0]][coord1[1]]
+            self.gem_grid.grid[coord1[0]][coord1[1]] = -1
+            gem.set_target(*self.gem_grid.grid_to_pixel(*coord2))
+            temp.append((coord2, gem))
+        for coord2, gem in temp:
+            self.gem_grid.grid[coord2[0]][coord2[1]] = gem
         self.animate_loop()
 
     def change(self, removals: list, bonuses: list, additions: list, moving_gems: list, ice_broken: list, medals_freed: list, text_info: tuple):
@@ -541,7 +547,15 @@ if __name__ == '__main__':
     gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [], [], [], ())
     time.sleep(1)
     gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [], [], [], ())
-    swaps = [[(i, j), (i, j + 1)] for j in range(PUZZLE_COLUMNS) for i in range(PUZZLE_ROWS)]
+    all = [(i, j) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))]
+    swaps = []
+    while 1 < len(all):
+        ai = random.randrange(len(all))
+        a = all.pop(ai)
+        bi = random.randrange(len(all))
+        b = all.pop(bi)
+        swaps.append([a, b])
+        swaps.append([b, a])
     gui.change([], [], [], swaps, [], [], ())
     time.sleep(1)
     gui.change([], [], [], [], [(i, j, -1) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))], [], ())
