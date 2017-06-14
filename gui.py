@@ -1,32 +1,30 @@
 import pygame
 import random
+import time
 
 from itertools import product
-from background import Background
 from game_state import GameState
 from global_variables import *
 import game_utilities as util
 
-gem_group = pygame.sprite.Group()
-ice_group = pygame.sprite.Group()
-medal_group = pygame.sprite.Group()
 
-
-class Container:
-
-    def __init__(self, **kwargs):
-        self.add(**kwargs)
-
-    def add(self, **kwargs):
-        for k, v in kwargs:
-            self.__dict__[k] = v
+def print_array(a):
+    print('\n'.join(['\t'.join([str(el) for el in row]) for row in a]))
 
 
 def rand():
     gems = [[(random.randrange(5), random.randrange(4), 0) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
     ice = [[random.randrange(2) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
-    medals = [[(random.randrange(5), random.randrange(4)) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
-    return gems, ice, medals
+    medals_small = [[random.randint(-1, 0) for j in range(PUZZLE_COLUMNS // 2)] for i in range(PUZZLE_ROWS // 2)]
+    medals = [[-1] * PUZZLE_COLUMNS for i in range(PUZZLE_ROWS)]
+    for i, j in product(range(len(medals_small)), range(len(medals_small[0]))):
+        medals[2 * i][2 * j] = medals_small[i][j]
+    moves_left = random.randrange(30)
+    medals_left = len([0 for row in medals for el in row if el == 0])
+    score = random.randrange(1000000)
+    terminal = True if random.random() < 2 / 3 else False
+    win = True if random.random() < 1 / 2 else False
+    return gems, ice, medals, (moves_left, medals_left, score, terminal, win)
 
 
 class Grid:
@@ -36,12 +34,12 @@ class Grid:
         self.columns = PUZZLE_COLUMNS
         self.cell_size = CELL_SIZE
         self.margin = MARGIN
-        self.grid = [[0] * self.columns] * (self.rows + 1)
+        self.grid = [[0] * self.columns for i in range(self.rows)]
 
 
 class Gem(pygame.sprite.Sprite):
 
-    def __init__(self, size: int, info: tuple, image_list: list, explosions: list):
+    def __init__(self, size: int, info: tuple, image_list: list, explosions: list, gem_group):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         self.gem_size = size
@@ -78,17 +76,18 @@ class Gem(pygame.sprite.Sprite):
 
 class GemGrid(Grid):
 
-    def __init__(self, gems: list, gem_images: list, explosions: list):
+    def __init__(self, gems: list, gem_images: list, explosions: list, gem_group):
         super().__init__()
         self.gem_images = gem_images
         self.explosions = explosions
         self.centering_offset = 0.05 * self.cell_size
+        self.gem_group = gem_group
         for i in range(PUZZLE_COLUMNS):
             for j in range(PUZZLE_ROWS):
                 self.add_gem(i, j, gems[i][j])
 
     def add_gem(self, y_coord: int, x_coord: int, info: tuple):
-        gem = Gem(0.9 * CELL_SIZE, info, self.gem_images, self.explosions)
+        gem = Gem(0.9 * CELL_SIZE, info, self.gem_images, self.explosions, self.gem_group)
         x = self.margin + self.centering_offset + x_coord * self.cell_size
         y = self.margin + self.centering_offset + y_coord * self.cell_size
         gem.init_rect(y, x)
@@ -96,7 +95,7 @@ class GemGrid(Grid):
 
 
 class Ice(pygame.sprite.Sprite):
-    def __init__(self, size: int, layer: int):
+    def __init__(self, size: int, layer: int, ice_group):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, ice_group)
         self.layer = 3
@@ -106,8 +105,9 @@ class Ice(pygame.sprite.Sprite):
 
 class IceGrid(Grid):
 
-    def __init__(self, ice: list):
+    def __init__(self, ice: list, ice_group):
         super().__init__()
+        self.ice_group = ice_group
         for i in range(PUZZLE_COLUMNS):
             for j in range(PUZZLE_ROWS):
                 self.add_ice(i, j, ice[i][j])
@@ -116,7 +116,7 @@ class IceGrid(Grid):
         if layer is 0:
             ice = 0
         else:
-            ice = Ice(self.cell_size, layer)
+            ice = Ice(self.cell_size, layer, self.ice_group)
             x = self.margin + x_coord * self.cell_size
             y = self.margin + y_coord * self.cell_size
             ice.rect.left = x
@@ -126,8 +126,8 @@ class IceGrid(Grid):
 
 class Medal(pygame.sprite.Sprite):
 
-    def __init__(self, cell_size: int):
-        super().__init__(self, medal_group)
+    def __init__(self, cell_size: int, medal_group):
+        pygame.sprite.Sprite.__init__(self, medal_group)
         self.medal_file = "tiles/medal_02_01.png"
         self.medal_size = cell_size * 2
         self.image, self.rect = util.load_image(self.medal_file, self.medal_size)
@@ -135,39 +135,114 @@ class Medal(pygame.sprite.Sprite):
 
 class MedalGrid(Grid):
 
-    def __init__(self, medals: list):
+    def __init__(self, medals: list, medal_group):
         super().__init__()
+        self.medal_group = medal_group
         for i in range(PUZZLE_COLUMNS):
             for j in range(PUZZLE_ROWS):
                 self.add_medal(i, j, medals[i][j])
 
-    def add_medal(self, y_coord: int, x_coord: int, info: tuple):
-        medal = Medal(self.cell_size)
-        x = int(self.margin + x_coord * self.cell_size)
-        y = int(self.margin + y_coord * self.cell_size)
-        medal.rect.left = x
-        medal.rect.top = y
-        self.sprites[medal_id] = medal
+    def add_medal(self, y_coord: int, x_coord: int, portion: int):
+        if portion is 0:
+            medal = Medal(self.cell_size, self.medal_group)
+            x = int(self.margin + x_coord * self.cell_size)
+            y = int(self.margin + y_coord * self.cell_size)
+            medal.rect.left = x
+            medal.rect.top = y
+            self.grid[y_coord][x_coord] = medal
+
+
+class Background:
+
+    def __init__(self, moves_left: int, medals_left: int, score: int, terminal: bool, win: bool):
+        self.font = pygame.font.Font(None, int(24 * HD_SCALE))
+        self.game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
+        self.moves_left = 0
+        self.moves_left_text = None
+        self.medals_left = 0
+        self.medals_left_text = None
+        self.score = 0
+        self.score_text = None
+        self.game_over_text = None
+        self.game_over_text_pos = None
+        self.background = util.load_background("stone_light_2.jpg", "ground.png", WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.gem_images = []
+        self.explosions = []
+        self.init_gem_images()
+        self.init_explosions()
+        self.set_all(moves_left, medals_left, score, terminal, win)
+
+    def set_all(self, moves_left: int, medals_left: int, score: int, terminal: bool, win: bool):
+        self.set_moves_left(moves_left)
+        self.set_medals_left(medals_left)
+        self.set_score(score)
+        self.set_game_over_text(terminal, win)
+
+    def set_moves_left(self, moves_left: int):
+        self.moves_left = moves_left
+        self.moves_left_text = self.font.render("Moves Left: {}".format(self.moves_left), 1, (10, 10, 10))
+
+    def set_medals_left(self, medals_left: int):
+        self.medals_left = medals_left
+        self.medals_left_text = self.font.render("Medals Left: {}".format(self.medals_left), 1, (10, 10, 10))
+
+    def set_score(self, score: int):
+        self.score = score
+        self.score_text = self.font.render('Score: {:03.0f}'.format(self.score), 1, (10, 10, 10))
+
+    def set_game_over_text(self, terminal: bool, win: bool):
+        text = ('You Win!' if win else 'Game Over') if terminal else ''
+        self.game_over_text = self.game_over_font.render(text, 1, (10, 10, 10))
+        self.game_over_text_pos = self.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+
+    def init_gem_images(self):
+        for i in range(1, 5):
+            type_list = []
+            for j in range(1, 7):
+                name = f'stones/Stone_0{j}_0{i}.png'
+                image = util.load_image_only(name, GEM_SIZE)
+                type_list.append(image)
+            self.gem_images.append(type_list)
+
+    def init_explosions(self):
+        for i in range(EXPLOSION_FRAMES):
+            back = f'explosions/black_smoke/blackSmoke0{i}.png'
+            fore = f'explosions/explosion/explosion0{i}.png'
+            image = util.load_explosion(fore, back, GEM_SIZE)
+            self.explosions.append(image)
+
 
 class GUI:
 
-    def __init__(self, gems, ice, medals):
+    def __init__(self, gems: list, ice, medals: list, text_info: tuple):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('Gem Island')
-        game_state = GameState(MOVES_LEFT, LEVEL_1_TOTAL_MEDALS)
-        self.bg = Background(game_state)
+        self.bg = Background(*text_info)
+        self.gem_group = pygame.sprite.Group()
+        self.gem_grid = GemGrid(gems, self.bg.gem_images, self.bg.explosions, self.gem_group)
+        self.ice_group = pygame.sprite.Group()
+        self.ice_grid = IceGrid(ice, self.ice_group)
+        self.medal_group = pygame.sprite.Group()
+        self.medal_grid = MedalGrid(medals, self.medal_group)
+        self.draw()
+
+    def draw(self):
         self.screen.blit(self.bg.background, (0, 0))
-        self.gem_grid = GemGrid(gems, self.bg.gem_images, self.bg.explosions)
-        self.ice_grid = IceGrid(ice)
-        # self.medal_grid = MedalGrid(medals)
-        # pygame.display.flip()
-        ice_group.draw(self.screen)
-        gem_group.draw(self.screen)
+        self.screen.blit(self.bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
+        self.screen.blit(self.bg.medals_left_text, (10, WINDOW_HEIGHT - MARGIN * 7 / 6))
+        self.screen.blit(self.bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+        self.medal_group.draw(self.screen)
+        self.ice_group.draw(self.screen)
+        self.gem_group.draw(self.screen)
+        self.screen.blit(self.bg.game_over_text, self.bg.game_over_text_pos)
         pygame.display.flip()
-        print('done')
-        while True:
-            pass
+
+    def update(self):
+        pass
 
 if __name__ == '__main__':
-    GUI(*rand())
+    gui = GUI(*rand())
+    time.sleep(4)
+    # gui.update()
+    # time.sleep(4)
