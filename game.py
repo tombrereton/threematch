@@ -297,12 +297,14 @@ class Board:
             else:
                 # if false, check for matches
                 # find matches
-                match_list, bonus_list = self.find_matches()
+                match_list, bonus_list, ice_list, medals_list = self.find_matches()
                 match_count = len(match_list)
 
                 if match_count >= 3:
                     self.match_list = match_list
                     self.bonus_list = bonus_list
+                    self.ice_removed = ice_list
+                    self.medals_removed = medals_list
                     self.game_state = "matches_found"
                 else:
                     # no more matches, then wait for user input
