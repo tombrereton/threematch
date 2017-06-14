@@ -12,6 +12,14 @@ def print_array(a):
     print('\n'.join(['\t'.join([str(el) for el in row]) for row in a]))
 
 
+def rand_text(medals = None):
+    moves_left = random.randrange(30)
+    medals_left = random.randrange(10) if medals is None else len([0 for row in medals for el in row if el == 0])
+    score = random.randrange(1000000)
+    terminal = True if random.random() < 2 / 3 else False
+    win = True if random.random() < 1 / 2 else False
+    return moves_left, medals_left, score, terminal, win
+
 def rand():
     gems = [[(random.randrange(5), random.randrange(1), 0) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
     ice = [[random.randint(-1, 1) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
@@ -19,12 +27,7 @@ def rand():
     medals = [[-1] * PUZZLE_COLUMNS for i in range(PUZZLE_ROWS)]
     for i, j in product(range(len(medals_small)), range(len(medals_small[0]))):
         medals[2 * i][2 * j] = medals_small[i][j]
-    moves_left = random.randrange(30)
-    medals_left = len([0 for row in medals for el in row if el == 0])
-    score = random.randrange(1000000)
-    terminal = True if random.random() < 2 / 3 else False
-    win = True if random.random() < 1 / 2 else False
-    return gems, ice, medals, (moves_left, medals_left, score, terminal, win)
+    return gems, ice, medals, rand_text(medals)
 
 
 def grid_to_pixel(y_coord: int, x_coord: int):
@@ -329,6 +332,11 @@ class GUI:
                     self.ice_grid.grid[i][j].update_image(layer)
         self.draw()
 
+    def remove_medals(self, medals_freed: list):
+        for i, j, _ in medals_freed:
+            self.medal_grid.remove(i, j)
+        self.draw()
+
     def add_bonuses(self, bonuses: list):
         for i, j, _, bt, _ in bonuses:
             self.gem_grid.grid[i][j].update_bonus_type(bt)
@@ -356,9 +364,13 @@ class GUI:
             self.gem_grid.grid[y2][x2].set_target(*o1)
         self.animate_loop()
 
-    def change(self, removals: list, bonuses: list, additions: list, moving_gems: list, ice_broken: list):
+    def change(self, removals: list, bonuses: list, additions: list, moving_gems: list, ice_broken: list, medals_freed: list, text_info: tuple):
+        if len(text_info) is not 0:
+            self.bg.set_all(*text_info)
+        self.draw()
         self.explode(removals)
         self.break_ice(ice_broken)
+        self.remove_medals(medals_freed)
         self.add_bonuses(bonuses)
         self.remove(removals)
         self.add(additions)
@@ -370,16 +382,20 @@ if __name__ == '__main__':
     for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
         time.sleep(1)
         if j % 2 is 0:
-            gui.change([(i, j, 0, 0, 0)], [], [], [], []) # remove
+            gui.change([(i, j, 0, 0, 0)], [], [], [], [], [], ()) # remove
         else:
-            gui.change([], [(i, j, 0, random.randint(1, 3), 0)], [], [], []) # bonus
+            gui.change([], [(i, j, 0, random.randint(1, 3), 0)], [], [], [], [], ()) # bonus
     '''
     time.sleep(1)
-    gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [], [])
+    gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [], [], [], ())
     time.sleep(1)
-    gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [], [])
+    gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [], [], [], ())
     swaps = [(i, j, i, j + 1) for j in range(0, PUZZLE_COLUMNS - 1, 2) for i in range(PUZZLE_ROWS)]
-    gui.change([], [], [], swaps, [])
+    gui.change([], [], [], swaps, [], [], ())
     time.sleep(1)
-    gui.change([], [], [], [], [(i, j, 0) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))])
-    time.sleep(10)
+    gui.change([], [], [], [], [(i, j, -1) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))], [], ())
+    time.sleep(1)
+    gui.change([], [], [], [], [], [(i, j, 0) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))], ())
+    time.sleep(1)
+    gui.change([], [], [], [], [], [], rand_text())
+    time.sleep(1)
