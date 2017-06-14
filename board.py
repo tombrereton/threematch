@@ -169,8 +169,8 @@ class Board(object):
         :return:
         """
 
-        horizontals, horiz_bonus = self.gem_grid.get_row_match_2(swap_locations)
-        verticals, vert_bonus = self.gem_grid.get_column_match_2(swap_locations)
+        horizontals, horiz_bonus = self.gem_grid.get_row_match_3(swap_locations)
+        verticals, vert_bonus = self.gem_grid.get_column_match_3(swap_locations)
 
         # merge matches and remove duplicates
         matches = horizontals + verticals
@@ -181,6 +181,8 @@ class Board(object):
         t_match = list(set(horizontals).intersection(verticals))
 
         if len(t_match) > 0:
+            t_match = [value for value in t_match if value[-1] == 0]
+
             # If duplicates in list make a T-type bonus
             matches = [value for value in matches if value not in t_match]
             for i, j, k, l in t_match:
