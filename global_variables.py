@@ -13,7 +13,7 @@ BONUS_TYPES = 3
 ICE_ROWS = 5
 
 # GUI variables
-HD_SCALE = 1.5  # Scale for changing the number of pixels
+HD_SCALE = 1 # Scale for changing the number of pixels
 CELL_SIZE = int(30 * HD_SCALE)  # Width of each shape (pixels).
 GEM_SIZE = int(0.9 * CELL_SIZE)
 MARGIN = int(70 * HD_SCALE)  # Margin around the board (pixels).

@@ -14,7 +14,7 @@ def print_array(a):
 
 def rand():
     gems = [[(random.randrange(5), random.randrange(4), 0) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
-    ice = [[random.randrange(2) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
+    ice = [[random.randint(-1, 1) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
     medals_small = [[random.randint(-1, 0) for j in range(PUZZLE_COLUMNS // 2)] for i in range(PUZZLE_ROWS // 2)]
     medals = [[-1] * PUZZLE_COLUMNS for i in range(PUZZLE_ROWS)]
     for i, j in product(range(len(medals_small)), range(len(medals_small[0]))):
@@ -27,14 +27,33 @@ def rand():
     return gems, ice, medals, (moves_left, medals_left, score, terminal, win)
 
 
-class Grid:
+def grid_to_pixel(y_coord: int, x_coord: int):
+    y = MARGIN + y_coord * CELL_SIZE
+    x = MARGIN + x_coord * CELL_SIZE
+    return y, x
 
-    def __init__(self):
+
+class SpriteGrid:
+
+    def __init__(self, info: list, group):
         self.rows = PUZZLE_ROWS
         self.columns = PUZZLE_COLUMNS
         self.cell_size = CELL_SIZE
         self.margin = MARGIN
-        self.grid = [[0] * self.columns for i in range(self.rows)]
+        self.grid = [[-1] * self.columns for i in range(self.rows)]
+        self.group = group
+        self.new_grid(info)
+
+    def new_grid(self, info: list):
+        self.group.empty()
+        for i, j in product(range(PUZZLE_COLUMNS), range(PUZZLE_ROWS)):
+            self.add(i, j, info[i][j])
+
+    def add(self, y_coord: int, x_coord: int, info):
+        raise NotImplementedError("Need to be implemented in sub class.")
+
+    def remove(self, y_coord: int, x_coord: int):
+        raise NotImplementedError("Need to be implemented in sub class.")
 
 
 class Gem(pygame.sprite.Sprite):
@@ -74,54 +93,56 @@ class Gem(pygame.sprite.Sprite):
         self.origin = (y, x)
 
 
-class GemGrid(Grid):
+class GemGrid(SpriteGrid):
 
-    def __init__(self, gems: list, gem_images: list, explosions: list, gem_group):
-        super().__init__()
+    def __init__(self, gems: list, gem_images: list, explosions: list, group):
         self.gem_images = gem_images
         self.explosions = explosions
-        self.centering_offset = 0.05 * self.cell_size
-        self.gem_group = gem_group
-        for i in range(PUZZLE_COLUMNS):
-            for j in range(PUZZLE_ROWS):
-                self.add_gem(i, j, gems[i][j])
+        self.centering_offset = 0.05 * CELL_SIZE
+        super().__init__(gems, group)
 
-    def add_gem(self, y_coord: int, x_coord: int, info: tuple):
-        gem = Gem(0.9 * CELL_SIZE, info, self.gem_images, self.explosions, self.gem_group)
-        x = self.margin + self.centering_offset + x_coord * self.cell_size
-        y = self.margin + self.centering_offset + y_coord * self.cell_size
+    def add(self, y_coord: int, x_coord: int, info: tuple):
+        gem = Gem(0.9 * CELL_SIZE, info, self.gem_images, self.explosions, self.group)
+        y, x = grid_to_pixel(y_coord, x_coord)
+        y += self.centering_offset
+        x += self.centering_offset
         gem.init_rect(y, x)
         self.grid[y_coord][x_coord] = gem
+
+    def remove(self, y_coord: int, x_coord: int):
+        gem = self.grid[y_coord][x_coord]
+        if gem is not -1:
+            self.group.remove(gem)
+            self.grid[y_coord][x_coord] = -1
 
 
 class Ice(pygame.sprite.Sprite):
     def __init__(self, size: int, layer: int, ice_group):
         # call super constructor
         pygame.sprite.Sprite.__init__(self, ice_group)
-        self.layer = 3
+        self.layer = layer
         self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
         self.image, self.rect = util.load_image(self.ice_layer, size)
 
 
-class IceGrid(Grid):
+class IceGrid(SpriteGrid):
 
-    def __init__(self, ice: list, ice_group):
-        super().__init__()
-        self.ice_group = ice_group
-        for i in range(PUZZLE_COLUMNS):
-            for j in range(PUZZLE_ROWS):
-                self.add_ice(i, j, ice[i][j])
+    def __init__(self, ice: list, group):
+        super().__init__(ice, group)
 
-    def add_ice(self, y_coord: int, x_coord: int, layer: int):
-        if layer is 0:
-            ice = 0
-        else:
-            ice = Ice(self.cell_size, layer, self.ice_group)
-            x = self.margin + x_coord * self.cell_size
-            y = self.margin + y_coord * self.cell_size
+    def add(self, y_coord: int, x_coord: int, layer: int):
+        if layer is not -1:
+            ice = Ice(self.cell_size, layer, self.group)
+            y, x = grid_to_pixel(y_coord, x_coord)
             ice.rect.left = x
             ice.rect.top = y
-        self.grid[y_coord][x_coord] = ice
+            self.grid[y_coord][x_coord] = ice
+
+    def remove(self, y_coord: int, x_coord: int):
+        ice = self.grid[y_coord][x_coord]
+        if ice is not -1:
+            self.group.remove(ice)
+            self.grid[y_coord][x_coord] = -1
 
 
 class Medal(pygame.sprite.Sprite):
@@ -133,23 +154,24 @@ class Medal(pygame.sprite.Sprite):
         self.image, self.rect = util.load_image(self.medal_file, self.medal_size)
 
 
-class MedalGrid(Grid):
+class MedalGrid(SpriteGrid):
 
-    def __init__(self, medals: list, medal_group):
-        super().__init__()
-        self.medal_group = medal_group
-        for i in range(PUZZLE_COLUMNS):
-            for j in range(PUZZLE_ROWS):
-                self.add_medal(i, j, medals[i][j])
+    def __init__(self, medals: list, group):
+        super().__init__(medals, group)
 
-    def add_medal(self, y_coord: int, x_coord: int, portion: int):
+    def add(self, y_coord: int, x_coord: int, portion: int):
         if portion is 0:
-            medal = Medal(self.cell_size, self.medal_group)
-            x = int(self.margin + x_coord * self.cell_size)
-            y = int(self.margin + y_coord * self.cell_size)
+            medal = Medal(self.cell_size, self.group)
+            y, x = grid_to_pixel(y_coord, x_coord)
             medal.rect.left = x
             medal.rect.top = y
             self.grid[y_coord][x_coord] = medal
+
+    def remove(self, y_coord: int, x_coord: int):
+        medal = self.grid[y_coord][x_coord]
+        if medal is not -1:
+            self.group.remove(medal)
+            self.grid[y_coord][x_coord] = -1
 
 
 class Background:
@@ -227,6 +249,13 @@ class GUI:
         self.medal_grid = MedalGrid(medals, self.medal_group)
         self.draw()
 
+    def new_state(self, gems: list, ice, medals: list, text_info: tuple):
+        self.gem_grid.new_grid(gems)
+        self.ice_grid.new_grid(ice)
+        self.medal_grid.new_grid(medals)
+        self.bg.set_all(*text_info)
+        self.draw()
+
     def draw(self):
         self.screen.blit(self.bg.background, (0, 0))
         self.screen.blit(self.bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
@@ -243,6 +272,7 @@ class GUI:
 
 if __name__ == '__main__':
     gui = GUI(*rand())
-    time.sleep(4)
-    # gui.update()
-    # time.sleep(4)
+    print(len(gui.gem_group))
+    while True:
+        time.sleep(1)
+        gui.new_state(*rand())
