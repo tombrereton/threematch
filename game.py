@@ -268,11 +268,13 @@ class Board:
             update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
 
             # remove gems in grid that are in matches_list
+            self.remove_gems()
 
             # pull gems down
+            _ = self.pull_gems_down()
 
             # enter pulled down state
-            self.game_state == "pulled_down"
+            self.game_state = "pulled_down"
 
         # if pulled down state, return additions, movements, etc, then try to pull down again
         elif self.game_state == "pulled_down":
@@ -283,22 +285,24 @@ class Board:
             update_bag = UpdateBag([], [], additions, movements, [], [], info)
 
             # check for more pull downs
+            more_pull_downs = self.pull_gems_down()
 
-            # if true, game state still pulled down
-            self.game_state == "pulled_down"
-
-            # if false, check for matches
-            # find matches
-            match_list, bonus_list = self.find_matches()
-            match_count = len(match_list)
-
-            if match_count >= 3:
-                self.match_list = match_list
-                self.bonus_list = bonus_list
-                self.game_state = "matches_found"
+            if more_pull_downs:
+                # if true, game state still pulled down
+                self.game_state = "pulled_down"
             else:
-                # no more matches, then wait for user input
-                self.game_state = "waiting_for_input"
+                # if false, check for matches
+                # find matches
+                match_list, bonus_list = self.find_matches()
+                match_count = len(match_list)
+
+                if match_count >= 3:
+                    self.match_list = match_list
+                    self.bonus_list = bonus_list
+                    self.game_state = "matches_found"
+                else:
+                    # no more matches, then wait for user input
+                    self.game_state = "waiting_for_input"
 
         return update_bag
 
@@ -628,6 +632,48 @@ class Board:
             bonus_list.append(bonus_gem)
 
         return temp_matches, bonus_list
+
+    def remove_gems(self):
+        """
+        This loops over the gems in the match_list and
+        removes them all from the grid.
+        :return:
+        """
+
+        for row, column, gem_type, bonus_type, activation in self.match_list:
+            self.gem_grid.grid[row][column] = -1
+
+    def pull_gems_down(self):
+        repeat = False
+
+        grid = self.gem_grid.grid
+        for i in range(self.columns):
+            for j in range(self.rows - 1, 0, -1):
+                if grid[j][i] == 0:
+                    # empty cell, therefore swap j,i with j-1,i
+                    repeat = True
+                    grid[j][i], grid[j - 1][i] = grid[j - 1][i], 0
+                    if grid[j][i] != 0:
+                        y = self.margin + self.centering_offset + j * self.cell_size
+                        x = self.margin + self.centering_offset + i * self.cell_size
+                        grid[j][i].set_target(y, x)
+            if grid[0][i] == 0:
+                gem = self.new_gem()
+                y = self.margin + self.centering_offset - self.cell_size
+                x = self.margin + self.centering_offset + i * self.cell_size
+                gem.init_rect(int(y), int(x))
+                gem.set_target(int(y + self.cell_size), int(x))
+                grid[0][i] = gem
+        return repeat
+
+    def remove_ice(self):
+        pass
+
+    def remove_medals(self):
+        pass
+
+    def get_movements(self):
+        pass
 
 
 # ============================================
