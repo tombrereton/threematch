@@ -1,3 +1,4 @@
+import itertools
 import random
 
 import pygame
@@ -288,12 +289,14 @@ class GemGrid(Grid):
         """
         row_count = 1
         match_index = j + row_count
-        bonus_type = 0
+        match_list = [self.get_gem_info(i, j)]
+
+        # check if its a match
         while match_index < self.columns and self.grid[i][j].type == self.grid[i][match_index].type:
-            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[i][match_index].bonus_type)
+            match_list.append(self.get_gem_info(i, match_index))
             row_count = row_count + 1
             match_index = match_index + 1
-        return row_count, bonus_type
+        return match_list
 
     def column_match_count(self, i: int, j: int):
         """
@@ -306,12 +309,13 @@ class GemGrid(Grid):
         """
         column_count = 1
         match_index = i + column_count
-        bonus_type = 0
+        match_list = [self.get_gem_info(i, j)]
+
         while match_index < self.rows and self.grid[i][j].type == self.grid[match_index][j].type:
-            bonus_type = max(bonus_type, self.grid[i][j].bonus_type, self.grid[match_index][j].bonus_type)
+            match_list.append(self.get_gem_info(match_index, j))
             column_count = column_count + 1
             match_index = match_index + 1
-        return column_count, bonus_type
+        return match_list
 
     def get_row_match(self):
         """
@@ -323,7 +327,8 @@ class GemGrid(Grid):
         """
         for row in range(self.rows):
             for column in range(self.columns):
-                row_match_count, _ = self.row_match_count(row, column)
+                match_list = self.row_match_count(row, column)
+                row_match_count = len(match_list)
                 if row_match_count >= 3:
                     return row, column, row_match_count
 
@@ -332,6 +337,7 @@ class GemGrid(Grid):
     def get_row_match_2(self, swap_locations: list):
         """
         check for matching gems in rows
+        :param swap_locations:
         :param gemgrid:
         :param rows:
         :param columns:
@@ -342,27 +348,148 @@ class GemGrid(Grid):
         for row in range(self.rows):
             column = 0
             while column < self.columns:
-                row_match_count, bonus_type = self.row_match_count(row, column)
+                row_match_count, used_bonus_list = self.row_match_count(row, column)
                 if row_match_count >= 3:
-                    if bonus_type == 1:
-                        # if bonus of type 1, remove row
-                        for col in range(self.columns):
-                            matches.append(self.get_gem_info(row, col))
 
+                    if len(used_bonus_list) > 0:
+                        column_skip_1 = 0
+                        column_skip_3 = 0
+
+                        for r, c, type, bonus_type in used_bonus_list:
+                            if bonus_type == 3:
+                                # append matches to dictionary
+                                matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
+
+                                # diamond bonus, remove 9 surrounding gems
+                                self.remove_surrounding_gems(c, matches, r)
+
+                                # remove duplicates
+                                matches = list(set(matches))
+
+                                # add max of row match count or last gem exploded from bonus
+                                column_skip_3 = column + max(row_match_count, min(c + 2, self.columns))
+
+                            if bonus_type == 1:
+                                # if bonus of type 1, remove row
+                                for col in range(self.columns):
+                                    matches.append(self.get_gem_info(row, col))
+
+                                # entire row removed, skip matches on current row.
+                                column_skip_1 = self.columns
+
+                        column = max(column_skip_1, column_skip_3)
                     elif row_match_count == 4:
                         self.row_match_4_bonus(bonuses, column, matches, row, swap_locations)
+
+                        # add row_match_count to column to avoid duplicates
+                        column = column + row_match_count
                     else:
                         # append matches to dictionary
                         matches = matches + (self.get_coord_list(row, column, row_match_count, 0))
 
-                    # add row_match_count to column to avoid duplicates
-                    column = column + row_match_count
+                        # add row_match_count to column to avoid duplicates
+                        column = column + row_match_count
 
                 else:
                     column = column + 1
 
         # return dictionary after looping over all row matches
         return matches, bonuses
+
+    def get_row_match_3(self, swap_locations: list):
+        """
+        check for matching gems in rows
+        :param swap_locations:
+        :param gemgrid:
+        :param rows:
+        :param columns:
+        :return:
+        """
+        matches = []
+        bonuses = []
+
+        # get all matches
+        for row in range(self.rows):
+            column = 0
+            while column < self.columns:
+                temp_matches = self.row_match_count(row, column)
+
+                match_count = len(temp_matches)
+
+                # if length of match list is 5, create bonus type 2
+                if match_count == 5:
+                    temp_matches, temp_bonuses = self.get_bonus(row, column, temp_matches, swap_locations, 2)
+                    matches += temp_matches
+                    bonuses += temp_bonuses
+
+                # if length of match list is 4, create bonus type 1
+                elif match_count == 4:
+                    temp_matches, temp_bonuses = self.get_bonus(row, column, temp_matches, swap_locations, 1)
+                    matches += temp_matches
+                    bonuses += temp_bonuses
+
+                # if length of match list >= 3, add temp matches to matches
+                elif match_count >= 3:
+                    matches += temp_matches
+
+                # add length of matches to column
+                column += len(temp_matches)
+
+        # loop over matches to check for bonuses and perform bonus action
+        matches_from_bonus = []
+        for row, column, gem_type, bonus_type in matches:
+            if bonus_type == 1:
+                # add row to matches at row
+                for j in range(self.columns):
+                    matches_from_bonus.append(self.get_gem_info(row, j))
+
+            if bonus_type == 2:
+                # add all gems of this gems type to matches
+                for i, j in itertools.product(range(self.rows), range(self.columns)):
+                    if self.grid[i][j].type == gem_type:
+                        matches_from_bonus.append(self.get_gem_info(i, j))
+
+            if bonus_type == 3:
+                # add 9 surrounding gems of this gem
+                row_max = min(row + 2, self.rows)
+                row_min = max(row - 1, 0)
+                col_max = min(column + 2, self.columns)
+                col_min = max(column - 1, 0)
+                for i, j in itertools.product(range(row_min, row_max), range(col_min, col_max)):
+                    matches_from_bonus.append(self.get_gem_info(i, j))
+
+        # add matches from bonuses
+        matches = matches + matches_from_bonus
+
+        # remove duplicates
+        matches = list(set(matches))
+
+        # return dictionary after looping over all row matches
+        return matches, bonuses
+
+    def get_bonus(self, row, column, temp_matches, swap_locations, bonus_type):
+        bonuses = []
+        reduced_temp_matches = [(row, column) for row, column, t, bt in temp_matches]
+
+        # create bonus at swap location otherwise at the first location of the match
+        if swap_locations[0] in reduced_temp_matches:
+            i, j = swap_locations[0]
+            temp_matches.remove(self.get_gem_info(i, j))
+            bonuses.append(self.get_gem_info(i, j, bonus_type))
+        elif swap_locations[1] in reduced_temp_matches:
+            i, j = swap_locations[1]
+            temp_matches.remove(self.get_gem_info(i, j))
+            bonuses.append(self.get_gem_info(i, j, bonus_type))
+        else:
+            temp_matches.remove(self.get_gem_info(row, column))
+            bonuses.append(self.get_gem_info(row, column, bonus_type))
+
+        return temp_matches, bonuses
+
+    def remove_surrounding_gems(self, c, matches, r):
+        for i in range(max(r - 1, 0), min(r + 2, self.rows)):
+            for j in range(max(c - 1, 0), min(c + 2, self.columns)):
+                matches.append(self.get_gem_info(i, j))
 
     def row_match_4_bonus(self, bonuses, column, matches, row, swap_locations):
         """
@@ -403,7 +530,8 @@ class GemGrid(Grid):
         """
         for column in range(self.columns):
             for row in range(self.rows):
-                column_match_count, _ = self.column_match_count(row, column)
+                match_list = self.column_match_count(row, column)
+                column_match_count = len(match_list)
                 if column_match_count >= 3:
                     return row, column, column_match_count
         return None, None, None
@@ -419,25 +547,120 @@ class GemGrid(Grid):
         for column in range(self.columns):
             row = 0
             while row < self.rows:
-                column_match_count, bonus_type = self.column_match_count(row, column)
+                column_match_count, used_bonus_list = self.column_match_count(row, column)
                 if column_match_count >= 3:
-                    if bonus_type == 1:
-                        # if bonus of type 1, remove column
-                        for r in range(self.rows):
-                            matches.append(self.get_gem_info(r, column))
+
+                    if len(used_bonus_list) > 0:
+                        row_skip_3 = 0
+                        row_skip_1 = 0
+
+                        for r, c, type, bonus_type in used_bonus_list:
+
+                            if bonus_type == 3:
+                                # append matches to dictionary
+                                matches = matches + self.get_coord_list(row, column, 0, column_match_count)
+
+                                # diamond bonus, remove 9 surrounding gems
+                                self.remove_surrounding_gems(c, matches, r)
+
+                                # remove duplicates
+                                matches = list(set(matches))
+
+                                # add max of column match count or last gem exploded
+                                row_skip_3 = row + max(column_match_count, min(r + 2, self.rows))
+
+                            if bonus_type == 1:
+                                # if bonus of type 1, remove column
+                                for r in range(self.rows):
+                                    matches.append(self.get_gem_info(r, column))
+
+                                # entire column removed, skip matches on current column
+                                row_skip_1 = self.rows
+
+                        row = max(row_skip_1, row_skip_3)
 
                     elif column_match_count == 4:
                         # get bonuses for 4 in a row
                         self.column_match_4_bonus(bonuses, column, matches, row, swap_locations)
 
+                        # add column_match_count to column to avoid duplicates
+                        row = row + column_match_count
                     else:
                         # append matches to dictionary
                         matches = matches + self.get_coord_list(row, column, 0, column_match_count)
 
-                    # add column_match_count to column to avoid duplicates
-                    row = row + column_match_count
+                        # add column_match_count to column to avoid duplicates
+                        row = row + column_match_count
                 else:
                     row = row + 1
+
+        # return dictionary after looping over all row matches
+        return matches, bonuses
+
+    def get_column_match_3(self, swap_locations: list):
+        """
+        check for matching gems in columns
+        :param swap_locations:
+        :return:
+        """
+        matches = []
+        bonuses = []
+
+        # get all matches
+        for column in range(self.columns):
+            row = 0
+            while row < self.rows:
+                temp_matches = self.column_match_count(row, column)
+
+                match_count = len(temp_matches)
+
+                # if length of match list is 5, create bonus type 2
+                if match_count == 5:
+                    temp_matches, temp_bonuses = self.get_bonus(row, column, temp_matches, swap_locations, 2)
+                    matches += temp_matches
+                    bonuses += temp_bonuses
+
+                # if length of match list is 4, create bonus type 1
+                elif match_count == 4:
+                    temp_matches, temp_bonuses = self.get_bonus(row, column, temp_matches, swap_locations, 1)
+                    matches += temp_matches
+                    bonuses += temp_bonuses
+
+                # if length of match list >= 3, add temp matches to matches
+                elif match_count >= 3:
+                    matches += temp_matches
+
+                # add length of matches to column
+                row += len(temp_matches)
+
+        # loop over matches to check for bonuses and perform bonus action
+        matches_from_bonus = []
+        for row, column, gem_type, bonus_type in matches:
+            if bonus_type == 1:
+                # add row to matches at row
+                for i in range(self.rows):
+                    matches_from_bonus.append(self.get_gem_info(i, column))
+
+            elif bonus_type == 2:
+                # add all gems of this gems type to matches
+                for i, j in itertools.product(range(self.rows), range(self.columns)):
+                    if self.grid[i][j].type == gem_type:
+                        matches_from_bonus.append(self.get_gem_info(i, j))
+
+            elif bonus_type == 3:
+                # add 9 surrounding gems of this gem
+                row_max = min(row + 2, self.rows)
+                row_min = max(row - 1, 0)
+                col_max = min(column + 2, self.columns)
+                col_min = max(column - 1, 0)
+                for i, j in itertools.product(range(row_min, row_max), range(col_min, col_max)):
+                    matches_from_bonus.append(self.get_gem_info(i, j))
+
+        # add matches from bonuses
+        matches = matches + matches_from_bonus
+
+        # remove duplicates
+        matches = list(set(matches))
 
         # return dictionary after looping over all row matches
         return matches, bonuses
