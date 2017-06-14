@@ -1,18 +1,18 @@
 import pygame
 import random
 import time
-
-from itertools import product
-from game_state import GameState
-from global_variables import *
 import game_utilities as util
+from itertools import product
+from global_variables import *
 
+
+# Functions for testing
 
 def print_array(a):
     print('\n'.join(['\t'.join([str(el) for el in row]) for row in a]))
 
 
-def rand_text(medals = None):
+def rand_text(medals=None):
     moves_left = random.randrange(30)
     medals_left = random.randrange(10) if medals is None else len([0 for row in medals for el in row if el == 0])
     score = random.randrange(1000000)
@@ -20,52 +20,104 @@ def rand_text(medals = None):
     win = True if random.random() < 1 / 2 else False
     return moves_left, medals_left, score, terminal, win
 
+
 def rand():
-    gems = [[(random.randrange(5), random.randrange(1), 0) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
-    ice = [[random.randint(-1, 1) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
-    medals_small = [[random.randint(-1, 0) for j in range(PUZZLE_COLUMNS // 2)] for i in range(PUZZLE_ROWS // 2)]
-    medals = [[-1] * PUZZLE_COLUMNS for i in range(PUZZLE_ROWS)]
+    gems = [[(random.randrange(5), random.randrange(1), 0) for _ in range(PUZZLE_COLUMNS)] for _ in range(PUZZLE_ROWS)]
+    ice = [[random.randint(-1, 1) for _ in range(PUZZLE_COLUMNS)] for _ in range(PUZZLE_ROWS)]
+    medals_small = [[random.randint(-1, 0) for _ in range(PUZZLE_COLUMNS // 2)] for _ in range(PUZZLE_ROWS // 2)]
+    medals = [[-1] * PUZZLE_COLUMNS for _ in range(PUZZLE_ROWS)]
     for i, j in product(range(len(medals_small)), range(len(medals_small[0]))):
         medals[2 * i][2 * j] = medals_small[i][j]
     return gems, ice, medals, rand_text(medals)
 
 
-def grid_to_pixel(y_coord: int, x_coord: int):
-    y = MARGIN + y_coord * CELL_SIZE
-    x = MARGIN + x_coord * CELL_SIZE
-    return y, x
-
-
 class SpriteGrid:
+    """
+    Abstract class to hold a grid of sprites.
+    """
 
-    def __init__(self, info: list, group):
-        self.rows = PUZZLE_ROWS
-        self.columns = PUZZLE_COLUMNS
-        self.cell_size = CELL_SIZE
-        self.margin = MARGIN
-        self.grid = [[-1] * self.columns for i in range(self.rows)]
+    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, group, info: list):
+        """
+        Constructor for the SpriteGrid class.
+        :param rows: Number of rows in the game
+        :param columns: Number of columns in the game
+        :param cell_size: Size of each cell in pixels
+        :param margin: Size of the margin in pixels
+        :param group: Group that sprites in this grid should go in
+        :param info: Information about sprites to be held in grid
+        """
+        # Set field variables
+        self.rows = rows
+        self.columns = columns
+        self.cell_size = cell_size
+        self.margin = margin
         self.group = group
+        # Create blank grid of the correct size
+        self.grid = [[-1] * self.columns for _ in range(self.rows)]
+        # Populate grid with sprites
         self.new_grid(info)
 
     def new_grid(self, info: list):
+        """
+        Method to fill grid with sprites.
+        :param info: Information about sprites to be held in grid
+        :return: None
+        """
+        # Remove old sprites from group (if any)
         self.group.empty()
-        for i, j in product(range(PUZZLE_COLUMNS), range(PUZZLE_ROWS)):
+        # Add sprites
+        for i, j in product(range(self.columns), range(self.rows)):
             self.add(i, j, info[i][j])
 
     def add(self, y_coord: int, x_coord: int, info):
+        """
+        Abstract method to add a sprite to the grid.
+        :param y_coord: Y coordinate to add sprite at
+        :param x_coord: X coordinate to add sprite at
+        :param info: Information about sprite
+        :return: None
+        """
         raise NotImplementedError("Need to be implemented in sub class.")
 
     def remove(self, y_coord: int, x_coord: int):
-        raise NotImplementedError("Need to be implemented in sub class.")
+        """
+        Removes a sprite from the grid.
+        :param y_coord: Y coordinate to remove sprite from
+        :param x_coord: X coordinate to remove sprite from
+        :return: None
+        """
+        # Get the sprite from the grid
+        sprite = self.grid[y_coord][x_coord]
+        # Check if there was a sprite there
+        if sprite is not -1:
+            # If so remove from sprite group...
+            self.group.remove(sprite)
+            # ... and remove from grid
+            self.grid[y_coord][x_coord] = -1
+
+    def grid_to_pixel(self, y_coord: int, x_coord: int):
+        """
+        Method to calculate coordinates in pixels from grid coordinates.
+        :param y_coord: Grid y coordinate
+        :param x_coord: Grid x coordinate
+        :return: A tuple of the pixel coordinates (y, x)
+        """
+        y = self.margin + y_coord * self.cell_size
+        x = self.margin + x_coord * self.cell_size
+        return y, x
 
 
 class Gem(pygame.sprite.Sprite):
+    """
+    Class for the gem sprites.
+    """
 
-    def __init__(self, size: int, info: tuple, image_list: list, explosions: list, gem_group):
-        # call super constructor
+    def __init__(self, size: int, gem_info: tuple, image_list: list, explosions: list, gem_group):
+        # Call to super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
+        # Set field variables
         self.gem_size = size
-        self.type, self.bonus_type, self.activation = info
+        self.type, self.bonus_type, self.activation = gem_info
         self.image_list = image_list
         self.explosions = explosions
         self.explosion_step = 0
@@ -116,8 +168,8 @@ class Gem(pygame.sprite.Sprite):
 
     def move(self):
         self.i += 1
-        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (ANIMATION_SCALE))
-        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (ANIMATION_SCALE))
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / ANIMATION_SCALE)
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / ANIMATION_SCALE)
         self.rect.top = y
         self.rect.left = x
         if self.i == ANIMATION_SCALE:
@@ -126,89 +178,190 @@ class Gem(pygame.sprite.Sprite):
 
 
 class GemGrid(SpriteGrid):
+    """
+    Class to hold a grid of gem sprites.
+    """
 
-    def __init__(self, gems: list, gem_images: list, explosions: list, group):
+    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, gem_images: list, explosions: list, group, gems: list):
+        """
+        Constructor for the GemGrid class.
+        :param rows: Number of rows in the game
+        :param columns: Number of columns in the game
+        :param cell_size: Size of each cell in pixels
+        :param margin: Size of the margin in pixels
+        :param gem_images: Matrix of gem images
+        :param explosions: List of explosion images
+        :param group: Group that gem sprites should go in
+        :param gems: Information about gem sprites to be held in grid
+        """
+        # Set field variables
         self.gem_images = gem_images
         self.explosions = explosions
-        self.centering_offset = 0.05 * CELL_SIZE
-        super().__init__(gems, group)
+        self.gem_size = int(0.9 * cell_size)
+        self.centering_offset = int(0.05 * cell_size)
+        # Call to super constructor
+        super().__init__(rows, columns, cell_size, margin, group, gems)
 
-    def add(self, y_coord: int, x_coord: int, info: tuple):
-        gem = Gem(0.9 * CELL_SIZE, info, self.gem_images, self.explosions, self.group)
-        y, x = grid_to_pixel(y_coord, x_coord)
-        y += self.centering_offset
-        x += self.centering_offset
+    def add(self, y_coord: int, x_coord: int, gem_info: tuple):
+        """
+        Method to add a gem sprite to the grid.
+        Implements method required by the superclass.
+        :param y_coord: Y coordinate to add gem sprite at
+        :param x_coord: X coordinate to add gem sprite at
+        :param gem_info: Information about gem sprite (type, bonus_type, activated)
+        :return: None
+        """
+        # Create Gem sprite
+        gem = Gem(self.gem_size, gem_info, self.gem_images, self.explosions, self.group)
+        # Calculate pixel coordinates it should go at
+        y, x = self.grid_to_pixel(y_coord, x_coord)
+        # Set correct coordinates
         gem.init_rect(y, x)
+        # Add to gem grid
         self.grid[y_coord][x_coord] = gem
 
-    def remove(self, y_coord: int, x_coord: int):
-        gem = self.grid[y_coord][x_coord]
-        if gem is not -1:
-            self.group.remove(gem)
-            self.grid[y_coord][x_coord] = -1
+    def grid_to_pixel(self, y_coord: int, x_coord: int):
+        """
+        Method to calculate coordinates in pixels from grid coordinates.
+        Overrides method from superclass to offset gems into cells.
+        :param y_coord: Grid y coordinate
+        :param x_coord: Grid x coordinate
+        :return: A tuple of the pixel coordinates (y, x)
+        """
+        y, x = super().grid_to_pixel(y_coord, x_coord)
+        y += self.centering_offset
+        x += self.centering_offset
+        return y, x
 
 
 class Ice(pygame.sprite.Sprite):
+    """
+    Class for the ice sprites
+    """
+
     def __init__(self, size: int, layer: int, ice_group):
-        # call super constructor
+        """
+        Constructor for the class.
+        :param size: Size of the ice sprite
+        :param layer: Layers of ice, 0 is thinnest ice
+        :param ice_group: Group to put this sprite in
+        """
+        # Call to super constructor
         pygame.sprite.Sprite.__init__(self, ice_group)
+        # Set field variables
         self.layer = layer
         self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
         self.image, self.rect = util.load_image(self.ice_layer, size)
 
     def update_image(self, layer: int):
+        """
+        Method to update this sprites image
+        :param layer: New value for how many layers of ice, 0 is thinnest ice
+        :return: None
+        """
         self.layer = layer
         self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
         self.image, _ = util.load_image(self.ice_layer, CELL_SIZE)
 
 
 class IceGrid(SpriteGrid):
+    """
+    Class to hold a grid of ice sprites.
+    """
 
-    def __init__(self, ice: list, group):
-        super().__init__(ice, group)
+    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, group, ice: list):
+        """
+        Constructor for IceGrid class.
+        :param rows: Number of rows in the game
+        :param columns: Number of columns in the game
+        :param cell_size: Size of each cell in pixels
+        :param margin: Size of the margin in pixels
+        :param group: Group that ice sprites should go in
+        :param ice: Information about ice sprites to be held in grid
+        """
+        # Call to super constructor
+        super().__init__(rows, columns, cell_size, margin, group, ice)
 
     def add(self, y_coord: int, x_coord: int, layer: int):
+        """
+        Method to add a ice sprite to the grid.
+        Implements method required by the superclass.
+        :param y_coord: Y coordinate to add ice sprite at
+        :param x_coord: X coordinate to add ice sprite at
+        :param layer: Layers of ice, 0 is thinnest
+        :return: None
+        """
+        # Check there is meant to be ice at this location
         if layer is not -1:
+            # Create Ice sprite
             ice = Ice(self.cell_size, layer, self.group)
-            y, x = grid_to_pixel(y_coord, x_coord)
+            # Calculate pixel coordinates it should go at
+            y, x = self.grid_to_pixel(y_coord, x_coord)
+            # Set correct coordinates
             ice.rect.left = x
             ice.rect.top = y
+            # Add to ice grid
             self.grid[y_coord][x_coord] = ice
-
-    def remove(self, y_coord: int, x_coord: int):
-        ice = self.grid[y_coord][x_coord]
-        if ice is not -1:
-            self.group.remove(ice)
-            self.grid[y_coord][x_coord] = -1
 
 
 class Medal(pygame.sprite.Sprite):
+    """
+    Class for the medal sprites.
+    """
 
-    def __init__(self, cell_size: int, medal_group):
+    def __init__(self, size: int, medal_group):
+        """
+        Constructor for the Medal class.
+        :param size: Size of the medal
+        :param medal_group: Group to put this sprite in
+        """
+        # Call to super constructor
         pygame.sprite.Sprite.__init__(self, medal_group)
+        # Set field variables
         self.medal_file = "tiles/medal_02_01.png"
-        self.medal_size = cell_size * 2
-        self.image, self.rect = util.load_image(self.medal_file, self.medal_size)
+        self.image, self.rect = util.load_image(self.medal_file, size)
 
 
 class MedalGrid(SpriteGrid):
+    """
+    Class to hold a grid of medal sprites
+    """
 
-    def __init__(self, medals: list, group):
-        super().__init__(medals, group)
+    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, group, medals: list):
+        """
+        Constructor for the MedalGrid class.
+        :param rows: Number of rows in the game
+        :param columns: Number of columns in the game
+        :param cell_size: Size of each cell in pixels
+        :param margin: Size of the margin in pixels
+        :param group: Group that medal sprites should go in
+        :param medals: Information about medal sprites to be held in grid
+        """
+        # Set field variables
+        self.medal_size = 2 * cell_size
+        # Call to super constructor
+        super().__init__(rows, columns, cell_size, margin, group, medals)
 
     def add(self, y_coord: int, x_coord: int, portion: int):
+        """
+        Method to add a medal sprite to the grid.
+        Implements method required by the superclass.
+        :param y_coord: Y coordinate to add medal sprite at
+        :param x_coord: X coordinate to add medal sprite at
+        :param portion: Portion of the medal, -1 for not a medal, [0, 4) for a medal
+        :return: None
+        """
+        # Check this is the top left of the medal
         if portion is 0:
-            medal = Medal(self.cell_size, self.group)
-            y, x = grid_to_pixel(y_coord, x_coord)
+            # Create Medal sprite
+            medal = Medal(self.medal_size, self.group)
+            # Calculate pixel coordinates it should go at
+            y, x = self.grid_to_pixel(y_coord, x_coord)
+            # Set correct coordinates
             medal.rect.left = x
             medal.rect.top = y
+            # Add to medal grid
             self.grid[y_coord][x_coord] = medal
-
-    def remove(self, y_coord: int, x_coord: int):
-        medal = self.grid[y_coord][x_coord]
-        if medal is not -1:
-            self.group.remove(medal)
-            self.grid[y_coord][x_coord] = -1
 
 
 class Background:
@@ -279,11 +432,11 @@ class GUI:
         pygame.display.set_caption('Gem Island')
         self.bg = Background(*text_info)
         self.gem_group = pygame.sprite.Group()
-        self.gem_grid = GemGrid(gems, self.bg.gem_images, self.bg.explosions, self.gem_group)
+        self.gem_grid = GemGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.bg.gem_images, self.bg.explosions, self.gem_group, gems)
         self.ice_group = pygame.sprite.Group()
-        self.ice_grid = IceGrid(ice, self.ice_group)
+        self.ice_grid = IceGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.ice_group, ice)
         self.medal_group = pygame.sprite.Group()
-        self.medal_grid = MedalGrid(medals, self.medal_group)
+        self.medal_grid = MedalGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.medal_group, medals)
         self.draw()
 
     def new_state(self, gems: list, ice, medals: list, text_info: tuple):
@@ -376,6 +529,7 @@ class GUI:
         self.add(additions)
         self.move(moving_gems)
 
+# Testing
 if __name__ == '__main__':
     gui = GUI(*rand())
     '''
