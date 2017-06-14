@@ -153,6 +153,11 @@ class Ice(pygame.sprite.Sprite):
         self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
         self.image, self.rect = util.load_image(self.ice_layer, size)
 
+    def update_image(self, layer: int):
+        self.layer = layer
+        self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
+        self.image, _ = util.load_image(self.ice_layer, CELL_SIZE)
+
 
 class IceGrid(SpriteGrid):
 
@@ -313,6 +318,17 @@ class GUI:
             self.gem_grid.grid[i][j].is_exploding = True
         self.animate_loop()
 
+    def break_ice(self, ice_broken: list):
+        for i, j, layer in ice_broken:
+            if layer is -1:
+                self.ice_grid.remove(i, j)
+            else:
+                if self.ice_grid.grid[i][j] is -1:
+                    self.ice_grid.add(i, j, layer)
+                else:
+                    self.ice_grid.grid[i][j].update_image(layer)
+        self.draw()
+
     def add_bonuses(self, bonuses: list):
         for i, j, _, bt, _ in bonuses:
             self.gem_grid.grid[i][j].update_bonus_type(bt)
@@ -340,8 +356,9 @@ class GUI:
             self.gem_grid.grid[y2][x2].set_target(*o1)
         self.animate_loop()
 
-    def change(self, removals: list, bonuses: list, additions: list, moving_gems: list):
+    def change(self, removals: list, bonuses: list, additions: list, moving_gems: list, ice_broken: list):
         self.explode(removals)
+        self.break_ice(ice_broken)
         self.add_bonuses(bonuses)
         self.remove(removals)
         self.add(additions)
@@ -353,14 +370,16 @@ if __name__ == '__main__':
     for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
         time.sleep(1)
         if j % 2 is 0:
-            gui.change([(i, j, 0, 0, 0)], [], [], []) # remove
+            gui.change([(i, j, 0, 0, 0)], [], [], [], []) # remove
         else:
-            gui.change([], [(i, j, 0, random.randint(1, 3), 0)], [], []) # bonus
+            gui.change([], [(i, j, 0, random.randint(1, 3), 0)], [], [], []) # bonus
     '''
     time.sleep(1)
-    gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [])
+    gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [], [])
     time.sleep(1)
-    gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [])
+    gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [], [])
     swaps = [(i, j, i, j + 1) for j in range(0, PUZZLE_COLUMNS - 1, 2) for i in range(PUZZLE_ROWS)]
-    gui.change([], [], [], swaps)
+    gui.change([], [], [], swaps, [])
     time.sleep(1)
+    gui.change([], [], [], [], [(i, j, 0) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))])
+    time.sleep(10)
