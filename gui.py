@@ -13,7 +13,7 @@ def print_array(a):
 
 
 def rand():
-    gems = [[(random.randrange(5), random.randrange(4), 0) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
+    gems = [[(random.randrange(5), random.randrange(1), 0) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
     ice = [[random.randint(-1, 1) for j in range(PUZZLE_COLUMNS)] for i in range(PUZZLE_ROWS)]
     medals_small = [[random.randint(-1, 0) for j in range(PUZZLE_COLUMNS // 2)] for i in range(PUZZLE_ROWS // 2)]
     medals = [[-1] * PUZZLE_COLUMNS for i in range(PUZZLE_ROWS)]
@@ -91,6 +91,35 @@ class Gem(pygame.sprite.Sprite):
 
     def set_origin(self, y: int, x: int):
         self.origin = (y, x)
+
+    def update(self):
+        if self.origin != self.target:
+            # move gem
+            self.move()
+
+        elif self.is_exploding:
+            # explode gem
+            self.explode()
+
+    def explode(self):
+        """
+        if about to be removed, explode gem first
+        :return:
+        """
+        self.image = self.explosions[self.explosion_step]
+        self.explosion_step += 1
+        if self.explosion_step > EXPLOSION_FRAMES - 1:
+            self.is_exploding = False
+
+    def move(self):
+        self.i += 1
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / (ANIMATION_SCALE))
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / (ANIMATION_SCALE))
+        self.rect.top = y
+        self.rect.left = x
+        if self.i == ANIMATION_SCALE:
+            self.i = 0
+            self.origin = self.target
 
 
 class GemGrid(SpriteGrid):
@@ -267,12 +296,71 @@ class GUI:
         self.screen.blit(self.bg.game_over_text, self.bg.game_over_text_pos)
         pygame.display.flip()
 
-    def update(self):
-        pass
+    def animate_loop(self):
+        for i in range(ANIMATION_SCALE):
+            # loop the number of times we need to animate given
+            # by ANIMATION_SCALE
+
+            # Call the update method on the sprites
+            self.gem_group.update()
+            self.ice_group.update()
+            self.medal_group.update()
+
+            self.draw()
+
+    def explode(self, removals: list):
+        for i, j, _, _, _ in removals:
+            self.gem_grid.grid[i][j].is_exploding = True
+        self.animate_loop()
+
+    def add_bonuses(self, bonuses: list):
+        for i, j, _, bt, _ in bonuses:
+            self.gem_grid.grid[i][j].update_bonus_type(bt)
+        self.draw()
+
+    def remove(self, removals: list):
+        for i, j, _, _, _ in removals:
+            self.gem_grid.remove(i, j)
+        self.draw()
+
+    def add(self, additions: list):
+        for gem in additions:
+            self.gem_grid.add(*gem[:2], gem[2:])
+            rect = self.gem_grid.grid[gem[0]][gem[1]].rect
+            y, x = rect.y - CELL_SIZE, rect.x
+            self.gem_grid.grid[gem[0]][gem[1]].set_rect(y, x)
+            self.gem_grid.grid[gem[0]][gem[1]].set_origin(y, x)
+        self.draw()
+
+    def move(self, moving_gems: list):
+        for y1, x1, y2, x2 in moving_gems:
+            o1 = self.gem_grid.grid[y1][x1].origin
+            o2 = self.gem_grid.grid[y2][x2].origin
+            self.gem_grid.grid[y1][x1].set_target(*o2)
+            self.gem_grid.grid[y2][x2].set_target(*o1)
+        self.animate_loop()
+
+    def change(self, removals: list, bonuses: list, additions: list, moving_gems: list):
+        self.explode(removals)
+        self.add_bonuses(bonuses)
+        self.remove(removals)
+        self.add(additions)
+        self.move(moving_gems)
 
 if __name__ == '__main__':
     gui = GUI(*rand())
-    print(len(gui.gem_group))
-    while True:
+    '''
+    for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
         time.sleep(1)
-        gui.new_state(*rand())
+        if j % 2 is 0:
+            gui.change([(i, j, 0, 0, 0)], [], [], []) # remove
+        else:
+            gui.change([], [(i, j, 0, random.randint(1, 3), 0)], [], []) # bonus
+    '''
+    time.sleep(1)
+    gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [])
+    time.sleep(1)
+    gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [])
+    swaps = [(i, j, i, j + 1) for j in range(0, PUZZLE_COLUMNS - 1, 2) for i in range(PUZZLE_ROWS)]
+    gui.change([], [], [], swaps)
+    time.sleep(1)
