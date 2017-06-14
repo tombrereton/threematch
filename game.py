@@ -68,6 +68,8 @@ class Board:
         self.swapped_gems = [(), ()]
         self.match_list = []
         self.bonus_list = []
+        self.ice_removed = []
+        self.medals_removed = []
 
     def new_gem(self):
         """
@@ -237,12 +239,14 @@ class Board:
                 self.swap_gems()
 
                 # find matches
-                match_list, bonus_list = self.find_matches()
+                match_list, bonus_list, ice_list, medals_list = self.find_matches()
                 match_count = len(match_list)
 
                 if match_count >= 3:
                     self.match_list = match_list
                     self.bonus_list = bonus_list
+                    self.ice_removed = ice_list
+                    self.medals_removed = medals_list
                     self.game_state = "matches_found"
                 else:
                     self.swap_gems()
@@ -262,8 +266,8 @@ class Board:
         elif self.game_state == "matches_found":
             match_list = self.match_list
             bonus_list = self.bonus_list
-            ice = []
-            medals = []
+            ice = self.ice_removed
+            medals = self.medals_removed
             info = self.get_game_info()
             update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
 
@@ -278,8 +282,8 @@ class Board:
 
         # if pulled down state, return additions, movements, etc, then try to pull down again
         elif self.game_state == "pulled_down":
-            additions = []
-            movements = []
+            additions = self.get_additions()
+            movements = self.get_movements()
             info = self.get_game_info()
 
             update_bag = UpdateBag([], [], additions, movements, [], [], info)
@@ -341,6 +345,8 @@ class Board:
 
         If the vertical and horizontal matches intersect, create
         a bonus of type 3.
+
+        # TODO: try to remove ice and medals
         :return:
         """
         h, h_from_bonus, h_bonuses = self.find_horizontal_matches()
@@ -368,7 +374,10 @@ class Board:
         matches.sort(key=itemgetter(0, 1))
         bonuses.sort(key=itemgetter(0, 1))
 
-        return matches, bonuses
+        ice_removed = self.remove_ice()
+        medals_removed = self.remove_medals()
+
+        return matches, bonuses, ice_removed, medals_removed
 
     def find_horizontal_matches(self):
         """
@@ -673,6 +682,9 @@ class Board:
         pass
 
     def get_movements(self):
+        pass
+
+    def get_additions(self):
         pass
 
 
