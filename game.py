@@ -7,6 +7,7 @@ from random import randint, choice
 
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
     MOVES_LEFT
+from update_bag import UpdateBag
 
 
 class Grid:
@@ -53,6 +54,10 @@ class Board:
         self.moves = moves
         self.gem_types = gem_types
         self.bonus_types = bonus_types
+        self.score = 0
+        self.terminal_state = False
+        self.win_state = False
+        self.game_state = "empty"
 
         # initialise grids
         self.init_gem_grid()
@@ -61,6 +66,8 @@ class Board:
 
         # helper variables
         self.swapped_gems = [(), ()]
+        self.match_list = []
+        self.bonus_list = []
 
     def new_gem(self):
         """
@@ -156,13 +163,15 @@ class Board:
             for j in range(2):
                 self.medal_grid.grid[row + i][column + j] = j + 2 * i
 
-    def swap_gems(self, swap_locations: list):
+    def set_swap_locations(self, swap_locations: list):
         """
         A list containing the swapped gems is passed in. The
         list is in the format:
 
         [(gem1_row, gem1_col),(gem2_row, gem2_col)]
 
+        It sets the swapped gems which is in the format:
+        [(row, column, type, bonus_type, activation),(same again)]
         :param swap_locations:
         :return:
         """
@@ -175,17 +184,152 @@ class Board:
         self.swapped_gems.append(self.get_gem_info(gem1_row, gem1_col))
         self.swapped_gems.append(self.get_gem_info(gem2_row, gem2_col))
 
+        self.gem_grid.grid[gem1_row][gem1_col], self.gem_grid.grid[gem2_row][gem2_col] = \
+            self.gem_grid.grid[gem2_row][gem2_col], self.gem_grid.grid[gem1_row][gem1_col]
 
+    def swap_gems(self):
 
-    def get_swapped_gems(self):
+        gem1_row = self.swapped_gems[0][0]
+        gem1_col = self.swapped_gems[0][1]
+        gem2_row = self.swapped_gems[1][0]
+        gem2_col = self.swapped_gems[1][1]
+
+        self.gem_grid.grid[gem1_row][gem1_col], self.gem_grid.grid[gem2_row][gem2_col] = \
+            self.gem_grid.grid[gem2_row][gem2_col], self.gem_grid.grid[gem1_row][gem1_col]
+
+    def get_swap_movement(self):
         """
-        Simple getter to get the list of swapped gems.
+        Returns a list of lists which represents movement.
 
-        This returns the gems to be swapped, i.e.
-        they are in their original position.
+        The first inner list is the original positions,
+        the second inner list is the new position.
         :return:
         """
-        return self.swapped_gems
+        original = self.swapped_gems
+        new = [self.swapped_gems[1], self.swapped_gems[0]]
+        return [original, new]
+
+    def get_game_info(self):
+        """
+        Simple getter to get game information
+        :return:
+        """
+        return self.moves, self.medals, self.score, self.terminal_state, self.win_state
+
+    def get_update(self):
+        """
+        Returns an UpdateBag and processes what action to take.
+        :return:
+        """
+        update_bag = None
+
+        # if waiting for input, block
+
+        # if input received state, return swap movements, make swap, and try to find matches
+        if self.game_state == "input_received":
+
+            # if adjacent swap, continue
+            if self.check_swap():
+                info = self.get_game_info()
+                movements = self.get_swap_movement()
+                update_bag = UpdateBag([], [], [], movements, [], [], info)
+
+                self.swap_gems()
+
+                # find matches
+                match_list, bonus_list = self.find_matches()
+                match_count = len(match_list)
+
+                if match_count >= 3:
+                    self.match_list = match_list
+                    self.bonus_list = bonus_list
+                    self.game_state = "matches_found"
+                else:
+                    self.swap_gems()
+                    self.game_state = "not_valid_swap"
+
+            else:
+                # swap locations not adjacent
+                self.game_state = "waiting_for_input"
+
+        # if not valid swap state, return inverse swap movement
+        elif self.game_state == "not_valid_swap":
+            info = self.get_game_info()
+            movements = self.get_swap_movement()
+            update_bag = UpdateBag([], [], [], movements, [], [], info)
+
+        # if matches found state, return matches, bonuses, etc, then pull gems down
+        elif self.game_state == "matches_found":
+            match_list = self.match_list
+            bonus_list = self.bonus_list
+            ice = []
+            medals = []
+            info = self.get_game_info()
+            update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
+
+            # remove gems in grid that are in matches_list
+
+            # pull gems down
+
+            # enter pulled down state
+            self.game_state == "pulled_down"
+
+        # if pulled down state, return additions, movements, etc, then try to pull down again
+        elif self.game_state == "pulled_down":
+            additions = []
+            movements = []
+            info = self.get_game_info()
+
+            update_bag = UpdateBag([], [], additions, movements, [], [], info)
+
+            # check for more pull downs
+
+            # if true, game state still pulled down
+            self.game_state == "pulled_down"
+
+            # if false, check for matches
+            # find matches
+            match_list, bonus_list = self.find_matches()
+            match_count = len(match_list)
+
+            if match_count >= 3:
+                self.match_list = match_list
+                self.bonus_list = bonus_list
+                self.game_state = "matches_found"
+            else:
+                # no more matches, then wait for user input
+                self.game_state = "waiting_for_input"
+
+        return update_bag
+
+    def check_swap(self):
+        """
+        return true if swap locations are adjacent, false if not
+        :return:
+        """
+        row1 = self.swapped_gems[0][0]
+        column1 = self.swapped_gems[0][1]
+        row2 = self.swapped_gems[1][0]
+        column2 = self.swapped_gems[1][1]
+
+        if row2 == row1 - 1 and column2 == column1:
+            # swap up
+            return True
+
+        elif row2 == row1 + 1 and column2 == column1:
+            # swap down
+            return True
+
+        elif row2 == row1 and column2 == column1 + 1:
+            # swap right
+            return True
+
+        elif row2 == row1 and column2 == column1 - 1:
+            # swap left
+            return True
+
+        else:
+            return False
 
     def find_matches(self):
         """
@@ -504,15 +648,9 @@ def main():
     print_grid(b.gem_grid.grid)
 
     swap_locations = [(1, 2), (2, 2)]
-    b.swap_gems(swap_locations)
-    print("Swapped gems:")
-    print(b.get_swapped_gems())
+    b.set_swap_locations(swap_locations)
 
-    matches, bonuses = b.find_matches()
-    print("Matches")
-    print(matches)
-    print("Bonuses")
-    print(bonuses)
+    print(b.get_update())
 
 
 if __name__ == '__main__':

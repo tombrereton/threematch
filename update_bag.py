@@ -12,3 +12,19 @@ class UpdateBag:
         self.ice = ice
         self.medals = medals
         self.info = info
+
+    def __str__(self):
+        print("Matches:")
+        print(self.matches)
+        print("Bonuses:")
+        print(self.bonuses)
+        print("Additions:")
+        print(self.additions)
+        print("Movements:")
+        print(self.movements)
+        print("Ice:")
+        print(self.ice)
+        print("Medals:")
+        print(self.medals)
+        print("Info:")
+        print(self.info)
