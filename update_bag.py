@@ -29,3 +29,14 @@ class UpdateBag:
                "Info:\n" \
                "{}".format(self.matches, self.bonuses, self.additions,
                            self.movements, self.ice, self.medals, self.info)
+
+    def is_empty(self):
+        """
+        Return true if all attributes are empty lists.
+        :return:
+        """
+        if self.matches == [] and self.bonuses == [] and self.additions == [] \
+                and self.movements == [] and self.ice == [] and self.medals == [] and self.info == []:
+            return True
+        else:
+            return False

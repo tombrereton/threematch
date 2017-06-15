@@ -70,6 +70,7 @@ class Board:
         self.bonus_list = []
         self.ice_removed = []
         self.medals_removed = []
+        self.movements = []
 
     def new_gem(self):
         """
@@ -598,18 +599,23 @@ class Board:
             match_index += 1
         return match_list
 
-    def get_gem_info(self, row: int, column: int, new_bonus=None):
+    def get_gem_info(self, row: int, column: int, new_bonus=None, top_row=False):
         """
         Return the coordinates of the gem, along with its
         type and bonus type. This information is returned
         as a tuple. The structure is:
         (row, column, type, bonus_type, activation
+        :param top_row:
         :param new_bonus:
         :param row:
         :param column:
         :return:
         """
-        gem = self.gem_grid.grid[row][column]
+        if top_row:
+            gem = self.gem_grid.grid[row + 1][column]
+        else:
+            gem = self.gem_grid.grid[row][column]
+
         if new_bonus is None:
             return row, column, gem[0], gem[1], gem[2]
         else:
@@ -658,26 +664,39 @@ class Board:
             self.gem_grid.grid[row][column] = -1
 
     def pull_gems_down(self):
-        repeat = False
+        """
+        Pulls gems down vertically to simulate gravity.
 
-        # grid = self.gem_grid.grid
-        # for i in range(self.columns):
-        #     for j in range(self.rows - 1, 0, -1):
-        #         if grid[j][i] == 0:
-        #             # empty cell, therefore swap j,i with j-1,i
-        #             repeat = True
-        #             grid[j][i], grid[j - 1][i] = grid[j - 1][i], 0
-        #             if grid[j][i] != 0:
-        #                 y = self.margin + self.centering_offset + j * self.cell_size
-        #                 x = self.margin + self.centering_offset + i * self.cell_size
-        #                 grid[j][i].set_target(y, x)
-        #     if grid[0][i] == 0:
-        #         gem = self.new_gem()
-        #         y = self.margin + self.centering_offset - self.cell_size
-        #         x = self.margin + self.centering_offset + i * self.cell_size
-        #         gem.init_rect(int(y), int(x))
-        #         gem.set_target(int(y + self.cell_size), int(x))
-        #         grid[0][i] = gem
+        We create new gems if required.
+        :return:
+        """
+        repeat = False
+        original_positions = []
+        new_positions = []
+
+        grid = self.gem_grid.grid
+
+        for i in range(self.columns):
+            for j in range(self.rows - 1, 0, -1):
+                # start from bottom row
+
+                if grid[j][i] == -1 and grid[j - 1][i] != -1:
+                    # if cell j,i is empty and the cell above is not empty, swap them.
+                    repeat = True
+                    original_positions.append(self.get_gem_info(j - 1, i))
+                    grid[j][i], grid[j - 1][i] = grid[j - 1][i], -1
+                    new_positions.append(self.get_gem_info(j, i))
+
+            if grid[0][i] == -1:
+                # if empty in the top row, create new gem
+                # and set original position to above top row,
+                # and new position to top row.
+                gem = self.new_gem()
+                grid[0][i] = gem
+                original_positions.append(self.get_gem_info(-1, i, top_row=True))
+                new_positions.append(self.get_gem_info(0, i))
+
+        self.movements = [original_positions, new_positions]
         return repeat
 
     def move_made(self):
@@ -690,7 +709,7 @@ class Board:
         return []
 
     def get_movements(self):
-        return []
+        return self.movements
 
     def get_additions(self):
         return []
@@ -716,13 +735,22 @@ def main():
     swap_locations = [(1, 2), (2, 2)]
     b.set_swap_locations(swap_locations)
 
-    state = b.get_update()
-    print("State 1:")
-    print(state)
+    # state = b.get_update()
+    # print("State 1:")
+    # print(state)
+    #
+    # state2 = b.get_update()
+    # print("\nState 2:")
+    # print(state2)
 
-    state2 = b.get_update()
-    print("\nState 2:")
-    print(state2)
+    count = 0
+    while not b.get_update().is_empty():
+        print(f'\nUpdate {count}:')
+        print(b.get_update())
+        count += 1
+
+        # print("Empty bag:")
+        # print(b.get_update())
 
 
 if __name__ == '__main__':
