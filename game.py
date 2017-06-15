@@ -275,7 +275,7 @@ class Board:
             update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
 
             # remove gems in grid that are in matches_list
-            self.remove_gems()
+            self.remove_gems_add_bonuses()
 
             # pull gems down
             _ = self.pull_gems_down()
@@ -653,7 +653,7 @@ class Board:
 
         return temp_matches, bonus_list
 
-    def remove_gems(self):
+    def remove_gems_add_bonuses(self):
         """
         This loops over the gems in the match_list and
         removes them all from the grid.
@@ -663,11 +663,17 @@ class Board:
         for row, column, gem_type, bonus_type, activation in self.match_list:
             self.gem_grid.grid[row][column] = -1
 
+        for row, column, gem_type, bonus_type, activation in self.bonus_list:
+            self.gem_grid.grid[row][column] = (gem_type, bonus_type, activation)
+
     def pull_gems_down(self):
         """
         Pulls gems down vertically to simulate gravity.
 
         We create new gems if required.
+
+        At the end of this method the gems will be at the position
+        listed in new_positions.
         :return:
         """
         repeat = False
@@ -676,25 +682,25 @@ class Board:
 
         grid = self.gem_grid.grid
 
-        for i in range(self.columns):
-            for j in range(self.rows - 1, 0, -1):
+        for j in range(self.columns):
+            for i in range(self.rows - 1, 0, -1):
                 # start from bottom row
 
-                if grid[j][i] == -1 and grid[j - 1][i] != -1:
+                if grid[i][j] == -1 and grid[i - 1][j] != -1:
                     # if cell j,i is empty and the cell above is not empty, swap them.
                     repeat = True
-                    original_positions.append(self.get_gem_info(j - 1, i))
-                    grid[j][i], grid[j - 1][i] = grid[j - 1][i], -1
-                    new_positions.append(self.get_gem_info(j, i))
+                    original_positions.append(self.get_gem_info(i - 1, j))
+                    grid[i][j], grid[i - 1][j] = grid[i - 1][j], -1
+                    new_positions.append(self.get_gem_info(i, j))
 
-            if grid[0][i] == -1:
+            if grid[0][j] == -1:
                 # if empty in the top row, create new gem
                 # and set original position to above top row,
                 # and new position to top row.
                 gem = self.new_gem()
-                grid[0][i] = gem
-                original_positions.append(self.get_gem_info(-1, i, top_row=True))
-                new_positions.append(self.get_gem_info(0, i))
+                grid[0][j] = gem
+                original_positions.append(self.get_gem_info(-1, j, top_row=True))
+                new_positions.append(self.get_gem_info(0, j))
 
         self.movements = [original_positions, new_positions]
         return repeat
