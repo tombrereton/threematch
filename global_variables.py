@@ -11,6 +11,7 @@ MOVES_LEFT = 26
 GEM_TYPES = 6
 BONUS_TYPES = 3
 ICE_ROWS = 5
+ICE_LAYERS = 1
 
 # GUI variables
 HD_SCALE = 1.2 # Scale for changing the number of pixels

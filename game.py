@@ -6,7 +6,7 @@ from operator import itemgetter
 from random import randint, choice
 
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
-    MOVES_LEFT
+    MOVES_LEFT, ICE_LAYERS
 from update_bag import UpdateBag
 
 
@@ -16,10 +16,8 @@ class Grid:
     initialise an empty 2D array.
     """
 
-    def __init__(self):
-        self.rows = PUZZLE_ROWS
-        self.columns = PUZZLE_COLUMNS
-        self.grid = [[-1] * self.columns for _ in range(self.rows)]
+    def __init__(self, rows, columns):
+        self.grid = [[-1] * columns for _ in range(rows)]
 
 
 class Board:
@@ -37,14 +35,17 @@ class Board:
 
     Swapped gems is a list of tuples, represented as:
     [(row, column, type, bonus_type, activation),(same again)]
+
+    test parameter should be "vertical" or "horizontal" to specify test grid type.
     """
 
     def __init__(self, rows: int, columns: int, ice_rows: int, medals: int,
-                 moves: int, gem_types: int = GEM_TYPES, bonus_types: int = BONUS_TYPES):
+                 moves: int, gem_types: int = GEM_TYPES, bonus_types: int = BONUS_TYPES, ice_layers=ICE_LAYERS,
+                 test=None):
         # grids
-        self.gem_grid = Grid()
-        self.ice_grid = Grid()
-        self.medal_grid = Grid()
+        self.gem_grid = Grid(rows, columns)
+        self.ice_grid = Grid(rows, columns)
+        self.medal_grid = Grid(rows, columns)
 
         # game variables
         self.rows = rows
@@ -58,6 +59,8 @@ class Board:
         self.terminal_state = False
         self.win_state = False
         self.game_state = "empty"
+        self.ice_layers = ice_layers - 1
+        self.test = test
 
         # helper variables
         self.medal_locations = []
@@ -67,20 +70,39 @@ class Board:
         self.ice_removed = []
         self.medals_removed = []
         self.movements = []
+        self.additions = []
 
         # initialise grids
         self.init_gem_grid()
         self.init_ice_grid()
         self.init_medal_grid()
 
-    def new_gem(self):
+    def __str__(self):
+        medal_grid = self.print_grid(self.medal_grid.grid)
+        ice_grid = self.print_grid(self.ice_grid.grid)
+        gem_grid = self.print_grid(self.gem_grid.grid)
+
+        s = "Medal grid:\n{}\nIce grid:\n{}\nGem grid:\n{}".format(medal_grid, ice_grid, gem_grid)
+        return s
+
+    def print_grid(self, grid):
+        s = ''
+        for i in range(self.rows):
+            s += f'{grid[i]}\n'
+        return s
+
+    def new_gem(self, gem_type=None):
         """
         Creates a tuple to represent a gem.
 
         The gem type is randomised.
         :return:
         """
-        gem_type = randint(0, self.gem_types - 1)
+        if gem_type is not None:
+            gem_type = gem_type
+        else:
+            gem_type = randint(0, self.gem_types - 1)
+
         bonus_type = 0
         activation = 0
         return gem_type, bonus_type, activation
@@ -89,10 +111,37 @@ class Board:
         """
         Initialises the gem grid with tuples.
         """
-        rows = self.rows
-        columns = self.columns
-        for row, column in product(range(rows), range(columns)):
-            self.gem_grid.grid[row][column] = self.new_gem()
+        if self.test == "vertical":
+            self.test_grid_vertical()
+        elif self.test == "horizontal":
+            self.test_grid_horizontal()
+        else:
+            rows = self.rows
+            columns = self.columns
+            for row, column in product(range(rows), range(columns)):
+                self.gem_grid.grid[row][column] = self.new_gem()
+
+    def test_grid_vertical(self):
+        """
+        Creates a test grid where all the columns are
+        the same type of gem.
+        :return:
+        """
+        for j, i in product(range(self.columns), range(self.rows)):
+            gem_type = j % self.gem_types
+            gem = self.new_gem(gem_type)
+            self.gem_grid.grid[i][j] = gem
+
+    def test_grid_horizontal(self):
+        """
+        Creates a test grid where all the rows are
+        the same type of gem.
+        :return:
+        """
+        for i, j in product(range(self.rows), range(self.columns)):
+            gem_type = i % self.gem_types
+            gem = self.new_gem(gem_type)
+            self.gem_grid.grid[i][j] = gem
 
     def init_ice_grid(self):
         """
@@ -102,12 +151,12 @@ class Board:
         up to the number of ICE_ROWS.
         :return:
         """
-        rows = self.ice_grid.rows - 1
-        columns = self.ice_grid.columns
+        rows = self.rows - 1
+        columns = self.columns
         ice_rows = rows - self.ice_rows
         for row in range(rows, ice_rows, -1):
             for col in range(columns):
-                self.ice_grid.grid[row][col] = 1
+                self.ice_grid.grid[row][col] = self.ice_layers
 
     def init_medal_grid(self):
         """
@@ -121,8 +170,8 @@ class Board:
         |2|3|
         :return:
         """
-        rows = self.medal_grid.rows
-        columns = self.medal_grid.columns
+        rows = self.rows
+        columns = self.columns
         i = 0
         while i < self.medals:
             # get random choice
@@ -140,8 +189,8 @@ class Board:
         :param x_coord: x coordinate to check (top left of medal)
         :return: None
         """
-        rows = self.medal_grid.rows
-        columns = self.medal_grid.columns
+        rows = self.rows
+        columns = self.columns
         if x_coord < columns - 1 and y_coord < rows - 1:
             for i in range(2):
                 for j in range(2):
@@ -169,7 +218,7 @@ class Board:
                 self.medal_grid.grid[row + i][column + j] = portion
 
                 # add portion to medal location list
-                self.medal_locations.append((i, j, portion))
+                self.medal_locations.append((row + i, column + j, portion))
 
     def set_swap_locations(self, swap_locations: list):
         """
@@ -289,8 +338,8 @@ class Board:
 
         # if pulled down state, return additions, movements, etc, then try to pull down again
         elif self.game_state == "pulled_down":
-            additions = self.get_additions()
-            movements = self.get_movements()
+            additions = self.additions
+            movements = self.movements
 
             info = self.get_game_info()
 
@@ -568,7 +617,7 @@ class Board:
         :param column:
         :return:
         """
-        columns = self.gem_grid.columns
+        columns = self.columns
         grid = self.gem_grid.grid
         match_index = column + 1
         match_list = [self.get_gem_info(row, column)]
@@ -587,13 +636,13 @@ class Board:
         :param column:
         :return:
         """
-        columns = self.columns
+        rows = self.rows
         grid = self.gem_grid.grid
         match_index = row + 1
         match_list = [self.get_gem_info(row, column)]
 
         # check if its a match
-        while match_index < columns and grid[row][column][0] == grid[match_index][column][0]:
+        while match_index < rows and grid[row][column][0] == grid[match_index][column][0]:
             # if match, append to list
             match_list.append(self.get_gem_info(match_index, column))
             match_index += 1
@@ -664,6 +713,9 @@ class Board:
             self.gem_grid.grid[row][column] = -1
             self.remove_ice(row, column)
 
+        # try to free medals after removing ice
+        self.free_medals()
+
         for row, column, gem_type, bonus_type, activation in self.bonus_list:
             self.gem_grid.grid[row][column] = (gem_type, bonus_type, activation)
 
@@ -680,6 +732,7 @@ class Board:
         repeat = False
         original_positions = []
         new_positions = []
+        additions = []
 
         grid = self.gem_grid.grid
 
@@ -695,14 +748,16 @@ class Board:
                     new_positions.append(self.get_gem_info(i, j))
 
             if grid[0][j] == -1:
-                # if empty in the top row, create new gem
+                # if empty in the top row, create new gem, add to additions list
                 # and set original position to above top row,
                 # and new position to top row.
                 gem = self.new_gem()
                 grid[0][j] = gem
+                additions.append(self.get_gem_info(-1, j, top_row=True))
                 original_positions.append(self.get_gem_info(-1, j, top_row=True))
                 new_positions.append(self.get_gem_info(0, j))
 
+        self.additions = additions
         self.movements = [original_positions, new_positions]
         return repeat
 
@@ -780,7 +835,7 @@ class Board:
         return self.movements
 
     def get_additions(self):
-        return []
+        return self.additions
 
 
 # ============================================

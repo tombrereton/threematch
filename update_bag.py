@@ -4,17 +4,17 @@ class UpdateBag:
     the Game and GUI class.
     """
 
-    def __init__(self, matches, bonuses, additions, movements, ice, medals, info):
-        self.matches = matches
+    def __init__(self, removals, bonuses, additions, movements, ice_removed, medals_removed, info):
+        self.removals = removals
         self.bonuses = bonuses
         self.additions = additions
         self.movements = movements
-        self.ice = ice
-        self.medals = medals
+        self.ice_removed = ice_removed
+        self.medals_removed = medals_removed
         self.info = info
 
     def __str__(self):
-        return "Matches:\n" \
+        return "Removals:\n" \
                "{}\n" \
                "Bonuses:\n" \
                "{}\n" \
@@ -22,21 +22,21 @@ class UpdateBag:
                "{}\n" \
                "Movements:\n" \
                "{}\n" \
-               "Ice:\n" \
+               "Ice removed:\n" \
                "{}\n" \
-               "Medals:\n" \
+               "Medals removed:\n" \
                "{}\n" \
                "Info:\n" \
-               "{}".format(self.matches, self.bonuses, self.additions,
-                           self.movements, self.ice, self.medals, self.info)
+               "{}".format(self.removals, self.bonuses, self.additions,
+                           self.movements, self.ice_removed, self.medals_removed, self.info)
 
     def is_empty(self):
         """
         Return true if all attributes are empty lists.
         :return:
         """
-        if self.matches == [] and self.bonuses == [] and self.additions == [] \
-                and self.movements == [] and self.ice == [] and self.medals == [] and self.info == []:
+        if self.removals == [] and self.bonuses == [] and self.additions == [] \
+                and self.movements == [] and self.ice_removed == [] and self.medals_removed == [] and self.info == []:
             return True
         else:
             return False
