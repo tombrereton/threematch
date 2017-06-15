@@ -32,7 +32,11 @@ def test_ice_removed():
     bag = b.get_update()
     print(bag)
 
-    print("Board 2:\n")
+    print("\nbag 5:\n")
+    bag = b.get_update()
+    print(bag)
+
+    print("\nBoard 2:\n")
     print(b)  #
     # ice should be like this
     ice_grid = [[-1] * columns for _ in range(rows)]
