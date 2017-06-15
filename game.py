@@ -59,18 +59,19 @@ class Board:
         self.win_state = False
         self.game_state = "empty"
 
-        # initialise grids
-        self.init_gem_grid()
-        self.init_ice_grid()
-        self.init_medal_grid()
-
         # helper variables
+        self.medal_locations = []
         self.swapped_gems = [(), ()]
         self.match_list = []
         self.bonus_list = []
         self.ice_removed = []
         self.medals_removed = []
         self.movements = []
+
+        # initialise grids
+        self.init_gem_grid()
+        self.init_ice_grid()
+        self.init_medal_grid()
 
     def new_gem(self):
         """
@@ -164,7 +165,11 @@ class Board:
         """
         for i in range(2):
             for j in range(2):
-                self.medal_grid.grid[row + i][column + j] = j + 2 * i
+                portion = j + 2 * i
+                self.medal_grid.grid[row + i][column + j] = portion
+
+                # add portion to medal location list
+                self.medal_locations.append((i, j, portion))
 
     def set_swap_locations(self, swap_locations: list):
         """
@@ -241,14 +246,12 @@ class Board:
                 self.swap_gems()
 
                 # find matches
-                match_list, bonus_list, ice_list, medals_list = self.find_matches()
+                match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
 
                 if match_count >= 3:
                     self.match_list = match_list
                     self.bonus_list = bonus_list
-                    self.ice_removed = ice_list
-                    self.medals_removed = medals_list
                     self.move_made()
                     self.game_state = "matches_found"
                 else:
@@ -267,15 +270,16 @@ class Board:
 
         # if matches found state, return matches, bonuses, etc, then pull gems down
         elif self.game_state == "matches_found":
+
+            # remove gems in grid that are in matches_list
+            self.remove_gems_add_bonuses()
+
             match_list = self.match_list
             bonus_list = self.bonus_list
             ice = self.ice_removed
             medals = self.medals_removed
             info = self.get_game_info()
             update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
-
-            # remove gems in grid that are in matches_list
-            self.remove_gems_add_bonuses()
 
             # pull gems down
             _ = self.pull_gems_down()
@@ -287,6 +291,7 @@ class Board:
         elif self.game_state == "pulled_down":
             additions = self.get_additions()
             movements = self.get_movements()
+
             info = self.get_game_info()
 
             update_bag = UpdateBag([], [], additions, movements, [], [], info)
@@ -300,14 +305,12 @@ class Board:
             else:
                 # if false, check for matches
                 # find matches
-                match_list, bonus_list, ice_list, medals_list = self.find_matches()
+                match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
 
                 if match_count >= 3:
                     self.match_list = match_list
                     self.bonus_list = bonus_list
-                    self.ice_removed = ice_list
-                    self.medals_removed = medals_list
                     self.game_state = "matches_found"
                 else:
                     # no more matches, then wait for user input
@@ -380,10 +383,7 @@ class Board:
         matches.sort(key=itemgetter(0, 1))
         bonuses.sort(key=itemgetter(0, 1))
 
-        ice_removed = self.remove_ice()
-        medals_removed = self.remove_medals()
-
-        return matches, bonuses, ice_removed, medals_removed
+        return matches, bonuses
 
     def find_horizontal_matches(self):
         """
@@ -659,9 +659,10 @@ class Board:
         removes them all from the grid.
         :return:
         """
-
+        self.ice_removed = []
         for row, column, gem_type, bonus_type, activation in self.match_list:
             self.gem_grid.grid[row][column] = -1
+            self.remove_ice(row, column)
 
         for row, column, gem_type, bonus_type, activation in self.bonus_list:
             self.gem_grid.grid[row][column] = (gem_type, bonus_type, activation)
@@ -708,11 +709,72 @@ class Board:
     def move_made(self):
         self.moves -= 1
 
-    def remove_ice(self):
-        return []
+    def remove_ice(self, row: int, column: int):
+        """
+        If ice is present in the grid cell,
+        reduce the layer by 1.
+        :param row:
+        :param column:
+        :return:
+        """
+        grid = self.ice_grid.grid
+        if grid[row][column] != -1:
+            # if there is ice, decrease the layer by 1
+            new_layer = grid[row][column] - 1
+            grid[row][column] = new_layer
 
-    def remove_medals(self):
-        return []
+            # add to the ice_removed list
+            self.ice_removed.append((row, column, new_layer))
+
+    def free_medals(self):
+        """
+        Loops over the medal locations list and
+        frees any completely uncovered medals.
+        :return:
+        """
+        self.medals_removed = []
+        grid = self.ice_grid.grid
+        for row, column, portion in self.medal_locations:
+            if grid[row][column] == -1 and portion == 0 and self.is_freeable_medal(row, column):
+                # medal is completely uncovered, remove it from grid
+                self.remove_medal(row, column)
+
+                # decrement medals
+                self.medals -= 1
+
+    def remove_medal(self, row: int, column: int):
+        """
+        Loops over the 4 portions of the medal
+        and sets them to -1.
+
+        Also removes medal portions from medal_locations list.
+        :param row:
+        :param column:
+        :return:
+        """
+        for i, j in product(range(2), range(2)):
+            # remove from grid
+            self.medal_grid.grid[row + i][column + j] = -1
+
+            # remove from medal locations list
+            portion = j + 2 * i
+            self.medal_locations.remove((row + i, column + j, portion))
+
+            # add to medals removed list
+            self.medals_removed.append((row + i, column + j, portion))
+
+    def is_freeable_medal(self, row: int, column: int):
+        """
+        Returns true if medal completely uncovered from ice,
+        otherwise return false
+        :param row:
+        :param column:
+        :return:
+        """
+        for i, j in product(range(2), range(2)):
+            if self.ice_grid.grid[row + i][column + j] != -1:
+                return False
+        return True
 
     def get_movements(self):
         return self.movements
