@@ -24,13 +24,15 @@ class Board:
     """
     The class which contains all the grids for gems, ice, and medals.
 
+    -1 represents an empty cell in all grids.
+
     The gem grid contains tuples in each cell, which represent:
     (type, bonus_type, activation)
 
     The ice grid contains a single value in each cell, represented by:
     (layer)
 
-    The medal_grid contains a single value in each cell, represented by:
+    The medal_grid contains a single value in each cell, represenEted by:
     (corner)
 
     Swapped gems is a list of tuples, represented as:

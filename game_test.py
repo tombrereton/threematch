@@ -10,25 +10,25 @@ b = Board(rows, columns, ice_rows, medals, moves_left, test='horizontal')
 
 
 def test_ice_removed():
-    print("Board 1:\n")
+    print("\nBoard 1:\n")
     print(b)
 
     swap_locations = [(0, 0), (0, 1)]
     b.set_swap_locations(swap_locations)
 
-    print("bag 1:\n")
+    print("\nbag 1:\n")
     bag = b.get_update()
     print(bag)
 
-    print("bag 2:\n")
+    print("\nbag 2:\n")
     bag = b.get_update()
     print(bag)
 
-    print("bag 3:\n")
+    print("\nbag 3:\n")
     bag = b.get_update()
     print(bag)
 
-    print("bag 4:\n")
+    print("\nbag 4:\n")
     bag = b.get_update()
     print(bag)
 
