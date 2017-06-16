@@ -1,9 +1,23 @@
 import pygame
 from pygame.locals import *
 
+from global_variables import CELL_SIZE, MARGIN
+
 
 def debug_print(msg):
     print(msg)
+
+
+def pixel_to_grid(y_coord: int, x_coord: int):
+    """
+    Method to calculate the row and column from pixel coordinates.
+    :param y_coord: Grid y coordinate
+    :param x_coord: Grid x coordinate
+    :return: A tuple of the pixel coordinates (y, x)
+    """
+    row = (y_coord - MARGIN) / CELL_SIZE
+    column = (x_coord - MARGIN) / CELL_SIZE
+    return row, column
 
 
 class Event:
@@ -76,6 +90,9 @@ class MouseController:
     def __init__(self, evManager):
         self.evManager = evManager
         self.evManager.register_listener(self)
+        self.is_second_click = False
+        self.first_row = -1
+        self.first_column = -1
 
     # ----------------------------------------------------------------------
     def notify(self, event):
@@ -85,25 +102,24 @@ class MouseController:
                 ev = None
                 if event.type == QUIT:
                     ev = QuitEvent()
-                elif event.type == KEYDOWN \
-                        and event.key == K_ESCAPE:
+                elif event.type == KEYDOWN and event.key == K_ESCAPE:
                     ev = QuitEvent()
-                elif event.type == KEYDOWN \
-                        and event.key == K_UP:
-                    direction = DIRECTION_UP
-                    ev = CharactorMoveRequest(direction)
-                elif event.type == KEYDOWN \
-                        and event.key == K_DOWN:
-                    direction = DIRECTION_DOWN
-                    ev = CharactorMoveRequest(direction)
-                elif event.type == KEYDOWN \
-                        and event.key == K_LEFT:
-                    direction = DIRECTION_LEFT
-                    ev = CharactorMoveRequest(direction)
-                elif event.type == KEYDOWN \
-                        and event.key == K_RIGHT:
-                    direction = DIRECTION_RIGHT
-                    ev = CharactorMoveRequest(direction)
+                elif event.type == MOUSEBUTTONDOWN and not self.is_second_click:
+                    # First click, save coordinates
+                    x = event.pos[0]
+                    y = event.pos[1]
+                    row, column = pixel_to_grid(y, x)
+                    self.first_row = row
+                    self.first_column = column
+                    self.is_second_click = True
+                elif event.type == MOUSEBUTTONUP and self.is_second_click:
+                    # Second click, create event object to send
+                    x = event.pos[0]
+                    y = event.pos[1]
+                    row, column = pixel_to_grid(y, x)
+                    swap_locations = [(self.first_row, self.first_column), (row, column)]
+                    ev = SwapGemsRequest(swap_locations)
+                    self.is_second_click = False
 
                 if ev:
                     self.evManager.post(ev)
