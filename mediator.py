@@ -1,3 +1,19 @@
+"""
+Rough plan:
+
+1.Mouse creates SwapGemsRequest
+
+2.EventManager send request to game
+
+3.game receives request in notify method
+
+4.if state is waiting for input, game sets swap locations
+and calls get_update within notify and send Update Bag to view
+
+5.if state not waiting for input and event is ClockTick
+call get_update and send Update Bag to view.
+"""
+
 import pygame
 from pygame.locals import *
 
@@ -123,3 +139,26 @@ class MouseController:
 
                 if ev:
                     self.evManager.post(ev)
+
+
+# ------------------------------------------------------------------------------
+class CPUSpinnerController:
+    """..."""
+
+    def __init__(self, evManager):
+        self.evManager = evManager
+        self.evManager.register_listener(self)
+
+        self.keepGoing = 1
+
+    # ----------------------------------------------------------------------
+    def Run(self):
+        while self.keepGoing:
+            event = TickEvent()
+            self.evManager.post(event)
+
+    # ----------------------------------------------------------------------
+    def Notify(self, event):
+        if isinstance(event, QuitEvent):
+            # this will stop the while loop from running
+            self.keepGoing = False

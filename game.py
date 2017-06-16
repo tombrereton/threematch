@@ -7,6 +7,7 @@ from random import randint, choice
 
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
     MOVES_LEFT, ICE_LAYERS
+from mediator import SwapGemsRequest, EventManager, UpdateBagEvent
 from update_bag import UpdateBag
 
 
@@ -42,12 +43,16 @@ class Board:
     """
 
     def __init__(self, rows: int, columns: int, ice_rows: int, medals: int,
-                 moves: int, gem_types: int = GEM_TYPES, bonus_types: int = BONUS_TYPES, ice_layers=ICE_LAYERS,
-                 test=None):
+                 moves: int, event_manager: EventManager, gem_types: int = GEM_TYPES, bonus_types: int = BONUS_TYPES,
+                 ice_layers=ICE_LAYERS, test=None):
         # grids
         self.gem_grid = Grid(rows, columns)
         self.ice_grid = Grid(rows, columns)
         self.medal_grid = Grid(rows, columns)
+
+        # event manager
+        self.ev = event_manager
+        self.ev.register_listener(self)
 
         # game variables
         self.rows = rows
@@ -86,6 +91,12 @@ class Board:
 
         s = "Medal grid:\n{}\nIce grid:\n{}\nGem grid:\n{}".format(medal_grid, ice_grid, gem_grid)
         return s
+
+    # ----------------------------------------------------------------------
+    def Notify(self, event):
+        if isinstance(event, SwapGemsRequest):
+            if self.game_state == "waiting_for_input":
+                self.set_swap_locations(SwapGemsRequest.swap_locations)
 
     def print_grid(self, grid):
         s = ''
@@ -293,6 +304,10 @@ class Board:
                 info = self.get_game_info()
                 movements = self.get_swap_movement()
                 update_bag = UpdateBag([], [], [], movements, [], [], info)
+
+                # send bag to view
+                event = UpdateBagEvent(update_bag)
+                self.ev.post(event)
 
                 self.swap_gems()
 
