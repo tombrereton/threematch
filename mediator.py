@@ -17,7 +17,9 @@ call get_update and send Update Bag to view.
 import pygame
 from pygame.locals import *
 
-from global_variables import CELL_SIZE, MARGIN
+from game import Board
+from global_variables import CELL_SIZE, MARGIN, PUZZLE_COLUMNS, PUZZLE_ROWS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS
+from gui import GUI
 
 
 def debug_print(msg):
@@ -162,3 +164,20 @@ class CPUSpinnerController:
         if isinstance(event, QuitEvent):
             # this will stop the while loop from running
             self.keepGoing = False
+
+
+# ------------------------------------------------------------------------------
+def main():
+    """..."""
+    evManager = EventManager()
+
+    mouse_cont = MouseController(evManager)
+    spinner = CPUSpinnerController(evManager)
+    view = GUI(evManager)
+    game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, evManager)
+
+    spinner.Run()
+
+
+if __name__ == "__main__":
+    main()

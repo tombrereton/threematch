@@ -7,7 +7,7 @@ from random import randint, choice
 
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
     MOVES_LEFT, ICE_LAYERS
-from mediator import SwapGemsRequest, EventManager, UpdateBagEvent
+from mediator import SwapGemsRequest, EventManager, UpdateBagEvent, TickEvent
 from update_bag import UpdateBag
 
 
@@ -51,8 +51,8 @@ class Board:
         self.medal_grid = Grid(rows, columns)
 
         # event manager
-        self.ev = event_manager
-        self.ev.register_listener(self)
+        self.event_manager = event_manager
+        self.event_manager.register_listener(self)
 
         # game variables
         self.rows = rows
@@ -97,6 +97,9 @@ class Board:
         if isinstance(event, SwapGemsRequest):
             if self.game_state == "waiting_for_input":
                 self.set_swap_locations(SwapGemsRequest.swap_locations)
+        elif isinstance(event, TickEvent):
+            if self.game_state != "waiting_for_input":
+                self.get_update()
 
     def print_grid(self, grid):
         s = ''
@@ -307,7 +310,7 @@ class Board:
 
                 # send bag to view
                 event = UpdateBagEvent(update_bag)
-                self.ev.post(event)
+                self.event_manager.post(event)
 
                 self.swap_gems()
 
@@ -334,6 +337,10 @@ class Board:
             movements = self.get_swap_movement()
             update_bag = UpdateBag([], [], [], movements, [], [], info)
 
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
+
         # if matches found state, return matches, bonuses, etc, then pull gems down
         elif self.game_state == "matches_found":
 
@@ -346,6 +353,10 @@ class Board:
             medals = self.medals_removed
             info = self.get_game_info()
             update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
+
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
 
             # pull gems down
             _ = self.pull_gems_down()
@@ -361,6 +372,10 @@ class Board:
             info = self.get_game_info()
 
             update_bag = UpdateBag([], [], additions, movements, [], [], info)
+
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
 
             # check for more pull downs
             more_pull_downs = self.pull_gems_down()
@@ -382,6 +397,7 @@ class Board:
                     # no more matches, then wait for user input
                     self.game_state = "waiting_for_input"
 
+        # TODO: remove or leave in for testing?
         return update_bag
 
     def check_swap(self):
