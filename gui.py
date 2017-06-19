@@ -4,6 +4,9 @@ import time
 import game_utilities as util
 from itertools import product
 from global_variables import *
+from mediator import UpdateBagEvent
+from update_bag import UpdateBag
+from mediator import EventManager
 
 
 # Functions for testing
@@ -112,7 +115,7 @@ class Gem(pygame.sprite.Sprite):
     Class for the gem sprites.
     """
 
-    def __init__(self, size: int, gem_info: tuple, image_list: list, explosions: list, gem_group):
+    def __init__(self, size: int, gem_info: tuple, image_list: list, explosions: list, gem_group, event_manager: EventManager):
         # Call to super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         # Set field variables
@@ -426,7 +429,7 @@ class Background:
 
 class GUI:
 
-    def __init__(self, gems: list, ice, medals: list, text_info: tuple):
+    def __init__(self, gems: list, ice, medals: list, text_info: tuple, event_manager: EventManager):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('Gem Island')
@@ -438,6 +441,8 @@ class GUI:
         self.medal_group = pygame.sprite.Group()
         self.medal_grid = MedalGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.medal_group, medals)
         self.draw()
+        self.event_manager = event_manager
+        self.event_manager.register_listener(self)
 
     def new_state(self, gems: list, ice, medals: list, text_info: tuple):
         self.gem_grid.new_grid(gems)
@@ -520,17 +525,22 @@ class GUI:
             self.gem_grid.grid[coord2[0]][coord2[1]] = gem
         self.animate_loop()
 
-    def change(self, removals: list, bonuses: list, additions: list, moving_gems: list, ice_broken: list, medals_freed: list, text_info: tuple):
-        if len(text_info) is not 0:
-            self.bg.set_all(*text_info)
+    def change(self, update_bag: UpdateBag):
+        if len(update_bag.info) is not 0:
+            self.bg.set_all(*update_bag.info)
         self.draw()
-        self.explode(removals)
-        self.break_ice(ice_broken)
-        self.remove_medals(medals_freed)
-        self.add_bonuses(bonuses)
-        self.remove(removals)
-        self.add(additions)
-        self.move(moving_gems)
+        self.explode(update_bag.removals)
+        self.break_ice(update_bag.ice_removed)
+        self.remove_medals(update_bag.medals_removed)
+        self.add_bonuses(update_bag.bonuses)
+        self.remove(update_bag.removals)
+        self.add(update_bag.additions)
+        self.move(update_bag.movements)
+
+    def Notify(self, event):
+        if isinstance(event, UpdateBagEvent):
+            self.change(event.update_bag)
+
 
 # Testing
 if __name__ == '__main__':
