@@ -1,7 +1,7 @@
 import pygame
 from pygame.constants import QUIT, KEYDOWN, K_ESCAPE, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
-from global_variables import MARGIN, CELL_SIZE
+from global_variables import *
 
 
 def debug_print(msg):
@@ -17,6 +17,11 @@ def pixel_to_grid(y_coord: int, x_coord: int):
     """
     row = (y_coord - MARGIN) // CELL_SIZE
     column = (x_coord - MARGIN) // CELL_SIZE
+    if row < 0 or row > PUZZLE_ROWS:
+        row = -1
+
+    if column < 0 or column > PUZZLE_COLUMNS:
+        column = -1
     return row, column
 
 
@@ -107,17 +112,29 @@ class MouseController:
                     x = event.pos[0]
                     y = event.pos[1]
                     row, column = pixel_to_grid(y, x)
-                    self.first_row = row
-                    self.first_column = column
-                    self.is_second_click = True
+
+                    if row == -1 or column == -1:
+                        # clicked not on grid
+                        self.is_second_click = False
+                    else:
+                        # clicked on grid
+                        self.first_row = row
+                        self.first_column = column
+                        self.is_second_click = True
+
                 elif event.type == MOUSEBUTTONUP and self.is_second_click:
                     # Second click, create event object to send
                     x = event.pos[0]
                     y = event.pos[1]
                     row, column = pixel_to_grid(y, x)
-                    swap_locations = [(self.first_row, self.first_column), (row, column)]
-                    ev = SwapGemsRequest(swap_locations)
-                    self.is_second_click = False
+                    if row == -1 or column == -1:
+                        # clicked not on grid
+                        self.is_second_click = False
+                    else:
+                        # clicked on grid
+                        swap_locations = [(self.first_row, self.first_column), (row, column)]
+                        ev = SwapGemsRequest(swap_locations)
+                        self.is_second_click = False
 
                 if ev:
                     self.evManager.post(ev)
@@ -143,5 +160,3 @@ class CPUSpinnerController:
         if isinstance(event, QuitEvent):
             # this will stop the while loop from running
             self.keepGoing = False
-
-

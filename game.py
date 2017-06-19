@@ -148,9 +148,11 @@ class Board:
                 self.match_list = match_list
                 self.bonus_list = bonus_list
 
-            self.remove_gems_add_bonuses()
-            while self.pull_gems_down():
-                pass
+            self.remove_gems_add_bonuses(init=True)
+
+            remove = True
+            while remove:
+                remove = self.pull_gems_down()
 
     def test_grid_vertical(self):
         """
@@ -762,7 +764,7 @@ class Board:
         for row, column, gem_type, bonus_type, activation in self.match_list:
             self.gem_grid.grid[row][column] = -1
 
-            if init:
+            if not init:
                 self.remove_ice(row, column)
 
         # try to free medals after removing ice
