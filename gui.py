@@ -436,8 +436,7 @@ class GUI:
         pygame.display.set_caption('Gem Island')
         self.bg = Background(*text_info)
         self.gem_group = pygame.sprite.Group()
-        self.gem_grid = GemGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.bg.gem_images, self.bg.explosions,
-                                self.gem_group, gems)
+        self.gem_grid = GemGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.bg.gem_images, self.bg.explosions, self.gem_group, gems)
         self.ice_group = pygame.sprite.Group()
         self.ice_grid = IceGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.ice_group, ice)
         self.medal_group = pygame.sprite.Group()
@@ -478,6 +477,7 @@ class GUI:
 
     def explode(self, removals: list):
         for i, j, _, _, _ in removals:
+            print(i, j)
             self.gem_grid.grid[i][j].is_exploding = True
         self.animate_loop()
 
@@ -520,8 +520,9 @@ class GUI:
         temp = []
         for coord1, coord2 in zip(*moving_gems):
             gem = self.gem_grid.grid[coord1[0]][coord1[1]]
-            self.gem_grid.grid[coord1[0]][coord1[1]] = -1
-            # y,x = (*self.gem_grid.grid_to_pixel(*coord2[:2]))
+            # self.gem_grid.grid[coord1[0]][coord1[1]] = -1
+            y, x = [*coord2[:2]]
+            yp, xp = [*self.gem_grid.grid_to_pixel(*coord2[:2])]
             gem.set_target(*self.gem_grid.grid_to_pixel(*coord2[:2]))
             temp.append((coord2, gem))
         for coord2, gem in temp:
