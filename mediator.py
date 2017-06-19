@@ -30,7 +30,7 @@ def main():
 
     mouse_cont = MouseController(evManager)
     spinner = CPUSpinnerController(evManager)
-    game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT , event_manager=evManager)
+    game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT, event_manager=evManager)
     view = GUI(*game.state(), evManager)
 
     spinner.run()
