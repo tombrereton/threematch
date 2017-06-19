@@ -144,6 +144,7 @@ class Board:
             match_list, bonus_list = self.find_matches()
             match_count = len(match_list)
 
+            count = 0
             while match_count >= 3:
                 self.match_list = match_list
                 self.bonus_list = bonus_list
@@ -153,8 +154,13 @@ class Board:
                 while remove:
                     remove = self.pull_gems_down()
 
+                print(f'loop {count}: ')
+                print(self)
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
+
+                count +=1
+
 
     def test_grid_vertical(self):
         """
@@ -798,6 +804,8 @@ class Board:
 
                 if grid[i][j] == -1 and grid[i - 1][j] != -1:
                     # if cell j,i is empty and the cell above is not empty, swap them.
+                    print(f'Pull down {j,i}:')
+                    print(self)
                     repeat = True
                     original_positions.append(self.get_gem_info(i - 1, j))
                     grid[i][j], grid[i - 1][j] = grid[i - 1][j], -1
@@ -812,6 +820,7 @@ class Board:
                 additions.append(self.get_gem_info(-1, j, top_row=True))
                 original_positions.append(self.get_gem_info(-1, j, top_row=True))
                 new_positions.append(self.get_gem_info(0, j))
+                repeat = True
 
         self.additions = additions
         self.movements = [original_positions, new_positions]
