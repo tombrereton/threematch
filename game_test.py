@@ -1,3 +1,4 @@
+from events import *
 from game import Board
 
 rows = 2
@@ -6,7 +7,8 @@ ice_rows = 2
 medals = 1
 moves_left = 30
 
-b = Board(rows, columns, ice_rows, medals, moves_left, test='horizontal')
+event_manager = EventManager()
+b = Board(rows, columns, ice_rows, medals, moves_left, test='horizontal', event_manager=event_manager)
 
 
 def test_ice_removed():

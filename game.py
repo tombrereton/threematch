@@ -85,7 +85,7 @@ class Board:
         self.init_medal_grid()
 
     def state(self):
-        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid,(0,0,0, False, False)
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (0, 0, 0, False, False)
 
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
@@ -139,6 +139,18 @@ class Board:
             columns = self.columns
             for row, column in product(range(rows), range(columns)):
                 self.gem_grid.grid[row][column] = self.new_gem()
+
+            # find matches
+            match_list, bonus_list = self.find_matches()
+            match_count = len(match_list)
+
+            if match_count >= 3:
+                self.match_list = match_list
+                self.bonus_list = bonus_list
+
+            self.remove_gems_add_bonuses()
+            while self.pull_gems_down():
+                pass
 
     def test_grid_vertical(self):
         """
@@ -740,7 +752,7 @@ class Board:
 
         return temp_matches, bonus_list
 
-    def remove_gems_add_bonuses(self):
+    def remove_gems_add_bonuses(self, init=False):
         """
         This loops over the gems in the match_list and
         removes them all from the grid.
@@ -749,7 +761,9 @@ class Board:
         self.ice_removed = []
         for row, column, gem_type, bonus_type, activation in self.match_list:
             self.gem_grid.grid[row][column] = -1
-            self.remove_ice(row, column)
+
+            if init:
+                self.remove_ice(row, column)
 
         # try to free medals after removing ice
         self.free_medals()
