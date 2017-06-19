@@ -507,26 +507,21 @@ class GUI:
             self.gem_grid.remove(i, j)
         self.draw()
 
-    def add(self, additions: list):
-        for gem in additions:
-            self.gem_grid.add(*gem[:2], gem[2:])
-            rect = self.gem_grid.grid[gem[0]][gem[1]].rect
-            y, x = rect.y - CELL_SIZE, rect.x
-            self.gem_grid.grid[gem[0]][gem[1]].set_rect(y, x)
-            self.gem_grid.grid[gem[0]][gem[1]].set_origin(y, x)
-        self.draw()
-
-    def move(self, moving_gems: list):
+    def move_and_add(self, moving_gems: list, additions: list):
         temp = []
         for coord1, coord2 in zip(*moving_gems):
+            if coord1[0] == -1: continue
             gem = self.gem_grid.grid[coord1[0]][coord1[1]]
-            # self.gem_grid.grid[coord1[0]][coord1[1]] = -1
-            y, x = [*coord2[:2]]
-            yp, xp = [*self.gem_grid.grid_to_pixel(*coord2[:2])]
             gem.set_target(*self.gem_grid.grid_to_pixel(*coord2[:2]))
             temp.append((coord2, gem))
         for coord2, gem in temp:
             self.gem_grid.grid[coord2[0]][coord2[1]] = gem
+        for gem in additions:
+            self.gem_grid.add(0, gem[1], gem[2:])
+            rect = self.gem_grid.grid[0][gem[1]].rect
+            y, x = rect.y - CELL_SIZE, rect.x
+            self.gem_grid.grid[0][gem[1]].set_rect(y, x)
+            self.gem_grid.grid[0][gem[1]].set_origin(y, x)
         self.animate_loop()
 
     def change(self, update_bag: UpdateBag):
@@ -538,8 +533,7 @@ class GUI:
         self.remove_medals(update_bag.medals_removed)
         self.add_bonuses(update_bag.bonuses)
         self.remove(update_bag.removals)
-        self.add(update_bag.additions)
-        self.move(update_bag.movements)
+        self.move_and_add(update_bag.movements, update_bag.additions)
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
