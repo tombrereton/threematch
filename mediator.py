@@ -16,7 +16,7 @@ call get_update and send Update Bag to view.
 
 from events import EventManager, MouseController, CPUSpinnerController
 from game import Board
-from global_variables import PUZZLE_COLUMNS, PUZZLE_ROWS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS
+from global_variables import *
 from gui import GUI
 
 
@@ -30,7 +30,7 @@ def main():
 
     mouse_cont = MouseController(evManager)
     spinner = CPUSpinnerController(evManager)
-    game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, evManager)
+    game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT , event_manager=evManager)
     view = GUI(*game.state(), evManager)
 
     spinner.Run()
