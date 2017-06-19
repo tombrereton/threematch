@@ -1,9 +1,13 @@
 """
 This is the file for the game logic of three match.
 """
+import logging
 from itertools import product
 from operator import itemgetter
 from random import randint, choice
+
+logging.basicConfig(filename='game.log', filemode='w', level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
@@ -86,7 +90,8 @@ class Board:
         self.init_medal_grid()
 
     def state(self):
-        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (0, 0, 0, False, False)
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
+            self.moves, self.medals, self.score, False, False)
 
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
@@ -155,8 +160,9 @@ class Board:
                 while remove:
                     remove = self.pull_gems_down()
 
-                print(f'loop {count}: ')
-                print(self)
+                # debug logging line
+                logging.debug(f"\nInit gem loop {count}:\n\n{self}")
+
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
 
@@ -342,7 +348,16 @@ class Board:
 
         # if waiting for input, block
         if self.game_state == "waiting_for_input":
+            logging.warning(update_bag)
             return update_bag
+
+        elif self.terminal_state:
+            info = self.get_game_info()
+            update_bag = UpdateBag([], [], [], [], [], [], info)
+
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
 
         # if input received state, return swap movements, make swap, and try to find matches
         elif self.game_state == "input_received":
@@ -449,6 +464,22 @@ class Board:
                     # no more matches, then wait for user input
                     self.game_state = "waiting_for_input"
                     self.cascade = 0
+
+                    if self.medals == 0:
+                        self.win_state = True
+                        self.terminal_state = True
+
+                    elif self.moves == 0:
+                        self.win_state = False
+                        self.terminal_state = True
+
+                    info = self.get_game_info()
+
+                    update_bag = UpdateBag([], [], [], [], [], [], info)
+
+                    # send bag to view
+                    event = UpdateBagEvent(update_bag)
+                    self.event_manager.post(event)
 
         # Leave in for testing
         return update_bag
@@ -582,17 +613,23 @@ class Board:
         matches_from_bonus = []
         for row, column, gem_type, bonus_type, activation in matches:
             if bonus_type == 1:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add row to matches at location row
                 for j in range(self.columns):
                     matches_from_bonus.append(self.get_gem_info(row, j))
 
             if bonus_type == 2:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add all gems of this gems type to matches
                 for i, j in product(range(self.rows), range(self.columns)):
                     if self.gem_grid.grid[i][j][0] == gem_type:
                         matches_from_bonus.append(self.get_gem_info(i, j))
 
             if bonus_type == 3:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add 9 surrounding gems of this gem
                 row_max = min(row + 2, self.rows)
                 row_min = max(row - 1, 0)
@@ -670,17 +707,23 @@ class Board:
         matches_from_bonus = []
         for row, column, gem_type, bonus_type, activation in matches:
             if bonus_type == 1:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add column to matches at location column
                 for i in range(self.rows):
                     matches_from_bonus.append(self.get_gem_info(i, column))
 
             if bonus_type == 2:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add all gems of this gems type to matches
                 for i, j in product(range(self.rows), range(self.columns)):
                     if self.gem_grid.grid[i][j][0] == gem_type:
                         matches_from_bonus.append(self.get_gem_info(i, j))
 
             if bonus_type == 3:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add 9 surrounding gems of this gem
                 row_max = min(row + 2, self.rows)
                 row_min = max(row - 1, 0)
