@@ -1,9 +1,13 @@
 """
 This is the file for the game logic of three match.
 """
+import logging
 from itertools import product
 from operator import itemgetter
 from random import randint, choice
+
+logging.basicConfig(filename='game.log', filemode='w', level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
@@ -156,8 +160,9 @@ class Board:
                 while remove:
                     remove = self.pull_gems_down()
 
-                print(f'loop {count}: ')
-                print(self)
+                # debug logging line
+                logging.debug(f"\nInit gem loop {count}:\n\n{self}")
+
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
 
@@ -342,6 +347,7 @@ class Board:
 
         # if waiting for input, block
         if self.game_state == "waiting_for_input":
+            logging.warning(update_bag)
             return update_bag
 
         elif self.terminal_state:
