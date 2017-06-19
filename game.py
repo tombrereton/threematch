@@ -338,6 +338,7 @@ class Board:
         :return:
         """
         update_bag = UpdateBag([], [], [], [], [], [], [])
+        update_bag.gems = self.gem_grid.grid
 
         # if waiting for input, block
         if self.game_state == "waiting_for_input":
@@ -351,6 +352,7 @@ class Board:
                 info = self.get_game_info()
                 movements = self.get_swap_movement()
                 update_bag = UpdateBag([], [], [], movements, [], [], info)
+                update_bag.gems = self.gem_grid.grid
 
                 # send bag to view
                 event = UpdateBagEvent(update_bag)
@@ -380,6 +382,7 @@ class Board:
             info = self.get_game_info()
             movements = self.get_swap_movement()
             update_bag = UpdateBag([], [], [], movements, [], [], info)
+            update_bag.gems = self.gem_grid.grid
 
             # send bag to view
             event = UpdateBagEvent(update_bag)
@@ -400,6 +403,7 @@ class Board:
             medals = self.medals_removed
             info = self.get_game_info()
             update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
+            update_bag.gems = self.gem_grid.grid
 
             # send bag to view
             event = UpdateBagEvent(update_bag)
@@ -419,6 +423,7 @@ class Board:
             info = self.get_game_info()
 
             update_bag = UpdateBag([], [], additions, movements, [], [], info)
+            update_bag.gems = self.gem_grid.grid
 
             # send bag to view
             event = UpdateBagEvent(update_bag)
