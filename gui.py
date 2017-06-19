@@ -476,10 +476,10 @@ class GUI:
             self.draw()
 
     def explode(self, removals: list):
-        for i, j, _, _, _ in removals:
-            print(i, j)
-            self.gem_grid.grid[i][j].is_exploding = True
-        self.animate_loop()
+        if len(removals):
+            for i, j, _, _, _ in removals:
+                self.gem_grid.grid[i][j].is_exploding = True
+            self.animate_loop()
 
     def break_ice(self, ice_broken: list):
         for i, j, layer in ice_broken:
@@ -510,7 +510,8 @@ class GUI:
     def move_and_add(self, moving_gems: list, additions: list):
         temp = []
         for coord1, coord2 in zip(*moving_gems):
-            if coord1[0] == -1: continue
+            if coord1[0] == -1:
+                continue
             gem = self.gem_grid.grid[coord1[0]][coord1[1]]
             gem.set_target(*self.gem_grid.grid_to_pixel(*coord2[:2]))
             temp.append((coord2, gem))
