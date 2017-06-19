@@ -144,15 +144,17 @@ class Board:
             match_list, bonus_list = self.find_matches()
             match_count = len(match_list)
 
-            if match_count >= 3:
+            while match_count >= 3:
                 self.match_list = match_list
                 self.bonus_list = bonus_list
+                self.remove_gems_add_bonuses(init=True)
 
-            self.remove_gems_add_bonuses(init=True)
+                remove = True
+                while remove:
+                    remove = self.pull_gems_down()
 
-            remove = True
-            while remove:
-                remove = self.pull_gems_down()
+                match_list, bonus_list = self.find_matches()
+                match_count = len(match_list)
 
     def test_grid_vertical(self):
         """
