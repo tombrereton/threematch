@@ -11,7 +11,7 @@ from events import UpdateBagEvent, EventManager
 from global_variables import *
 from update_bag import UpdateBag
 
-logging.basicConfig(logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 # Functions for testing
 
@@ -517,7 +517,7 @@ class GUI:
     def add_bonuses_fix(self, bonuses: list):
         for i, j, *gem in bonuses:
             if self.gem_grid.grid[i][j] == -1:
-                print('fixed bonus')
+                # print('fixed bonus')
                 self.gem_grid.add(i, j, gem)
         self.draw()
 
@@ -552,12 +552,12 @@ class GUI:
         self.remove(update_bag.removals)
         self.add_bonuses_fix(update_bag.bonuses)
         self.move_and_add(update_bag.movements, update_bag.additions)
-        self.compare(update_bag.gems, False)
-        self.gems = copy.deepcopy(update_bag.gems)
+        # self.compare(update_bag.gems, False)
+        # self.gems = copy.deepcopy(update_bag.gems)
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
-            print(event.update_bag)
+            # print(event.update_bag)
             self.change(event.update_bag)
 
     def compare(self, gems, before: bool):
@@ -575,36 +575,3 @@ class GUI:
                 logging.warning(f'row {i} column {j}')
                 logging.warning(game_gem)
                 logging.warning(gui_gem)
-
-# Testing
-if __name__ == '__main__':
-    gui = GUI(*rand())
-    '''
-    for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
-        time.sleep(1)
-        if j % 2 is 0:
-            gui.change([(i, j, 0, 0, 0)], [], [], [], [], [], ()) # remove
-        else:
-            gui.change([], [(i, j, 0, random.randint(1, 3), 0)], [], [], [], [], ()) # bonus
-    '''
-    time.sleep(1)
-    gui.change([(0, j, 0, 0, 0) for j in range(PUZZLE_ROWS)], [], [], [], [], [], ())
-    time.sleep(1)
-    gui.change([], [], [(0, j, random.randrange(6), random.randrange(4), 0) for j in range(PUZZLE_ROWS)], [], [], [], ())
-    all = [(i, j) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))]
-    swaps = []
-    while 1 < len(all):
-        ai = random.randrange(len(all))
-        a = all.pop(ai)
-        bi = random.randrange(len(all))
-        b = all.pop(bi)
-        swaps.append([a, b])
-        swaps.append([b, a])
-    gui.change([], [], [], swaps, [], [], ())
-    time.sleep(1)
-    gui.change([], [], [], [], [(i, j, -1) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))], [], ())
-    time.sleep(1)
-    gui.change([], [], [], [], [], [(i, j, 0) for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS))], ())
-    time.sleep(1)
-    gui.change([], [], [], [], [], [], rand_text())
-    time.sleep(1)
