@@ -78,6 +78,7 @@ class Board:
         self.medals_removed = []
         self.movements = []
         self.additions = []
+        self.cascade = 0
 
         # initialise grids
         self.init_gem_grid()
@@ -159,8 +160,7 @@ class Board:
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
 
-                count +=1
-
+                count += 1
 
     def test_grid_vertical(self):
         """
@@ -311,7 +311,26 @@ class Board:
         Simple getter to get game information
         :return:
         """
+        self.update_score()
         return self.moves, self.medals, self.score, self.terminal_state, self.win_state
+
+    def update_score(self):
+        """
+        Takes in match list. Adds points based on
+        the number of gems.
+
+        Future implementation: multipliers for combos
+        :param match_list:
+        :param bonus_list:
+        :param medals_freed:
+        :param cascade:
+        :return:
+        """
+        match_list = self.match_list
+        bonus_list = self.bonus_list
+        medals_freed = len(self.medals_removed)
+        bonus_removed = len([0 for y, x, t, bt, activation in match_list if bt is not 0])
+        self.score += 100 * self.cascade * (len(match_list) + len(bonus_list) + 2 * bonus_removed + 5 * medals_freed)
 
     def get_update(self):
         """
@@ -370,6 +389,7 @@ class Board:
 
         # if matches found state, return matches, bonuses, etc, then pull gems down
         elif self.game_state == "matches_found":
+            self.cascade += 1
 
             # remove gems in grid that are in matches_list
             self.remove_gems_add_bonuses()
@@ -423,8 +443,9 @@ class Board:
                 else:
                     # no more matches, then wait for user input
                     self.game_state = "waiting_for_input"
+                    self.cascade = 0
 
-        # TODO: remove or leave in for testing?
+        # Leave in for testing
         return update_bag
 
     def check_swap(self):
@@ -804,8 +825,6 @@ class Board:
 
                 if grid[i][j] == -1 and grid[i - 1][j] != -1:
                     # if cell j,i is empty and the cell above is not empty, swap them.
-                    print(f'Pull down {j,i}:')
-                    print(self)
                     repeat = True
                     original_positions.append(self.get_gem_info(i - 1, j))
                     grid[i][j], grid[i - 1][j] = grid[i - 1][j], -1
