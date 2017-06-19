@@ -344,6 +344,8 @@ class Board:
             event = UpdateBagEvent(update_bag)
             self.event_manager.post(event)
 
+            self.game_state = "waiting_for_input"
+
         # if matches found state, return matches, bonuses, etc, then pull gems down
         elif self.game_state == "matches_found":
 
