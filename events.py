@@ -17,10 +17,10 @@ def pixel_to_grid(y_coord: int, x_coord: int):
     """
     row = (y_coord - MARGIN) // CELL_SIZE
     column = (x_coord - MARGIN) // CELL_SIZE
-    if row < 0 or row > PUZZLE_ROWS:
+    if row < 0 or row >= PUZZLE_ROWS:
         row = -1
 
-    if column < 0 or column > PUZZLE_COLUMNS:
+    if column < 0 or column >= PUZZLE_COLUMNS:
         column = -1
     return row, column
 
