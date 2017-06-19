@@ -3,12 +3,15 @@ import time
 from itertools import product
 
 import pygame
+import copy
+import logging
 
 import game_utilities as util
 from events import UpdateBagEvent, EventManager
 from global_variables import *
 from update_bag import UpdateBag
 
+logging.basicConfig(logging.DEBUG)
 
 # Functions for testing
 
@@ -131,6 +134,9 @@ class Gem(pygame.sprite.Sprite):
         self.origin = (0, 0)
         self.target = (0, 0)
         self.i = 0
+
+    def __str__(self):
+        return '({}, {}, {})'.format(self.type, self.bonus_type, self.activation)
 
     def update_bonus_type(self, new_bonus_type: int):
         self.bonus_type = new_bonus_type
@@ -444,6 +450,7 @@ class GUI:
         self.draw()
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
+        self.gems = copy.deepcopy(gems)
 
     def new_state(self, gems: list, ice, medals: list, text_info: tuple):
         self.gem_grid.new_grid(gems)
@@ -507,12 +514,20 @@ class GUI:
             self.gem_grid.remove(i, j)
         self.draw()
 
+    def add_bonuses_fix(self, bonuses: list):
+        for i, j, *gem in bonuses:
+            if self.gem_grid.grid[i][j] == -1:
+                print('fixed bonus')
+                self.gem_grid.add(i, j, gem)
+        self.draw()
+
     def move_and_add(self, moving_gems: list, additions: list):
         temp = []
         for coord1, coord2 in zip(*moving_gems):
             if coord1[0] == -1:
                 continue
             gem = self.gem_grid.grid[coord1[0]][coord1[1]]
+            self.gem_grid.grid[coord1[0]][coord1[1]] = -1
             gem.set_target(*self.gem_grid.grid_to_pixel(*coord2[:2]))
             temp.append((coord2, gem))
         for coord2, gem in temp:
@@ -526,6 +541,7 @@ class GUI:
         self.animate_loop()
 
     def change(self, update_bag: UpdateBag):
+        # self.compare(self.gems, True)
         if len(update_bag.info) is not 0:
             self.bg.set_all(*update_bag.info)
         self.draw()
@@ -534,12 +550,31 @@ class GUI:
         self.remove_medals(update_bag.medals_removed)
         self.add_bonuses(update_bag.bonuses)
         self.remove(update_bag.removals)
+        self.add_bonuses_fix(update_bag.bonuses)
         self.move_and_add(update_bag.movements, update_bag.additions)
+        self.compare(update_bag.gems, False)
+        self.gems = copy.deepcopy(update_bag.gems)
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
+            print(event.update_bag)
             self.change(event.update_bag)
 
+    def compare(self, gems, before: bool):
+        for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
+            game_gem = gems[i][j]
+            gui_gem = self.gem_grid.grid[i][j]
+            if (game_gem == -1) and (gui_gem == -1):
+                continue
+            elif type(game_gem) is tuple and type(gui_gem) is Gem:
+                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or game_gem[2] != gui_gem.activation:
+                    continue
+            else:
+                logging.warning('Before' if before else 'After')
+                logging.warning('comparison failed')
+                logging.warning(f'row {i} column {j}')
+                logging.warning(game_gem)
+                logging.warning(gui_gem)
 
 # Testing
 if __name__ == '__main__':
