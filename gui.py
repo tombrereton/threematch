@@ -537,7 +537,6 @@ class GUI:
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
-            print(event.update_bag)
             self.change(event.update_bag)
 
 
