@@ -477,6 +477,7 @@ class GUI:
 
     def explode(self, removals: list):
         for i, j, _, _, _ in removals:
+            print(i, j)
             self.gem_grid.grid[i][j].is_exploding = True
         self.animate_loop()
 
@@ -519,8 +520,9 @@ class GUI:
         temp = []
         for coord1, coord2 in zip(*moving_gems):
             gem = self.gem_grid.grid[coord1[0]][coord1[1]]
-            self.gem_grid.grid[coord1[0]][coord1[1]] = -1
-            # y,x = *self.gem_grid.grid_to_pixel(*coord2)
+            # self.gem_grid.grid[coord1[0]][coord1[1]] = -1
+            y, x = [*coord2[:2]]
+            yp, xp = [*self.gem_grid.grid_to_pixel(*coord2[:2])]
             gem.set_target(*self.gem_grid.grid_to_pixel(*coord2[:2]))
             temp.append((coord2, gem))
         for coord2, gem in temp:
