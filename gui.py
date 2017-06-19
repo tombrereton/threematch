@@ -517,10 +517,11 @@ class GUI:
 
     def move(self, moving_gems: list):
         temp = []
-        for coord1, coord2 in moving_gems:
+        for coord1, coord2 in zip(*moving_gems):
             gem = self.gem_grid.grid[coord1[0]][coord1[1]]
             self.gem_grid.grid[coord1[0]][coord1[1]] = -1
-            gem.set_target(*self.gem_grid.grid_to_pixel(*coord2))
+            # y,x = *self.gem_grid.grid_to_pixel(*coord2)
+            gem.set_target(*self.gem_grid.grid_to_pixel(*coord2[:2]))
             temp.append((coord2, gem))
         for coord2, gem in temp:
             self.gem_grid.grid[coord2[0]][coord2[1]] = gem
@@ -540,6 +541,7 @@ class GUI:
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
+            print(event.update_bag)
             self.change(event.update_bag)
 
 

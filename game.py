@@ -65,7 +65,7 @@ class Board:
         self.score = 0
         self.terminal_state = False
         self.win_state = False
-        self.game_state = "empty"
+        self.game_state = "waiting_for_input"
         self.ice_layers = ice_layers - 1
         self.test = test
 
@@ -99,7 +99,7 @@ class Board:
     def notify(self, event):
         if isinstance(event, SwapGemsRequest):
             if self.game_state == "waiting_for_input":
-                self.set_swap_locations(SwapGemsRequest.swap_locations)
+                self.set_swap_locations(event.swap_locations)
         elif isinstance(event, TickEvent):
             if self.game_state != "waiting_for_input":
                 self.get_update()
