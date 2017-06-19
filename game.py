@@ -5,9 +5,9 @@ from itertools import product
 from operator import itemgetter
 from random import randint, choice
 
+from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
 from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
     MOVES_LEFT, ICE_LAYERS
-from mediator import SwapGemsRequest, EventManager, UpdateBagEvent, TickEvent
 from update_bag import UpdateBag
 
 

@@ -1,12 +1,13 @@
-import pygame
 import random
 import time
-import game_utilities as util
 from itertools import product
+
+import pygame
+
+import game_utilities as util
+from events import UpdateBagEvent, EventManager
 from global_variables import *
-from mediator import UpdateBagEvent
 from update_bag import UpdateBag
-from mediator import EventManager
 
 
 # Functions for testing
