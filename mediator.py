@@ -33,8 +33,8 @@ def pixel_to_grid(y_coord: int, x_coord: int):
     :param x_coord: Grid x coordinate
     :return: A tuple of the pixel coordinates (y, x)
     """
-    row = (y_coord - MARGIN) / CELL_SIZE
-    column = (x_coord - MARGIN) / CELL_SIZE
+    row = (y_coord - MARGIN) // CELL_SIZE
+    column = (x_coord - MARGIN) // CELL_SIZE
     return row, column
 
 
@@ -173,8 +173,8 @@ def main():
 
     mouse_cont = MouseController(evManager)
     spinner = CPUSpinnerController(evManager)
-    view = GUI(evManager)
     game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, evManager)
+    view = GUI(*game.state(), evManager)
 
     spinner.Run()
 
