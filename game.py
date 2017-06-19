@@ -84,6 +84,9 @@ class Board:
         self.init_ice_grid()
         self.init_medal_grid()
 
+    def state(self):
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, tuple()
+
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
         ice_grid = self.print_grid(self.ice_grid.grid)
