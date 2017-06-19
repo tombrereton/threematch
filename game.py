@@ -86,7 +86,8 @@ class Board:
         self.init_medal_grid()
 
     def state(self):
-        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (0, 0, 0, False, False)
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
+            self.moves, self.medals, self.score, False, False)
 
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
@@ -343,6 +344,14 @@ class Board:
         if self.game_state == "waiting_for_input":
             return update_bag
 
+        elif self.terminal_state:
+            info = self.get_game_info()
+            update_bag = UpdateBag([], [], [], [], [], [], info)
+
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
+
         # if input received state, return swap movements, make swap, and try to find matches
         elif self.game_state == "input_received":
 
@@ -444,6 +453,22 @@ class Board:
                     # no more matches, then wait for user input
                     self.game_state = "waiting_for_input"
                     self.cascade = 0
+
+                    if self.medals == 0:
+                        self.win_state = True
+                        self.terminal_state = True
+
+                    elif self.moves == 0:
+                        self.win_state = False
+                        self.terminal_state = True
+
+                    info = self.get_game_info()
+
+                    update_bag = UpdateBag([], [], [], [], [], [], info)
+
+                    # send bag to view
+                    event = UpdateBagEvent(update_bag)
+                    self.event_manager.post(event)
 
         # Leave in for testing
         return update_bag
