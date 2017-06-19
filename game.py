@@ -608,17 +608,23 @@ class Board:
         matches_from_bonus = []
         for row, column, gem_type, bonus_type, activation in matches:
             if bonus_type == 1:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add row to matches at location row
                 for j in range(self.columns):
                     matches_from_bonus.append(self.get_gem_info(row, j))
 
             if bonus_type == 2:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add all gems of this gems type to matches
                 for i, j in product(range(self.rows), range(self.columns)):
                     if self.gem_grid.grid[i][j][0] == gem_type:
                         matches_from_bonus.append(self.get_gem_info(i, j))
 
             if bonus_type == 3:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add 9 surrounding gems of this gem
                 row_max = min(row + 2, self.rows)
                 row_min = max(row - 1, 0)
@@ -696,17 +702,23 @@ class Board:
         matches_from_bonus = []
         for row, column, gem_type, bonus_type, activation in matches:
             if bonus_type == 1:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add column to matches at location column
                 for i in range(self.rows):
                     matches_from_bonus.append(self.get_gem_info(i, column))
 
             if bonus_type == 2:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add all gems of this gems type to matches
                 for i, j in product(range(self.rows), range(self.columns)):
                     if self.gem_grid.grid[i][j][0] == gem_type:
                         matches_from_bonus.append(self.get_gem_info(i, j))
 
             if bonus_type == 3:
+                # remove original gem
+                matches.remove(self.get_gem_info(row, column))
                 # add 9 surrounding gems of this gem
                 row_max = min(row + 2, self.rows)
                 row_min = max(row - 1, 0)
