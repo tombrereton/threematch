@@ -133,13 +133,13 @@ class CPUSpinnerController:
         self.keepGoing = 1
 
     # ----------------------------------------------------------------------
-    def Run(self):
+    def run(self):
         while self.keepGoing:
             event = TickEvent()
             self.evManager.post(event)
 
     # ----------------------------------------------------------------------
-    def Notify(self, event):
+    def notify(self, event):
         if isinstance(event, QuitEvent):
             # this will stop the while loop from running
             self.keepGoing = False

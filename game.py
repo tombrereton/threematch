@@ -85,7 +85,7 @@ class Board:
         self.init_medal_grid()
 
     def state(self):
-        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, tuple()
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid,(0,0,0, False, False)
 
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
@@ -96,7 +96,7 @@ class Board:
         return s
 
     # ----------------------------------------------------------------------
-    def Notify(self, event):
+    def notify(self, event):
         if isinstance(event, SwapGemsRequest):
             if self.game_state == "waiting_for_input":
                 self.set_swap_locations(SwapGemsRequest.swap_locations)

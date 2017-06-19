@@ -116,7 +116,7 @@ class Gem(pygame.sprite.Sprite):
     Class for the gem sprites.
     """
 
-    def __init__(self, size: int, gem_info: tuple, image_list: list, explosions: list, gem_group, event_manager: EventManager):
+    def __init__(self, size: int, gem_info: tuple, image_list: list, explosions: list, gem_group):
         # Call to super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         # Set field variables
@@ -538,7 +538,7 @@ class GUI:
         self.add(update_bag.additions)
         self.move(update_bag.movements)
 
-    def Notify(self, event):
+    def notify(self, event):
         if isinstance(event, UpdateBagEvent):
             self.change(event.update_bag)
 

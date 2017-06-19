@@ -33,7 +33,7 @@ def main():
     game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT , event_manager=evManager)
     view = GUI(*game.state(), evManager)
 
-    spinner.Run()
+    spinner.run()
 
 
 if __name__ == "__main__":
