@@ -550,9 +550,12 @@ class Board:
 
         # remove all bonuses in matches
         reduced_bonuses = [(r, c) for r, c, t, bt, a in bonuses]
-        for row, col, gem_type, bonus_type, activation in matches:
-            if (row, col) in reduced_bonuses:
-                matches.remove(self.get_gem_info(row, col))
+        i = 0
+        while i < len(matches):
+            if matches[i][:2] in reduced_bonuses:
+                matches.pop(i)
+            else:
+                i += 1
 
         return matches, bonuses
 
