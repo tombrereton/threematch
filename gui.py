@@ -1,22 +1,24 @@
+import copy
+import logging
 import random
-import time
 from itertools import product
 
 import pygame
-import copy
-import logging
 
 import game_utilities as util
 from events import UpdateBagEvent, EventManager
 from global_variables import *
 from update_bag import UpdateBag
 
-logging.basicConfig(level=logging.DEBUG)
 
 # Functions for testing
 
 def print_array(a):
     print('\n'.join(['\t'.join([str(el) for el in row]) for row in a]))
+
+
+def build_array_string(a):
+    return '\n' + '\n'.join([', '.join([str(el) for el in row]) for row in a])
 
 
 def rand_text(medals=None):
@@ -192,7 +194,8 @@ class GemGrid(SpriteGrid):
     Class to hold a grid of gem sprites.
     """
 
-    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, gem_images: list, explosions: list, group, gems: list):
+    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, gem_images: list, explosions: list, group,
+                 gems: list):
         """
         Constructor for the GemGrid class.
         :param rows: Number of rows in the game
@@ -375,7 +378,6 @@ class MedalGrid(SpriteGrid):
 
 
 class Background:
-
     def __init__(self, moves_left: int, medals_left: int, score: int, terminal: bool, win: bool):
         self.font = pygame.font.Font(None, int(24 * HD_SCALE))
         self.game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
@@ -435,14 +437,14 @@ class Background:
 
 
 class GUI:
-
     def __init__(self, gems: list, ice, medals: list, text_info: tuple, event_manager: EventManager):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('Gem Island')
         self.bg = Background(*text_info)
         self.gem_group = pygame.sprite.Group()
-        self.gem_grid = GemGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.bg.gem_images, self.bg.explosions, self.gem_group, gems)
+        self.gem_grid = GemGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.bg.gem_images, self.bg.explosions,
+                                self.gem_group, gems)
         self.ice_group = pygame.sprite.Group()
         self.ice_grid = IceGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.ice_group, ice)
         self.medal_group = pygame.sprite.Group()
@@ -550,17 +552,17 @@ class GUI:
         self.remove_medals(update_bag.medals_removed)
         self.add_bonuses(update_bag.bonuses)
         self.remove(update_bag.removals)
-        self.add_bonuses_fix(update_bag.bonuses)
+        # self.add_bonuses_fix(update_bag.bonuses)
         self.move_and_add(update_bag.movements, update_bag.additions)
-        # self.compare(update_bag.gems, False)
-        # self.gems = copy.deepcopy(update_bag.gems)
+        self.compare(update_bag.gems, update_bag)
+        self.gems = copy.deepcopy(update_bag.gems)
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
             # print(event.update_bag)
             self.change(event.update_bag)
 
-    def compare(self, gems, before: bool):
+    def compare(self, gems, update_bag):
         for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
             game_gem = gems[i][j]
             gui_gem = self.gem_grid.grid[i][j]
@@ -570,8 +572,10 @@ class GUI:
                 if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or game_gem[2] != gui_gem.activation:
                     continue
             else:
-                logging.warning('Before' if before else 'After')
-                logging.warning('comparison failed')
+                logging.warning('\n\nFrom model gem grid: \n' + build_array_string(gems))
+                logging.warning('\n\nFrom GUI gem grid: \n'+ build_array_string(self.gem_grid.grid))
+                logging.warning('\n\n' + str(update_bag)+ '\n')
+                logging.warning('\n\nComparison failed:')
                 logging.warning(f'row {i} column {j}')
                 logging.warning(game_gem)
                 logging.warning(gui_gem)

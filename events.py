@@ -75,8 +75,8 @@ class EventManager:
 
     # ----------------------------------------------------------------------
     def post(self, event):
-        if not isinstance(event, TickEvent):
-            debug_print("\n     Message: " + event.name)
+        # if not isinstance(event, TickEvent):
+        #     debug_print("\n     Message: " + event.name)
         for listener in self.listeners:
             # NOTE: If the weakref has died, it will be
             # automatically removed, so we don't have
