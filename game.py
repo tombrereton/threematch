@@ -144,7 +144,7 @@ class Board:
             rows = self.rows
             columns = self.columns
             for row, column in product(range(rows), range(columns)):
-                self.gem_grid.grid[row][column] = self.new_gem()
+                self.gem_grid.grid[row][column] = self.new_gem((row + column) % 2)
 
             # find matches
             match_list, bonus_list = self.find_matches()
@@ -354,6 +354,7 @@ class Board:
         elif self.terminal_state:
             info = self.get_game_info()
             update_bag = UpdateBag([], [], [], [], [], [], info)
+            update_bag.gems = self.gem_grid.grid
 
             # send bag to view
             event = UpdateBagEvent(update_bag)
@@ -476,6 +477,7 @@ class Board:
                     info = self.get_game_info()
 
                     update_bag = UpdateBag([], [], [], [], [], [], info)
+                    update_bag.gems = self.gem_grid.grid
 
                     # send bag to view
                     event = UpdateBagEvent(update_bag)
