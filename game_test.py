@@ -242,12 +242,12 @@ def test_2_1_ice_removed():
     print(b)  #
     # ice should be like this
     ice_grid = [[-1] * columns0 for _ in range(rows0)]
-    current_ice = b0.ice_grid.grid
+    current_ice = b.ice_grid.grid
     assert current_ice == ice_grid
 
 
 def test_2_2_medals_removed():
     medal_grid = [[-1] * columns0 for _ in range(rows0)]
-    current_medals = b0.medal_grid.grid
+    current_medals = b.medal_grid.grid
     assert current_medals == medal_grid
 
