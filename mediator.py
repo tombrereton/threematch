@@ -27,7 +27,7 @@ from gui_variables import *
 # ------------------------------------------------------------------------------
 def main():
     """..."""
-    gui_vars = GUIVariables.default()
+    gui_vars = GUIVariables.from_global()
     evManager = EventManager(gui_vars)
 
     mouse_cont = MouseController(evManager)

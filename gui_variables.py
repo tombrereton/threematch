@@ -20,7 +20,7 @@ class GUIVariables:
         self.explosion_frames = explosion_frames
 
     @staticmethod
-    def default():
+    def from_global():
         return GUIVariables(gv.PUZZLE_ROWS, gv.PUZZLE_COLUMNS, gv.HD_SCALE, gv.BASE_CELL_SIZE, gv.GEM_RATIO,
                             gv.BASE_MARGIN, gv.BASE_TEXT_AREA, gv.ANIMATION_SCALE, gv.EXPLOSION_FRAMES)
 

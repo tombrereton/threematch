@@ -457,8 +457,9 @@ class GUI:
         self.screen.blit(self.bg.game_over_text, self.bg.game_over_text_pos)
         pygame.display.flip()
 
-    def animate_loop(self):
-        for i in range(self.gui_vars.animation_scale):
+    def animate_loop(self, loop = None):
+        loop = self.gui_vars.animation_scale if loop is None else loop
+        for i in range(loop):
             # loop the number of times we need to animate given
             # by ANIMATION_SCALE
 
@@ -473,7 +474,7 @@ class GUI:
         if len(removals):
             for i, j, _, _, _ in removals:
                 self.gem_grid.grid[i][j].is_exploding = True
-            self.animate_loop()
+            self.animate_loop(self.gui_vars.explosion_frames)
 
     def break_ice(self, ice_broken: list):
         for i, j, layer in ice_broken:
@@ -536,7 +537,7 @@ class GUI:
         self.remove_medals(update_bag.medals_removed)
         self.add_bonuses(update_bag.bonuses)
         self.remove(update_bag.removals)
-        self.add_bonuses_fix(update_bag.bonuses)
+        # self.add_bonuses_fix(update_bag.bonuses)
         self.move_and_add(update_bag.movements, update_bag.additions)
         self.compare(update_bag.gems)
 
