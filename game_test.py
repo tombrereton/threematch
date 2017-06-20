@@ -49,6 +49,80 @@ def test_use_bonus_type_1():
     assert expected_bonuses == actual_bonuses
 
 
+def test_use_bonus_type_2():
+    """
+    TODO
+    :return:
+    """
+    print('\n\nTest use bonus type 2:\n')
+
+    # Set up grid for testing
+
+    # swap to allow matches to be found
+    swap_locations = [(0, 0), (0, 1)]
+
+    # find matches by calling get update twice
+    bag = b1.get_update()
+
+    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 1, 0), (0, 4, 1, 0, 0)]
+    expected_bonuses = []
+
+    actual_removals = bag.removals
+    actual_bonuses = bag.bonuses
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_use_bonus_type_3():
+    """
+    TODO
+    :return:
+    """
+    print('\n\nTest use bonus type 3:\n')
+
+    # Set up grid for testing
+
+    # swap to allow matches to be found
+    swap_locations = [(0, 0), (0, 1)]
+
+    # find matches by calling get update twice
+    bag = b1.get_update()
+
+    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 1, 0), (0, 4, 1, 0, 0)]
+    expected_bonuses = []
+
+    actual_removals = bag.removals
+    actual_bonuses = bag.bonuses
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_use_4_match_intersect():
+    """
+    TODO
+    :return:
+    """
+    print('\n\nTest 4 match intersect:\n')
+
+    # Set up grid for testing
+
+    # swap to allow matches to be found
+    swap_locations = [(0, 0), (0, 1)]
+
+    # find matches by calling get update twice
+    bag = b1.get_update()
+
+    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 1, 0), (0, 4, 1, 0, 0)]
+    expected_bonuses = []
+
+    actual_removals = bag.removals
+    actual_bonuses = bag.bonuses
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
 
 def test_ice_removed():
     print("\nBoard 1:\n")
