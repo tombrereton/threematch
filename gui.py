@@ -54,8 +54,7 @@ class SpriteGrid:
         # Set field variables
         self.gui_vars = gui_vars
         self.group = group
-        # Create blank grid of the correct size
-        self.grid = [[-1] * self.gui_vars.columns for _ in range(self.gui_vars.rows)]
+        self.grid = None
         # Populate grid with sprites
         self.new_grid(info)
 
@@ -65,6 +64,8 @@ class SpriteGrid:
         :param info: Information about sprites to be held in grid
         :return: None
         """
+        # Create blank grid of the correct size
+        self.grid = [[-1] * self.gui_vars.columns for _ in range(self.gui_vars.rows)]
         # Remove old sprites from group (if any)
         self.group.empty()
         # Add sprites
@@ -551,7 +552,8 @@ class GUI:
             if (game_gem == -1) and (gui_gem == -1):
                 continue
             elif type(game_gem) is tuple and type(gui_gem) is Gem:
-                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or game_gem[2] != gui_gem.activation:
+                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or \
+                                game_gem[2] != gui_gem.activation:
                     continue
             else:
                 logging.warning(f'Comparison failed at: ({i}, {j})')

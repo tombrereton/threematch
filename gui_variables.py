@@ -3,8 +3,8 @@ import global_variables as gv
 
 class GUIVariables:
 
-    def __init__(self, rows: int, columns: int, hd_scale: float, base_cell_size: int, gem_ratio: float, base_margin: int,
-                base_text_area: int, animation_scale: int, explosion_frames: int):
+    def __init__(self, rows: int, columns: int, hd_scale: float, base_cell_size: int, gem_ratio: float,
+                 base_margin: int, base_text_area: int, animation_scale: int, explosion_frames: int):
         self.rows = rows
         self.columns = columns
         self.hd_scale = hd_scale
@@ -19,6 +19,7 @@ class GUIVariables:
         self.animation_scale = animation_scale
         self.explosion_frames = explosion_frames
 
+    @staticmethod
     def default():
         return GUIVariables(gv.PUZZLE_ROWS, gv.PUZZLE_COLUMNS, gv.HD_SCALE, gv.BASE_CELL_SIZE, gv.GEM_RATIO,
                             gv.BASE_MARGIN, gv.BASE_TEXT_AREA, gv.ANIMATION_SCALE, gv.EXPLOSION_FRAMES)
@@ -32,6 +33,4 @@ class GUIVariables:
         """
         row = (y_coord - self.margin) // self.cell_size
         column = (x_coord - self.margin) // self.cell_size
-        row = row if row in range(self.rows) else -1
-        column = column if column in range(self.columns) else -1
-        return row, column
+        return row if -1 < row < self.rows else -1, column if -1 < column < self.columns else -1
