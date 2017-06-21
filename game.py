@@ -156,9 +156,11 @@ class Board:
             # find matches
             match_list, bonus_list = self.find_matches()
             match_count = len(match_list)
+            bonus_count = len(bonus_list)
+
 
             count = 0
-            while match_count >= 3:
+            while match_count + bonus_count >= 3:
                 self.match_list = match_list
                 self.bonus_list = bonus_list
                 self.remove_gems_add_bonuses(init=True)
@@ -172,6 +174,7 @@ class Board:
 
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
+                bonus_count = len(bonus_list)
 
                 count += 1
 
@@ -385,8 +388,14 @@ class Board:
                 # find matches
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
+                bonus_count = len(bonus_list)
 
-                if match_count >= 3:
+                # logging
+                logging.info("Input received state:")
+                logging.info(match_count)
+                logging.info(len(bonus_list))
+
+                if match_count + bonus_count >= 3:
                     self.match_list = match_list
                     self.bonus_list = bonus_list
                     self.move_made()
@@ -462,8 +471,14 @@ class Board:
                 # find matches
                 match_list, bonus_list = self.find_matches()
                 match_count = len(match_list)
+                bonus_count = len(bonus_list)
 
-                if match_count >= 3:
+                # logging
+                logging.info("Pulled down state:")
+                logging.info(match_count)
+                logging.info(len(bonus_list))
+
+                if match_count + bonus_count >= 3:
                     self.match_list = match_list
                     self.bonus_list = bonus_list
                     self.game_state = "matches_found"
@@ -672,7 +687,7 @@ class Board:
                 matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
 
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action_horizontal(matches_from_bonus))
+        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, row_first=False))
 
         # remove duplicates
         matches = list(set(matches))
@@ -740,7 +755,7 @@ class Board:
                 matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
 
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action_vertical(matches_from_bonus))
+        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, row_first=True))
 
         # remove duplicates
         matches = list(set(matches))
@@ -788,42 +803,45 @@ class Board:
 
         return broken
 
-    def cascade_bonus_action_vertical(self, matches_from_bonus):
+    def cascade_bonus_action(self, matches_from_bonus, row_first: bool):
         """
         Loops over matches from bonus and performs bonus
         action.
 
         Gems removed from bonus action are appended to
         matches from bonuses
+        :param row_first:
         :param matches_from_bonus:
         :return:
         """
-        breaking = matches_from_bonus[:]
+        breaking_next = matches_from_bonus[:]
         broken = []
 
-        while len(breaking):
-            gem = breaking[0]
-            row, column, gem_type, bonus_type, activation = gem
-            if bonus_type == 1 and gem not in broken:
-                # add row to matches at location row
-                temp = self.remove_column(row, column)
-                temp = [gem for gem in temp if gem not in broken]
-                breaking.extend(temp)
+        while len(breaking_next):
+            breaking_current, breaking_next = breaking_next, []
+            for gem in breaking_current:
+                row, column, gem_type, bonus_type, activation = gem
+                if bonus_type == 1 and gem not in broken:
+                    # add row to matches at location row
+                    f = self.remove_row if row_first else self.remove_column
+                    temp = f(row, column)
+                    temp = [gem for gem in temp if gem not in broken]
+                    breaking_next.extend(temp)
 
-            if bonus_type == 2:
-                # add all gems of this gems type to matches
-                temp = self.remove_all_gems_of_type(gem_type, row, column)
-                temp = [gem for gem in temp if gem not in broken]
-                breaking.extend(temp)
+                if bonus_type == 2:
+                    # add all gems of this gems type to matches
+                    temp = self.remove_all_gems_of_type(gem_type, row, column)
+                    temp = [gem for gem in temp if gem not in broken]
+                    breaking_next.extend(temp)
 
-            if bonus_type == 3:
-                # add 9 surrounding gems of this gem
-                temp = self.remove_surrounding_gems(row, column)
-                temp = [gem for gem in temp if gem not in broken]
-                breaking.extend(temp)
+                if bonus_type == 3:
+                    # add 9 surrounding gems of this gem
+                    temp = self.remove_surrounding_gems(row, column)
+                    temp = [gem for gem in temp if gem not in broken]
+                    breaking_next.extend(temp)
 
-            breaking.remove(gem)
-            broken.append(gem)
+                broken.append(gem)
+            row_first = not row_first
 
         return broken
 

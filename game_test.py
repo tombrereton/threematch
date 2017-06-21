@@ -379,6 +379,28 @@ def test_1_10_swap_in_bonus_from_above_and_activate_horizontal():
     assert expected_bonuses == actual_bonuses
 
 
+def test_1_11_diamond_grid():
+    """
+    Should remove all gems
+    :return:
+    """
+
+    print('\n\nTest 1.11 grid full of diamonds, remove all:\n')
+
+    b2 = Board(rows=3, columns=3, ice_rows=0, medals=0, moves=10, gem_types=1, test='horizontal',
+               event_manager=event_manager)
+    print(b2)
+
+    actual_removed, actual_bonus = b2.find_matches()
+    b2.match_list = actual_removed
+    b2.bonus_list = actual_bonus
+    b2.remove_gems_add_bonuses()
+
+
+    print('\n\n second:\n')
+    print(actual_removed)
+    print(actual_bonus)
+
 def test_2_1_ice_removed():
     """
     Testing that all ice is removed
