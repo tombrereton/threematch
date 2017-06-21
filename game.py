@@ -876,6 +876,9 @@ class Board:
         for row, column, gem_type, bonus_type, activation in self.bonus_list:
             self.gem_grid.grid[row][column] = (gem_type, bonus_type, activation)
 
+            if not init:
+                self.remove_ice(row, column)
+
     def pull_gems_down(self):
         """
         Pulls gems down vertically to simulate gravity.

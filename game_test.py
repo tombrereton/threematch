@@ -265,6 +265,44 @@ def test_1_7_use_bonuses_when_removed_by_bonus():
     assert expected_bonuses == actual_bonuses
 
 
+def test_1_8_swap_in_bonus_and_activate():
+    """
+    Testing activating a cross bonus (type 1)
+    when being swapped in.
+
+    5 gems in a column. 2 gems of type 0,
+    then a gem of type 1, then a cross gem of
+    type 0, then a gem of type 1.
+
+    All 5 gems should be removed.
+    :return:
+    """
+    print('\n\nTest 1.8 swap in a cross bonus and removing all gems:\n')
+
+    b2 = Board(rows=5, columns=1, ice_rows=0, medals=0, moves=10, gem_types=3, test='vertical',
+               event_manager=event_manager)
+
+    # Set up grid for testing
+    b2.gem_grid.grid[2][0] = (1, 0, 0)
+    b2.gem_grid.grid[3][0] = (0, 1, 0)
+    b2.gem_grid.grid[4][0] = (1, 0, 0)
+    print(b2)
+
+    swap_locations = [(2, 0), (3, 0)]
+    b2.set_swap_locations(swap_locations)
+    b2.swap_gems()
+
+    print(b2)
+
+    expected_removals = [(0, 0, 0, 0, 0), (1, 0, 0, 0, 0), (2, 0, 0, 1, 0), (3, 0, 1, 0, 0), (4, 0, 1, 0, 0)]
+    expected_bonuses = []
+
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
 def test_2_1_ice_removed():
     """
     Testing that all ice is removed
@@ -324,3 +362,39 @@ def test_2_2_medals_removed():
     medal_grid = [[-1] * columns0 for _ in range(rows0)]
     current_medals = b.medal_grid.grid
     assert current_medals == medal_grid
+
+
+def test_2_3_remove_ice_when_creating_bonus():
+    """
+    Testing that ice is removed when a bonus is
+    also created.
+
+    Row of 4 gems of type 0.
+
+    Should remove all gems except for the first,
+    where a bonus of type 1 is created.
+
+    The ice should all be removed underneath
+    :return:
+    """
+    print('\n\nTest 2.3 removing ice when creating a bonus:\n')
+
+    b2 = Board(rows=1, columns=4, ice_rows=1, medals=0, moves=10, gem_types=3, test='horizontal',
+               event_manager=event_manager)
+
+    print(b2)
+
+    expected_removals = [(0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 0, 0)]
+    expected_bonuses = [(0, 0, 0, 1, 0)]
+    expected_ice_grid = [[-1, -1, -1, -1]]
+
+    actual_removals, actual_bonuses = b2.find_matches()
+    b2.match_list = actual_removals
+    b2.bonus_list = actual_bonuses
+    b2.remove_gems_add_bonuses()
+
+    actual_ice_grid = b2.ice_grid.grid
+
+    assert expected_ice_grid == actual_ice_grid
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
