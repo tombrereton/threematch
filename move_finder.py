@@ -7,14 +7,14 @@ from collections import Counter
 
 class Grid:
 	"""
-	Wrapper class for a grid, provides method for checking for matches
-	"""
+    Wrapper class for a grid, provides method for checking for matches
+    """
 
 	def __init__(self, grid: list):
 		"""
-		Constructor for class
+        Constructor for class
         :param grid: Grid of gem types
-		"""
+        """
 		# Set field variabls
 		self.grid = grid
 
@@ -32,9 +32,9 @@ class Grid:
 
 	def match_check(self):
 		"""
-		Method to check if this grid contains matches
+        Method to check if this grid contains matches
         :return: True if grid contains one or matches, False if not
-		"""
+        """
 		for i in range(len(self.a)):
 			for j in range(len(self.a[0])):
 					if self.get_gem(i, j) is self.get_gem(i + 1, j) is self.get_gem(i + 2, j) is not None:
@@ -44,19 +44,19 @@ class Grid:
 		return False
 
 
-class Alternate(Grid):
+class Swapped(Grid):
 	"""
-	Class that provides an alternate view of a grid if a move had been made
-	"""
+    Class that provides an swapped view of a grid if a move had been made
+    """
 
 	def __init__(self, grid: list, y: int, x: int, d: int):
 		"""
-		Constructor for class
+        Constructor for class
         :param grid: grid of gems
         :param y: Y coordinate of move
         :param x: X coordinate of move
         :param d: Direction of move, 0 for down or 1 for right
-		"""
+        """
         # Call to super constructor
 		super().__init__(grid)
         # Set field variables
@@ -98,9 +98,9 @@ def moves_one(grid: list):
     # Iterate through all possible moves
     for i, j, k in product(range(len(grid)), range(len(grid[0])), range(2)):
         # Create view of grid if this move was made
-        alt = Alternate(grid, i, j, k)
+        swapped = Swapped(grid, i, j, k)
         # Check if this move was not off grid and if it results in a match
-        if alt.good() and alt.match_check():
+        if swapped.good() and swapped.match_check():
             # If this resulted in a match add to list
             moves.append((i, j, k))
     # Return list of moves
