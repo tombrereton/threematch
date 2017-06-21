@@ -390,6 +390,12 @@ class Background:
         self.game_over_text = None
         self.game_over_text_pos = None
         self.background = util.load_background("stone_light_2.jpg", "ground.png", WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.grid_image_top_left = util.load_image_only("grid_inner_1.png", CELL_SIZE, rotate=0)
+        self.grid_image_bottom_right = util.load_image_only("grid_inner_2.png", CELL_SIZE, rotate=0)
+        self.border_top = util.load_border("border_2.png", CELL_SIZE * 2, CELL_SIZE * 3 / 4)
+        self.border_bottom = util.load_border("border_2.png", CELL_SIZE * 2, CELL_SIZE * 3 / 4, rotate=180)
+        self.border_left = util.load_border("border_2.png", CELL_SIZE * 3 / 4, CELL_SIZE * 2, rotate=90)
+        self.border_right = util.load_border("border_2.png", CELL_SIZE * 3 / 4, CELL_SIZE * 2, rotate=-90)
         self.gem_images = []
         self.explosions = []
         self.init_gem_images()
@@ -463,6 +469,27 @@ class GUI:
 
     def draw(self):
         self.screen.blit(self.bg.background, (0, 0))
+
+        # TODO: move it appropriate place
+        for j in range(PUZZLE_COLUMNS):
+            self.screen.blit(self.bg.border_top, (MARGIN * 0.78 + j * CELL_SIZE, MARGIN * 0.85))
+
+        for j in range(PUZZLE_COLUMNS):
+            self.screen.blit(self.bg.border_bottom, (MARGIN * 0.78 + j * CELL_SIZE,
+                                                     MARGIN * 0.84 + PUZZLE_ROWS * CELL_SIZE))
+
+        for i in range(PUZZLE_ROWS):
+            self.screen.blit(self.bg.border_left, (MARGIN * 0.85, MARGIN * 0.77 + i * CELL_SIZE))
+
+        for i in range(PUZZLE_ROWS):
+            self.screen.blit(self.bg.border_right, (MARGIN * 0.82 + PUZZLE_COLUMNS * CELL_SIZE,
+                                                    MARGIN * 0.79 + i * CELL_SIZE))
+
+        # TODO: remove the 'minus 1' and centre gems?
+        for i, j in product(range(PUZZLE_ROWS ), range(PUZZLE_COLUMNS )):
+            # rest
+            self.screen.blit(self.bg.grid_image_top_left, (MARGIN - 1 + i * CELL_SIZE, MARGIN - 1 + j * CELL_SIZE))
+
         self.screen.blit(self.bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
         self.screen.blit(self.bg.medals_left_text, (10, WINDOW_HEIGHT - MARGIN * 7 / 6))
         self.screen.blit(self.bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
@@ -569,12 +596,13 @@ class GUI:
             if (game_gem == -1) and (gui_gem == -1):
                 continue
             elif type(game_gem) is tuple and type(gui_gem) is Gem:
-                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or game_gem[2] != gui_gem.activation:
+                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or game_gem[
+                    2] != gui_gem.activation:
                     continue
             else:
                 logging.warning('\n\nFrom model gem grid: \n' + build_array_string(gems))
-                logging.warning('\n\nFrom GUI gem grid: \n'+ build_array_string(self.gem_grid.grid))
-                logging.warning('\n\n' + str(update_bag)+ '\n')
+                logging.warning('\n\nFrom GUI gem grid: \n' + build_array_string(self.gem_grid.grid))
+                logging.warning('\n\n' + str(update_bag) + '\n')
                 logging.warning('\n\nComparison failed:')
                 logging.warning(f'row {i} column {j}')
                 logging.warning(game_gem)
