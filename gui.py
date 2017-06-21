@@ -581,8 +581,8 @@ class GUI:
         self.remove(update_bag.removals)
         # self.add_bonuses_fix(update_bag.bonuses)
         self.move_and_add(update_bag.movements, update_bag.additions)
-        self.compare(update_bag.gems, update_bag)
-        self.gems = copy.deepcopy(update_bag.gems)
+        # self.compare(update_bag.gems, update_bag)
+        # self.gems = copy.deepcopy(update_bag.gems)
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
