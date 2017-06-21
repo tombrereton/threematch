@@ -24,9 +24,17 @@ b = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', e
 b0 = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b2 = Board(rows2, columns2, ice_rows2, medals2, moves_left2, test='horizontal', event_manager=event_manager)
 
+
 def test_1_1_use_bonus_type_1():
     """
-    Should remove all gems in row and create no bonuses
+    5 gems in a row. 3 gems of type 0.
+    Then 1 gem of type 0 and bonus type 1 (removes entire row).
+    Then gem of type 1.
+
+    Should remove all gems in row and create a bonus at 1st swap location.
+
+    Swap location is the 1st element, and the bonus created should be
+    type 1.
     :return:
     """
     print('\n\nTest use bonus type 1:\n')
@@ -58,7 +66,14 @@ def test_1_1_use_bonus_type_1():
 
 def test_1_2_use_bonus_type_2():
     """
-    TODO
+    Testing that a star bonus (type 2)
+    removes all gems of the same type.
+
+    5 gems in a row.
+    2 gems of type 0. Then gem of type 0 and bonus type 2 (star).
+    Then gem of type 1. Then gem of type 0.
+
+    4 Gems should be removed (all of type 0).
     :return:
     """
     print('\n\nTest use bonus type 2:\n')
@@ -69,6 +84,7 @@ def test_1_2_use_bonus_type_2():
     row[2] = (0, 2, 0)
     # Add type 1
     row[3] = (1, 0, 0)
+    print(row)
 
     # find matches by calling find_matches
     actual_removals, actual_bonuses = b2.find_matches()
@@ -90,7 +106,16 @@ def test_1_3_use_bonus_type_3():
 
 def test_1_4_use_4_match_intersect():
     """
-    TODO
+    Vertical is a 4 in a row, therefore getting a type 1 bonus
+    Horizontal is a normal 3 match.
+
+    The vertical and horizontal matches intersect.
+
+    This should result in all matches being removed except for the
+    swap position (the intersection point in this case), where a
+    type 1 bonus is created.
+
+    FYI, type 1 bonus removes entire row/column.
     :return:
     """
     print('\n\nTest 4 match intersect:\n')
@@ -125,7 +150,16 @@ def test_1_4_use_4_match_intersect():
 
 def test_1_5_use_bonus_3_intersect():
     """
-    TODO
+    Vertical is a three in a row.
+
+    Horizontal is a three in a row.
+
+    The swap makes the horizontal and vertical
+    intersect. The intersection is a
+    diamond bonus (type 3).
+
+    All matches should be removed including the gems
+    from the bonus action (points (1,1) and (1,3))
     :return:
     """
     print('\n\nTest 1.5 match intersect:\n')
@@ -164,11 +198,21 @@ def test_1_6_use_bonus_2_get_bonus_1():
     Testing that a bonus type 1 is still
     created when using a bonus type 2.
 
+    8 gems in a row.
+
+    4 of type 0. Then 1 of type 1.
+    Then a star bonus (type 2) of type 0.
+    Then 2 more of type 0.
+
+    All gems of type 0 should be removed and a
+    bonus of type 1 should be created at location
+    (0,0).
+
     Bonus type 1 occurs from 4 in a row.
     Bonus type 2 destroys all gems of that type.
     :return:
     """
-    print('\n\nTest 1.6 using a start bonus and getting a match 4:\n')
+    print('\n\nTest 1.6 using a star bonus and getting a match 4:\n')
 
     b2 = Board(1, 8, ice_rows1, medals1, moves_left1, gem_types=3, test='horizontal', event_manager=event_manager)
 
@@ -189,7 +233,17 @@ def test_1_6_use_bonus_2_get_bonus_1():
 
 def test_1_7_use_bonuses_when_removed_by_bonus():
     """
-    TODO
+    5 gems in a row.
+
+    1st gem is a diamond of type 0. 2nd is a gem of
+    type 1. 3rd is a star of type 0. The last 2
+    are normal gems of type 0.
+
+    The star should remove all gems of type 0, which
+    should the activate the 1st gem bonus, removing the
+    type 1 gem.
+
+    In short, this should remove all gems.
     :return:
     """
     print('\n\nTest 1.7 using a bonus when it is removed by a bonus:\n')
@@ -212,6 +266,16 @@ def test_1_7_use_bonuses_when_removed_by_bonus():
 
 
 def test_2_1_ice_removed():
+    """
+    Testing that all ice is removed
+    when gems are matched on top.
+
+    All gems should match and remove
+    the ice underneath.
+
+    Grid is 2 by 3.
+    :return:
+    """
     print("\nBoard 1:\n")
     print(b)
 
@@ -247,7 +311,16 @@ def test_2_1_ice_removed():
 
 
 def test_2_2_medals_removed():
+    """
+    Testing that all medals are removed
+    when gems matched on top of ice.
+
+    All gems should match, remove the ice,
+    and free the medal underneath.
+
+    Grid is 2 by 3.
+    :return:
+    """
     medal_grid = [[-1] * columns0 for _ in range(rows0)]
     current_medals = b.medal_grid.grid
     assert current_medals == medal_grid
-
