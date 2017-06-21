@@ -4,11 +4,10 @@ This is the file for the game logic of three match.
 import logging
 from itertools import product
 from operator import itemgetter
-from random import randint, choice
+from random import randint, choice, seed
 
 from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
-from global_variables import PUZZLE_ROWS, PUZZLE_COLUMNS, GEM_TYPES, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, BONUS_TYPES, \
-    MOVES_LEFT, ICE_LAYERS
+from global_variables import *
 from update_bag import UpdateBag
 
 
@@ -43,9 +42,18 @@ class Board:
     test parameter should be "vertical" or "horizontal" to specify test grid type.
     """
 
-    def __init__(self, rows: int, columns: int, ice_rows: int, medals: int,
-                 moves: int, event_manager: EventManager, gem_types: int = GEM_TYPES, bonus_types: int = BONUS_TYPES,
-                 ice_layers=ICE_LAYERS, test=None):
+    def __init__(self,
+                 rows: int,
+                 columns: int,
+                 ice_rows: int,
+                 medals: int,
+                 moves: int,
+                 event_manager: EventManager,
+                 gem_types: int = GEM_TYPES,
+                 bonus_types: int = BONUS_TYPES,
+                 ice_layers=ICE_LAYERS,
+                 test=None,
+                 random_seed=RANDOM_SEED):
         # grids
         self.gem_grid = Grid(rows, columns)
         self.ice_grid = Grid(rows, columns)
@@ -69,6 +77,7 @@ class Board:
         self.game_state = "waiting_for_input"
         self.ice_layers = ice_layers - 1
         self.test = test
+        self.random_seed = random_seed
 
         # helper variables
         self.medal_locations = []
@@ -80,6 +89,7 @@ class Board:
         self.movements = []
         self.additions = []
         self.cascade = 0
+        self.activated_gems = []
 
         # initialise grids
         self.init_gem_grid()
@@ -529,19 +539,27 @@ class Board:
         matches = h + v
         bonuses = h_bonuses + v_bonuses
 
+        # reduced bonus list for operations later
+        reduced_bonuses = [(r, c) for r, c, t, bt, a in bonuses]
+
         # if matches intersect, create bonus type 3
         t_match = list(set(h).intersection(v))
 
         if len(t_match) > 0:
 
-            # if gem in t_match and matches, remove it from matches
-            # and make it a T-type bonuses
-            matches = [gem for gem in matches if gem not in t_match]
-            for row, column, gem_type, bonus_type, activation in t_match:
-                bonuses.append(self.get_gem_info(row, column, 3))
+            # remove t_match bonus from its list if in bonuses
+            for gem in reversed(t_match):
+                if gem[:2] in reduced_bonuses:
+                    t_match.remove(gem)
+
+            # add t_match bonus to bonus list
+            for r, c, t, bt, a in t_match:
+                bonuses.append(self.get_gem_info(r, c, 3))
+                reduced_bonuses.append((r, c))
 
         # merge all the matches
-        matches += h_from_bonus + v_from_bonus
+        matches.extend(h_from_bonus)
+        matches.extend(v_from_bonus)
         matches = list(set(matches))
 
         # sort list (remove, if too slow)
@@ -549,12 +567,51 @@ class Board:
         bonuses.sort(key=itemgetter(0, 1))
 
         # remove all bonuses in matches
-        reduced_bonuses = [(r, c) for r, c, t, bt, a in bonuses]
         for gem in reversed(matches):
             if gem[:2] in reduced_bonuses:
                 matches.remove(gem)
 
         return matches, bonuses
+
+    def get_matches_from_activated_bonuses(self):
+        """
+        Loops over the activated gems list and
+        performs their bonus action.
+
+        All gems removed from bonus actions are added
+        to a temp list, the activated gems are then
+        equal to this temp list.
+        :return:
+        """
+        temp_matches = []
+
+        for row, column, gem_type, bonus_type, activation in self.activated_gems:
+            if bonus_type == 1:
+                # randomly remove column or row
+                seed(self.random_seed)
+                r = randint(1, 2)
+                if r == 1:
+                    # add row to matches at location row
+                    temp_matches.extend(self.remove_row(row, column))
+                else:
+                    # add column to matches at location column
+                    temp_matches.extend(self.remove_column(row, column))
+
+            elif bonus_type == 2:
+                # add all gems of this gems type to matches
+                temp_matches.extend(self.remove_all_gems_of_type(gem_type, row, column))
+
+            elif bonus_type == 3:
+                # add 9 surrounding gems of this gem
+                temp_matches.extend(self.remove_surrounding_gems(row, column))
+
+        # add any bonuses in temp_match list to remove for next time
+        self.activated_gems = []
+        for row, column, gem_type, bonus_type, activation in temp_matches:
+            if bonus_type > 0:
+                self.activated_gems.append(self.get_gem_info(row, column))
+
+        return temp_matches
 
     def find_horizontal_matches(self):
         """
@@ -578,7 +635,6 @@ class Board:
         """
         matches = []
         bonuses = []
-        original_bonus_gems = []
 
         rows = self.rows
         columns = self.columns
@@ -587,66 +643,36 @@ class Board:
         for row in range(rows):
             column = 0
             while column < columns:
-
                 # find the horizontal match at location row, column
                 temp_matches = self.get_row_match(row, column)
-                temp_bonuses = []
 
-                match_count = len(temp_matches)
+                # Get bonus gems
+                temp_matches_2, temp_bonuses = self.get_bonus_types_1_2_and_matches(row, column, temp_matches)
 
-                # if length of match list is 5, create bonus type 2
-                if match_count == 5:
-                    # remove swap location from matches and add to bonus list
-                    temp_matches, temp_bonuses, temp_orig_bonuses = self.get_bonus_list(row, column, temp_matches, 2)
-                    matches += temp_matches
-                    bonuses += temp_bonuses
-                    original_bonus_gems += temp_orig_bonuses
-
-                # if length of match list is 4, create bonus type 1
-                elif match_count == 4:
-                    # remove swap location from matches and add to bonus list
-                    temp_matches, temp_bonuses, temp_orig_bonuses = self.get_bonus_list(row, column, temp_matches, 1)
-                    matches += temp_matches
-                    bonuses += temp_bonuses
-                    original_bonus_gems += temp_orig_bonuses
-
-                # if length of match list >= 3, add temp matches to matches
-                elif match_count >= 3:
-                    matches += temp_matches
+                # Add gems to lists
+                matches.extend(temp_matches_2)
+                bonuses.extend(temp_bonuses)
 
                 # add length of matches to column
-                column += len(temp_matches) + len(temp_bonuses)
+                column += len(temp_matches)
 
         # loop over matches to check for bonuses and perform bonus action
         matches_from_bonus = []
         for row, column, gem_type, bonus_type, activation in matches:
             if bonus_type == 1:
-                # remove original gem
-                # matches.remove(self.get_gem_info(row, column))
                 # add row to matches at location row
-                for j in range(self.columns):
-                    if self.get_gem_info(row, j) not in original_bonus_gems:
-                        matches_from_bonus.append(self.get_gem_info(row, j))
+                matches_from_bonus.extend(self.remove_row(row, column))
 
             if bonus_type == 2:
-                # remove original gem
-                # matches.remove(self.get_gem_info(row, column))
                 # add all gems of this gems type to matches
-                for i, j in product(range(self.rows), range(self.columns)):
-                    if self.gem_grid.grid[i][j][0] == gem_type and self.get_gem_info(i, j) not in original_bonus_gems:
-                        matches_from_bonus.append(self.get_gem_info(i, j))
+                matches_from_bonus.extend(self.remove_all_gems_of_type(gem_type, row, column))
 
             if bonus_type == 3:
-                # remove original gem
-                # matches.remove(self.get_gem_info(row, column))
                 # add 9 surrounding gems of this gem
-                row_max = min(row + 2, self.rows)
-                row_min = max(row - 1, 0)
-                col_max = min(column + 2, self.columns)
-                col_min = max(column - 1, 0)
-                for i, j in product(range(row_min, row_max), range(col_min, col_max)):
-                    if self.get_gem_info(i, j) not in original_bonus_gems:
-                        matches_from_bonus.append(self.get_gem_info(i, j))
+                matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
+
+        # perform bonus action for any gem in matches_from_bonus list
+        matches_from_bonus.extend(self.cascade_bonus_action_horizontal(matches_from_bonus))
 
         # remove duplicates
         matches = list(set(matches))
@@ -677,7 +703,6 @@ class Board:
         """
         matches = []
         bonuses = []
-        original_bonus_gems = []
 
         rows = self.rows
         columns = self.columns
@@ -686,66 +711,36 @@ class Board:
         for column in range(columns):
             row = 0
             while row < rows:
-
                 # find the horizontal match at location row, column
                 temp_matches = self.get_column_match(row, column)
-                temp_bonuses = []
 
-                match_count = len(temp_matches)
+                # Get bonus gems
+                temp_matches_2, temp_bonuses = self.get_bonus_types_1_2_and_matches(row, column, temp_matches)
 
-                # if length of match list is 5, create bonus type 2
-                if match_count == 5:
-                    # remove swap location from matches and add to bonus list
-                    temp_matches, temp_bonuses, temp_orig_bonus = self.get_bonus_list(row, column, temp_matches, 2)
-                    matches += temp_matches
-                    bonuses += temp_bonuses
-                    original_bonus_gems += temp_orig_bonus
-
-                # if length of match list is 4, create bonus type 1
-                elif match_count == 4:
-                    # remove swap location from matches and add to bonus list
-                    temp_matches, temp_bonuses, temp_orig_bonus = self.get_bonus_list(row, column, temp_matches, 1)
-                    matches += temp_matches
-                    bonuses += temp_bonuses
-                    original_bonus_gems += temp_orig_bonus
-
-                # if length of match list >= 3, add temp matches to matches
-                elif match_count >= 3:
-                    matches += temp_matches
+                # Add gems to lists
+                matches.extend(temp_matches_2)
+                bonuses.extend(temp_bonuses)
 
                 # add length of matches to column
-                row += len(temp_matches) + len(temp_bonuses)
+                row += len(temp_matches)
 
         # loop over matches to check for bonuses and perform bonus action
         matches_from_bonus = []
         for row, column, gem_type, bonus_type, activation in matches:
             if bonus_type == 1:
-                # remove original gem
-                # matches.remove(self.get_gem_info(row, column))
                 # add column to matches at location column
-                for i in range(self.rows):
-                    if self.get_gem_info(i, column) not in original_bonus_gems:
-                        matches_from_bonus.append(self.get_gem_info(i, column))
+                matches_from_bonus.extend(self.remove_column(row, column))
 
-            if bonus_type == 2:
-                # remove original gem
-                # matches.remove(self.get_gem_info(row, column))
+            elif bonus_type == 2:
                 # add all gems of this gems type to matches
-                for i, j in product(range(self.rows), range(self.columns)):
-                    if self.gem_grid.grid[i][j][0] == gem_type and self.get_gem_info(i, j) not in original_bonus_gems:
-                        matches_from_bonus.append(self.get_gem_info(i, j))
+                matches_from_bonus.extend(self.remove_all_gems_of_type(gem_type, row, column))
 
-            if bonus_type == 3:
-                # remove original gem
-                # matches.remove(self.get_gem_info(row, column))
+            elif bonus_type == 3:
                 # add 9 surrounding gems of this gem
-                row_max = min(row + 2, self.rows)
-                row_min = max(row - 1, 0)
-                col_max = min(column + 2, self.columns)
-                col_min = max(column - 1, 0)
-                for i, j in product(range(row_min, row_max), range(col_min, col_max)):
-                    if self.get_gem_info(i, j) not in original_bonus_gems:
-                        matches_from_bonus.append(self.get_gem_info(i, j))
+                matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
+
+        # perform bonus action for any gem in matches_from_bonus list
+        matches_from_bonus.extend(self.cascade_bonus_action_vertical(matches_from_bonus))
 
         # remove duplicates
         matches = list(set(matches))
@@ -753,6 +748,185 @@ class Board:
 
         # return dictionary after looping over all row matches
         return matches, matches_from_bonus, bonuses
+
+    def cascade_bonus_action_horizontal(self, matches_from_bonus):
+        """
+        Loops over matches from bonus and performs bonus
+        action.
+
+        Gems removed from bonus action are appended to
+        matches from bonuses
+        :param matches_from_bonus:
+        :return:
+        """
+        breaking = matches_from_bonus[:]
+        broken = []
+
+        while len(breaking):
+            gem = breaking[0]
+            row, column, gem_type, bonus_type, activation = gem
+            if bonus_type == 1 and gem not in broken:
+                # add row to matches at location row
+                temp = self.remove_row(row, column)
+                temp = [gem for gem in temp if gem not in broken]
+                breaking.extend(temp)
+
+            if bonus_type == 2:
+                # add all gems of this gems type to matches
+                temp = self.remove_all_gems_of_type(gem_type, row, column)
+                temp = [gem for gem in temp if gem not in broken]
+                breaking.extend(temp)
+
+            if bonus_type == 3:
+                # add 9 surrounding gems of this gem
+                temp = self.remove_surrounding_gems(row, column)
+                temp = [gem for gem in temp if gem not in broken]
+                breaking.extend(temp)
+
+            breaking.remove(gem)
+            broken.append(gem)
+
+        return broken
+
+    def cascade_bonus_action_vertical(self, matches_from_bonus):
+        """
+        Loops over matches from bonus and performs bonus
+        action.
+
+        Gems removed from bonus action are appended to
+        matches from bonuses
+        :param matches_from_bonus:
+        :return:
+        """
+        breaking = matches_from_bonus[:]
+        broken = []
+
+        while len(breaking):
+            gem = breaking[0]
+            row, column, gem_type, bonus_type, activation = gem
+            if bonus_type == 1 and gem not in broken:
+                # add row to matches at location row
+                temp = self.remove_column(row, column)
+                temp = [gem for gem in temp if gem not in broken]
+                breaking.extend(temp)
+
+            if bonus_type == 2:
+                # add all gems of this gems type to matches
+                temp = self.remove_all_gems_of_type(gem_type, row, column)
+                temp = [gem for gem in temp if gem not in broken]
+                breaking.extend(temp)
+
+            if bonus_type == 3:
+                # add 9 surrounding gems of this gem
+                temp = self.remove_surrounding_gems(row, column)
+                temp = [gem for gem in temp if gem not in broken]
+                breaking.extend(temp)
+
+            breaking.remove(gem)
+            broken.append(gem)
+
+        return broken
+
+    def add_to_activated_gems(self, matches_from_bonuses: list):
+        """
+        Loops over the matches from bonuses list and
+        add any bonuses in it to the activated gems list.
+        :param matches_from_bonuses:
+        :return:
+        """
+        for row, column, gem_type, bonus_type, activation in matches_from_bonuses:
+            if bonus_type > 0:
+                self.activated_gems.append(self.get_gem_info(row, column))
+
+    def get_bonus_types_1_2_and_matches(self, row: int, column: int, temp_matches: list):
+        """
+        Add bonuses to a list if matches are correct length.
+
+        Adds matches to a list if length 3 or more.
+
+        Returns bonus and match list.
+        :param column:
+        :param row:
+        :param temp_matches:
+        :return:
+        """
+        match_list = []
+        bonus_list = []
+
+        match_count = len(temp_matches)
+
+        # if length of match list is 5, create bonus type 2
+        if match_count == 5:
+            # remove swap location from matches and add to bonus list
+            bonus_list.extend(self.get_bonus_list(row, column, temp_matches, 2))
+
+        # if length of match list is 4, create bonus type 1
+        elif match_count == 4:
+            # remove swap location from matches and add to bonus list
+            bonus_list.extend(self.get_bonus_list(row, column, temp_matches, 1))
+
+        # if length of match list >= 3, add temp matches to matches
+        if match_count >= 3:
+            match_list.extend(temp_matches)
+
+        return match_list, bonus_list
+
+    def remove_row(self, row, column):
+        """
+        Adds entire row to list
+        :param column:
+        :param row:
+        :return:
+        """
+        gem_list = []
+        for j in range(self.columns):
+            if self.get_gem_info(row, j) != self.get_gem_info(row, column):
+                gem_list.append(self.get_gem_info(row, j))
+        return gem_list
+
+    def remove_column(self, row, column):
+        """
+        Add entire column to list
+        :param row:
+        :param column:
+        :return:
+        """
+        gem_list = []
+        for i in range(self.rows):
+            if self.get_gem_info(i, column) != self.get_gem_info(row, column):
+                gem_list.append(self.get_gem_info(i, column))
+        return gem_list
+
+    def remove_all_gems_of_type(self, gem_type: int, row, column):
+        """
+        Add all gems of type gem_type to list
+        :param column:
+        :param row:
+        :param gem_type:
+        :return:
+        """
+        gem_list = []
+        for i, j in product(range(self.rows), range(self.columns)):
+            if self.gem_grid.grid[i][j][0] == gem_type and self.get_gem_info(i, j) != self.get_gem_info(row, column):
+                gem_list.append(self.get_gem_info(i, j))
+        return gem_list
+
+    def remove_surrounding_gems(self, row: int, column: int):
+        """
+        Add 9 surrounding gems of location row,column to list.
+        :param row:
+        :param column:
+        :return:
+        """
+        gem_list = []
+        row_max = min(row + 2, self.rows)
+        row_min = max(row - 1, 0)
+        col_max = min(column + 2, self.columns)
+        col_min = max(column - 1, 0)
+        for i, j in product(range(row_min, row_max), range(col_min, col_max)):
+            if self.get_gem_info(i, j) != self.get_gem_info(row, column):
+                gem_list.append(self.get_gem_info(i, j))
+        return gem_list
 
     def get_row_match(self, row: int, column: int):
         """
@@ -824,35 +998,25 @@ class Board:
         :return:
         """
         bonus_list = []
-        original_bonus_gems_temp = []
         reduced_temp_matches = [(i, j) for i, j, t, bt, a in temp_matches]
 
         # create bonus at swap location otherwise at the first location of the match
         if self.swapped_gems[0][:2] in reduced_temp_matches:
+            # bonus at first swap location
             i, j = self.swapped_gems[0][:2]
-            gem = self.get_gem_info(i, j)
             bonus_gem = self.get_gem_info(i, j, bonus_type)
-
-            original_bonus_gems_temp.append(gem)
-            temp_matches.remove(gem)
             bonus_list.append(bonus_gem)
         elif self.swapped_gems[1][:2] in reduced_temp_matches:
+            # bonus at second swap location
             i, j = self.swapped_gems[1][:2]
-            gem = self.get_gem_info(i, j)
             bonus_gem = self.get_gem_info(i, j, bonus_type)
-
-            original_bonus_gems_temp.append(gem)
-            temp_matches.remove(gem)
             bonus_list.append(bonus_gem)
         else:
-            gem = self.get_gem_info(row, column)
+            # bonus at first location in match
             bonus_gem = self.get_gem_info(row, column, bonus_type)
-
-            original_bonus_gems_temp.append(gem)
-            temp_matches.remove(gem)
             bonus_list.append(bonus_gem)
 
-        return temp_matches, bonus_list, original_bonus_gems_temp
+        return bonus_list
 
     def remove_gems_add_bonuses(self, init=False):
         """

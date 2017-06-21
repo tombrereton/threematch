@@ -33,7 +33,7 @@ def test_1_1_use_bonus_type_1():
 
     Should remove all gems in row and create a bonus at 1st swap location.
 
-    Swap location is the 1st element, and the bonus created should be
+    Swap location is the zeroth element, and the bonus created should be
     type 1.
     :return:
     """
@@ -265,7 +265,7 @@ def test_1_7_use_bonuses_when_removed_by_bonus():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_8_swap_in_bonus_and_activate():
+def test_1_8_swap_in_bonus_and_activate_vertical():
     """
     Testing activating a cross bonus (type 1)
     when being swapped in.
@@ -277,7 +277,7 @@ def test_1_8_swap_in_bonus_and_activate():
     All 5 gems should be removed.
     :return:
     """
-    print('\n\nTest 1.8 swap in a cross bonus and removing all gems:\n')
+    print('\n\nTest 1.8 swap in a cross bonus and removing all gems vertically:\n')
 
     b2 = Board(rows=5, columns=1, ice_rows=0, medals=0, moves=10, gem_types=3, test='vertical',
                event_manager=event_manager)
@@ -296,6 +296,82 @@ def test_1_8_swap_in_bonus_and_activate():
 
     expected_removals = [(0, 0, 0, 0, 0), (1, 0, 0, 0, 0), (2, 0, 0, 1, 0), (3, 0, 1, 0, 0), (4, 0, 1, 0, 0)]
     expected_bonuses = []
+
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_1_9_swap_in_bonus_and_activate_horizontal():
+    """
+    Testing activating a cross bonus (type 1)
+    when being swapped in.
+
+    5 gems in a row. 2 gems of type 0,
+    then a gem of type 1, then a cross gem of
+    type 0, then a gem of type 1.
+
+    All 5 gems should be removed.
+    :return:
+    """
+    print('\n\nTest 1.9 swap in a cross bonus and removing all gems horizontally:\n')
+
+    b2 = Board(rows=1, columns=5, ice_rows=0, medals=0, moves=10, gem_types=3, test='horizontal',
+               event_manager=event_manager)
+
+    # Set up grid for testing
+    b2.gem_grid.grid[0][2] = (1, 0, 0)
+    b2.gem_grid.grid[0][3] = (0, 1, 0)
+    b2.gem_grid.grid[0][4] = (1, 0, 0)
+    print(b2)
+
+    swap_locations = [(0, 2), (0, 3)]
+    b2.set_swap_locations(swap_locations)
+    b2.swap_gems()
+
+    print(b2)
+
+    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 1, 0), (0, 3, 1, 0, 0), (0, 4, 1, 0, 0)]
+    expected_bonuses = []
+
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_1_10_swap_in_bonus_from_above_and_activate_horizontal():
+    """
+    Testing activating a cross bonus (type 1)
+    when being swapped in.
+
+    Grid is 2 by 5.
+
+    Second row should all be removed except for swap location
+    which should create a bonus.
+    :return:
+    """
+    print('\n\nTest 1.10 swap in a cross bonus from above and remove all gems horizontally:\n')
+
+    b2 = Board(rows=2, columns=5, ice_rows=0, medals=0, moves=10, gem_types=3, test='horizontal',
+               event_manager=event_manager)
+
+    # Set up grid for testing
+    b2.gem_grid.grid[0][1] = (1, 1, 0)
+    b2.gem_grid.grid[0][2] = (1, 0, 0)
+    b2.gem_grid.grid[1][1] = (0, 0, 0)
+    b2.gem_grid.grid[1][4] = (0, 0, 0)
+    print(b2)
+
+    swap_locations = [(0, 1), (1, 1)]
+    b2.set_swap_locations(swap_locations)
+    b2.swap_gems()
+
+    print(b2)
+
+    expected_removals = [(1, 0, 1, 0, 0), (1, 2, 1, 0, 0), (1, 3, 1, 0, 0), (1, 4, 0, 0, 0)]
+    expected_bonuses = [(1, 1, 1, 1, 0)]
 
     actual_removals, actual_bonuses = b2.find_matches()
 
