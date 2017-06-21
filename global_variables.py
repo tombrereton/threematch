@@ -8,6 +8,9 @@ LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
 MOVES_LEFT = 26
+GEM_TYPES = 6
+BONUS_TYPES = 3
+ICE_ROWS = 5
 
 # GUI variables
 HD_SCALE = 1.5  # Scale for changing the number of pixels
