@@ -52,9 +52,9 @@ python3 main.py
 ```
 
 3. Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
-in `global_variables.py` under the GLOBAL CONSTANSTS section. Recommended values are between and including 1 and 3.
+in `global_variables.py` under the GUI variables section. Recommended values are between and including 1 and 3.
 
-## Game Details
+## Game Rules
 
 * 6 gem types (colours).
 * 3 bonus types (star, cross, diamond)
