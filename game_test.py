@@ -1,5 +1,6 @@
 from events import *
 from game import Board
+from gui_variables import GUIVariables
 
 rows0 = 2
 columns0 = 3
@@ -19,7 +20,7 @@ ice_rows2 = 0
 medals2 = 0
 moves_left2 = 30
 
-event_manager = EventManager()
+event_manager = EventManager(gui_vars=GUIVariables)
 b = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b0 = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b2 = Board(rows2, columns2, ice_rows2, medals2, moves_left2, test='horizontal', event_manager=event_manager)
@@ -396,10 +397,10 @@ def test_1_11_diamond_grid():
     b2.bonus_list = actual_bonus
     b2.remove_gems_add_bonuses()
 
-
     print('\n\n second:\n')
     print(actual_removed)
     print(actual_bonus)
+
 
 def test_2_1_ice_removed():
     """
