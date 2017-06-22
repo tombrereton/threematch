@@ -771,45 +771,6 @@ class Board:
         # return dictionary after looping over all row matches
         return matches, matches_from_bonus, bonuses
 
-    def cascade_bonus_action_horizontal(self, matches_from_bonus):
-        """
-        Loops over matches from bonus and performs bonus
-        action.
-
-        Gems removed from bonus action are appended to
-        matches from bonuses
-        :param matches_from_bonus:
-        :return:
-        """
-        breaking = matches_from_bonus[:]
-        broken = []
-
-        while len(breaking):
-            gem = breaking[0]
-            row, column, gem_type, bonus_type, activation = gem
-            if bonus_type == 1 and gem not in broken:
-                # add row to matches at location row
-                temp = self.remove_row(row, column)
-                temp = [gem for gem in temp if gem not in broken]
-                breaking.extend(temp)
-
-            if bonus_type == 2:
-                # add all gems of this gems type to matches
-                temp = self.remove_all_gems_of_type(gem_type, row, column)
-                temp = [gem for gem in temp if gem not in broken]
-                breaking.extend(temp)
-
-            if bonus_type == 3:
-                # add 9 surrounding gems of this gem
-                temp = self.remove_surrounding_gems(row, column)
-                temp = [gem for gem in temp if gem not in broken]
-                breaking.extend(temp)
-
-            breaking.remove(gem)
-            broken.append(gem)
-
-        return broken
-
     def cascade_bonus_action(self, matches_from_bonus, broken, row_first: bool):
         """
         Loops over matches from bonus and performs bonus
@@ -817,19 +778,19 @@ class Board:
 
         Gems removed from bonus action are appended to
         matches from bonuses
+        :param broken:
         :param row_first:
         :param matches_from_bonus:
         :return:
         """
         breaking_next = matches_from_bonus[:]
-        # broken = []
 
         while len(breaking_next):
             breaking_current, breaking_next = breaking_next, []
             for gem in breaking_current:
                 row, column, gem_type, bonus_type, activation = gem
                 if bonus_type == 1 and gem not in broken:
-                    # add row to matches at location row
+                    # add row to matches at location row, else add column to matches
                     f = self.remove_row if row_first else self.remove_column
                     temp = f(row, column)
                     temp = [gem for gem in temp if gem not in broken]

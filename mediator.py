@@ -14,15 +14,13 @@ and calls get_update within notify and send Update Bag to view
 call get_update and send Update Bag to view.
 """
 
-import logging
-
 from events import EventManager, MouseController, CPUSpinnerController
 from game import Board
 from global_variables import *
 from gui import GUI
 
 # logging.basicConfig(filename='game.log', filemode='w', level=logging.DEBUG)
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 
 # ------------------------------------------------------------------------------
