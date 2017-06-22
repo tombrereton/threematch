@@ -95,20 +95,20 @@ class NaiveAIControllerV1:
         self.evManager = evManager
         self.evManager.register_listener(self)
         self.game = board
-        self.move_finder = moves_three()
+        self.move_finder = pick_move
 
         # ----------------------------------------------------------------------
 
-        def notify(self, event):
-            if isinstance(event, TickEvent):
-                ev = None
-                if board.game_state == "waiting_for_input":
-                    # find move and select
-                    swap_locations = self.move_finder(self.game.gem_grid.grid)
-                    ev = SwapGemsRequest(swap_locations)
+    def notify(self, event):
+        if isinstance(event, TickEvent):
+            ev = None
+            if self.game.game_state == "waiting_for_input":
+                # find move and select
+                swap_locations = self.move_finder(self.game.gem_grid.grid)
+                ev = SwapGemsRequest(swap_locations)
 
-                if ev is not None:
-                    self.evManager.post(ev)
+            if ev is not None:
+                self.evManager.post(ev)
 
 
 class MouseController:
