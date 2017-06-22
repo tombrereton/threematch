@@ -20,13 +20,11 @@ from global_variables import *
 from gui import GUI
 from gui_variables import *
 
+
 # logging.basicConfig(filename='game.log', filemode='w', level=logging.DEBUG)
 # logging.basicConfig(level=logging.INFO)
 
 
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 def main():
     """..."""
