@@ -161,7 +161,7 @@ def moves_three(grid: list):
             # Get the coordinates in this section of three
             to_check = [(i + c, j) if k == 0 else (i, j + c) for c in range(3)]
             # Get the types in this section
-            types = [grid[i][j] for i, j in to_check]
+            types = [grid[i][j][0] for i, j in to_check]
             # Count the occurrences of each type 
             c = Counter(types).most_common()
             # If there are 2 types then must be two of one type, one of another
@@ -181,11 +181,18 @@ def moves_three(grid: list):
                 # Iterate through these locations
                 for y2, x2 in surround:
                     # If a major_type gem is present this can be used to make a match
-                    if grid[y2][x2] == major_type:
-                        # Add move to moves list
-                        moves.append(((y1, x1), (y2, x2)))
+                    if grid[y2][x2][0] == major_type and ((y2, x2), (y1, x1)) not in moves:
+                        # Check move not already mound
+                        if ((y2, x2), (y1, x1)) not in moves and ((y1, x1), (y2, x2)) not in moves:
+                            # Add moves to move list
+                            moves.append(((y1, x1), (y2, x2)))
     # Return list of moves
     return moves
+
+
+def pick_move(grid: list):
+    moves = moves_three(grid)
+    return random.choice(moves) if len(moves) else None
 
 
 def p(grid: list):
