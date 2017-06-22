@@ -5,7 +5,7 @@ import logging
 import os
 from itertools import product
 from operator import itemgetter
-from random import randint, choice, seed
+from random import randint, choice
 from time import strftime
 
 from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
@@ -613,46 +613,6 @@ class Board:
 
         return matches, bonuses
 
-    def get_matches_from_activated_bonuses(self):
-        """
-        Loops over the activated gems list and
-        performs their bonus action.
-
-        All gems removed from bonus actions are added
-        to a temp list, the activated gems are then
-        equal to this temp list.
-        :return:
-        """
-        temp_matches = []
-
-        for row, column, gem_type, bonus_type, activation in self.activated_gems:
-            if bonus_type == 1:
-                # randomly remove column or row
-                seed(self.random_seed)
-                r = randint(1, 2)
-                if r == 1:
-                    # add row to matches at location row
-                    temp_matches.extend(self.remove_row(row, column))
-                else:
-                    # add column to matches at location column
-                    temp_matches.extend(self.remove_column(row, column))
-
-            elif bonus_type == 2:
-                # add all gems of this gems type to matches
-                temp_matches.extend(self.remove_all_gems_of_type(gem_type, row, column))
-
-            elif bonus_type == 3:
-                # add 9 surrounding gems of this gem
-                temp_matches.extend(self.remove_surrounding_gems(row, column))
-
-        # add any bonuses in temp_match list to remove for next time
-        self.activated_gems = []
-        for row, column, gem_type, bonus_type, activation in temp_matches:
-            if bonus_type > 0:
-                self.activated_gems.append(self.get_gem_info(row, column))
-
-        return temp_matches
-
     def find_horizontal_matches(self):
         """
         Finds the horizontal matches in the gem grid and adds them to a match_list.
@@ -1218,14 +1178,15 @@ class Board:
         line1 = 'Preamble\n'
         header_underline = '===============================================================================\n'
         glossary = 't = gem type\nbt = bonus type\ni = ice layer\nmp = medal portion\nmu = medals uncovered\n' + \
-                   's = score\na = action\ntmo = total moves\ntme = total medals\n'
+                   's = score\na = action\ntmo = total moves\ntme = total medals\nr = row\nc = columns\n'
 
-        line3 = 'tmo\ttme\n'
+        line3 = 'tmo\ttme\tr\tc\n'
         divider = '-------------------------------------------------------------------------------\n'
-        line5 = str(self.moves) + '\t' + str(self.total_medals) + '\n'
+        line5 = str(self.moves) + '\t' + str(self.total_medals) + '\t' + str(self.rows) + '\t' + str(
+            self.columns) + '\n'
 
         key_about = '\nKey for state and progress information.\n2 lines represent a state-action pair:\n'
-        header1 = 't\tbt\ti\tmp\tt\tbt\ti\tmp\t...\n'
+        header1 = 't\tbt\ti\tmp\t' * self.rows * self.columns + '\n'
         header2 = 'mu\ts\ta\n'
 
         preamble = line1 + header_underline + glossary + divider + line3 + header_underline + line5 + divider \
@@ -1234,13 +1195,14 @@ class Board:
         return preamble
 
     def create_file(self):
-        main_dir = os.path.split(os.path.abspath(__file__))[0]
-        data_dir = os.path.join(main_dir, 'training_data')
-        name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
-        self.file_name = os.path.join(data_dir, name)
+        if self.test is None:
+            main_dir = os.path.split(os.path.abspath(__file__))[0]
+            data_dir = os.path.join(main_dir, 'training_data')
+            name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
+            self.file_name = os.path.join(data_dir, name)
 
-        with open(self.file_name, 'w') as file:
-            file.write(self.file_header())
+            with open(self.file_name, 'w') as file:
+                file.write(self.file_header())
 
     def write_state_action(self):
         """
@@ -1249,10 +1211,11 @@ class Board:
         :return:
         """
 
-        state = self.get_game_state()
-        progress = self.get_progress_state()
+        if self.test is None:
+            state = self.get_game_state()
+            progress = self.get_progress_state()
 
-        string = state + '\n' + progress + '\n'
+            string = state + '\n' + progress + '\n'
 
-        with open(self.file_name, 'a') as file:
-            file.write(string)
+            with open(self.file_name, 'a') as file:
+                file.write(string)
