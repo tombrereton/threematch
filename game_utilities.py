@@ -69,11 +69,40 @@ def load_explosion(foreground: str, background: str, size: int):
     return merged
 
 
-def load_image_only(name: str, size: int, colorkey=None):
+def load_image_only(name: str, size: int, colorkey=None, rotate=0):
     fullname = os.path.join(data_dir, name)
+    size = int(size)
     try:
         image = pygame.image.load(fullname)
+
+        if rotate:
+            image = pygame.transform.rotate(image, rotate)
+
         image = pygame.transform.smoothscale(image, (size, size))
+    except pygame.error:
+        print('Cannot load image:', fullname)
+        raise SystemExit(geterror())
+
+    # convert alpha makes the images transparent
+    image = image.convert_alpha()
+    if colorkey is not None:
+        if colorkey is -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey, RLEACCEL)
+    return image
+
+
+def load_border(name: str, length: int, height: int, colorkey=None, rotate=0):
+    fullname = os.path.join(data_dir, name)
+    length = int(length)
+    height = int(height)
+    try:
+        image = pygame.image.load(fullname)
+
+        if rotate:
+            image = pygame.transform.rotate(image, rotate)
+
+        image = pygame.transform.smoothscale(image, (length, height))
     except pygame.error:
         print('Cannot load image:', fullname)
         raise SystemExit(geterror())

@@ -1,4 +1,3 @@
-import copy
 import logging
 import random
 from itertools import product
@@ -6,12 +5,14 @@ from itertools import product
 import pygame
 
 import game_utilities as util
+import global_variables as gv
 from events import UpdateBagEvent, EventManager
-from global_variables import *
+from gui_variables import GUIVariables
 from update_bag import UpdateBag
 
 
 # Functions for testing
+
 
 def print_array(a):
     print('\n'.join(['\t'.join([str(el) for el in row]) for row in a]))
@@ -31,10 +32,12 @@ def rand_text(medals=None):
 
 
 def rand():
-    gems = [[(random.randrange(5), random.randrange(1), 0) for _ in range(PUZZLE_COLUMNS)] for _ in range(PUZZLE_ROWS)]
-    ice = [[random.randint(-1, 1) for _ in range(PUZZLE_COLUMNS)] for _ in range(PUZZLE_ROWS)]
-    medals_small = [[random.randint(-1, 0) for _ in range(PUZZLE_COLUMNS // 2)] for _ in range(PUZZLE_ROWS // 2)]
-    medals = [[-1] * PUZZLE_COLUMNS for _ in range(PUZZLE_ROWS)]
+    rows = gv.PUZZLE_ROWS
+    columns = gv.PUZZLE_COLUMNS
+    gems = [[(random.randrange(5), random.randrange(1), 0) for _ in range(columns)] for _ in range(rows)]
+    ice = [[random.randint(-1, 1) for _ in range(columns)] for _ in range(rows)]
+    medals_small = [[random.randint(-1, 0) for _ in range(columns // 2)] for _ in range(rows // 2)]
+    medals = [[-1] * columns for _ in range(rows)]
     for i, j in product(range(len(medals_small)), range(len(medals_small[0]))):
         medals[2 * i][2 * j] = medals_small[i][j]
     return gems, ice, medals, rand_text(medals)
@@ -45,24 +48,16 @@ class SpriteGrid:
     Abstract class to hold a grid of sprites.
     """
 
-    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, group, info: list):
+    def __init__(self, gui_vars: GUIVariables, group, info: list):
         """
         Constructor for the SpriteGrid class.
-        :param rows: Number of rows in the game
-        :param columns: Number of columns in the game
-        :param cell_size: Size of each cell in pixels
-        :param margin: Size of the margin in pixels
         :param group: Group that sprites in this grid should go in
         :param info: Information about sprites to be held in grid
         """
         # Set field variables
-        self.rows = rows
-        self.columns = columns
-        self.cell_size = cell_size
-        self.margin = margin
+        self.gui_vars = gui_vars
         self.group = group
-        # Create blank grid of the correct size
-        self.grid = [[-1] * self.columns for _ in range(self.rows)]
+        self.grid = None
         # Populate grid with sprites
         self.new_grid(info)
 
@@ -72,10 +67,12 @@ class SpriteGrid:
         :param info: Information about sprites to be held in grid
         :return: None
         """
+        # Create blank grid of the correct size
+        self.grid = [[-1] * self.gui_vars.columns for _ in range(self.gui_vars.rows)]
         # Remove old sprites from group (if any)
         self.group.empty()
         # Add sprites
-        for i, j in product(range(self.columns), range(self.rows)):
+        for i, j in product(range(self.gui_vars.rows), range(self.gui_vars.columns)):
             self.add(i, j, info[i][j])
 
     def add(self, y_coord: int, x_coord: int, info):
@@ -111,8 +108,8 @@ class SpriteGrid:
         :param x_coord: Grid x coordinate
         :return: A tuple of the pixel coordinates (y, x)
         """
-        y = self.margin + y_coord * self.cell_size
-        x = self.margin + x_coord * self.cell_size
+        y = self.gui_vars.margin + y_coord * self.gui_vars.cell_size
+        x = self.gui_vars.margin + x_coord * self.gui_vars.cell_size
         return y, x
 
 
@@ -121,11 +118,11 @@ class Gem(pygame.sprite.Sprite):
     Class for the gem sprites.
     """
 
-    def __init__(self, size: int, gem_info: tuple, image_list: list, explosions: list, gem_group):
+    def __init__(self, gui_vars: GUIVariables, gem_info: tuple, image_list: list, explosions: list, gem_group):
         # Call to super constructor
         pygame.sprite.Sprite.__init__(self, gem_group)
         # Set field variables
-        self.gem_size = size
+        self.gui_vars = gui_vars
         self.type, self.bonus_type, self.activation = gem_info
         self.image_list = image_list
         self.explosions = explosions
@@ -175,16 +172,16 @@ class Gem(pygame.sprite.Sprite):
         """
         self.image = self.explosions[self.explosion_step]
         self.explosion_step += 1
-        if self.explosion_step > EXPLOSION_FRAMES - 1:
+        if self.explosion_step > self.gui_vars.explosion_frames - 1:
             self.is_exploding = False
 
     def move(self):
         self.i += 1
-        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / ANIMATION_SCALE)
-        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / ANIMATION_SCALE)
+        y = int(self.origin[0] + self.i * (self.target[0] - self.origin[0]) / self.gui_vars.animation_scale)
+        x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / self.gui_vars.animation_scale)
         self.rect.top = y
         self.rect.left = x
-        if self.i == ANIMATION_SCALE:
+        if self.i == self.gui_vars.animation_scale:
             self.i = 0
             self.origin = self.target
 
@@ -194,14 +191,10 @@ class GemGrid(SpriteGrid):
     Class to hold a grid of gem sprites.
     """
 
-    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, gem_images: list, explosions: list, group,
+    def __init__(self, gui_vars: GUIVariables, gem_images: list, explosions: list, group,
                  gems: list):
         """
         Constructor for the GemGrid class.
-        :param rows: Number of rows in the game
-        :param columns: Number of columns in the game
-        :param cell_size: Size of each cell in pixels
-        :param margin: Size of the margin in pixels
         :param gem_images: Matrix of gem images
         :param explosions: List of explosion images
         :param group: Group that gem sprites should go in
@@ -210,10 +203,8 @@ class GemGrid(SpriteGrid):
         # Set field variables
         self.gem_images = gem_images
         self.explosions = explosions
-        self.gem_size = int(0.9 * cell_size)
-        self.centering_offset = int(0.05 * cell_size)
         # Call to super constructor
-        super().__init__(rows, columns, cell_size, margin, group, gems)
+        super().__init__(gui_vars, group, gems)
 
     def add(self, y_coord: int, x_coord: int, gem_info: tuple):
         """
@@ -225,7 +216,7 @@ class GemGrid(SpriteGrid):
         :return: None
         """
         # Create Gem sprite
-        gem = Gem(self.gem_size, gem_info, self.gem_images, self.explosions, self.group)
+        gem = Gem(self.gui_vars, gem_info, self.gem_images, self.explosions, self.group)
         # Calculate pixel coordinates it should go at
         y, x = self.grid_to_pixel(y_coord, x_coord)
         # Set correct coordinates
@@ -242,8 +233,8 @@ class GemGrid(SpriteGrid):
         :return: A tuple of the pixel coordinates (y, x)
         """
         y, x = super().grid_to_pixel(y_coord, x_coord)
-        y += self.centering_offset
-        x += self.centering_offset
+        y += self.gui_vars.gem_offset
+        x += self.gui_vars.gem_offset
         return y, x
 
 
@@ -263,6 +254,7 @@ class Ice(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, ice_group)
         # Set field variables
         self.layer = layer
+        self.size = size
         self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
         self.image, self.rect = util.load_image(self.ice_layer, size)
 
@@ -274,7 +266,7 @@ class Ice(pygame.sprite.Sprite):
         """
         self.layer = layer
         self.ice_layer = "ice/ice_layer_{}.png".format(self.layer)
-        self.image, _ = util.load_image(self.ice_layer, CELL_SIZE)
+        self.image, _ = util.load_image(self.ice_layer, self.size)
 
 
 class IceGrid(SpriteGrid):
@@ -282,18 +274,14 @@ class IceGrid(SpriteGrid):
     Class to hold a grid of ice sprites.
     """
 
-    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, group, ice: list):
+    def __init__(self, gui_vars: GUIVariables, group, ice: list):
         """
         Constructor for IceGrid class.
-        :param rows: Number of rows in the game
-        :param columns: Number of columns in the game
-        :param cell_size: Size of each cell in pixels
-        :param margin: Size of the margin in pixels
         :param group: Group that ice sprites should go in
         :param ice: Information about ice sprites to be held in grid
         """
         # Call to super constructor
-        super().__init__(rows, columns, cell_size, margin, group, ice)
+        super().__init__(gui_vars, group, ice)
 
     def add(self, y_coord: int, x_coord: int, layer: int):
         """
@@ -307,7 +295,7 @@ class IceGrid(SpriteGrid):
         # Check there is meant to be ice at this location
         if layer is not -1:
             # Create Ice sprite
-            ice = Ice(self.cell_size, layer, self.group)
+            ice = Ice(self.gui_vars.cell_size, layer, self.group)
             # Calculate pixel coordinates it should go at
             y, x = self.grid_to_pixel(y_coord, x_coord)
             # Set correct coordinates
@@ -322,17 +310,17 @@ class Medal(pygame.sprite.Sprite):
     Class for the medal sprites.
     """
 
-    def __init__(self, size: int, medal_group):
+    def __init__(self, gui_vars: GUIVariables, medal_group):
         """
         Constructor for the Medal class.
-        :param size: Size of the medal
         :param medal_group: Group to put this sprite in
         """
         # Call to super constructor
         pygame.sprite.Sprite.__init__(self, medal_group)
         # Set field variables
+        self.gui_vars = gui_vars
         self.medal_file = "tiles/medal_02_01.png"
-        self.image, self.rect = util.load_image(self.medal_file, size)
+        self.image, self.rect = util.load_image(self.medal_file, self.gui_vars.medal_size)
 
 
 class MedalGrid(SpriteGrid):
@@ -340,20 +328,14 @@ class MedalGrid(SpriteGrid):
     Class to hold a grid of medal sprites
     """
 
-    def __init__(self, rows: int, columns: int, cell_size: int, margin: int, group, medals: list):
+    def __init__(self, gui_vars: GUIVariables, group, medals: list):
         """
         Constructor for the MedalGrid class.
-        :param rows: Number of rows in the game
-        :param columns: Number of columns in the game
-        :param cell_size: Size of each cell in pixels
-        :param margin: Size of the margin in pixels
         :param group: Group that medal sprites should go in
         :param medals: Information about medal sprites to be held in grid
         """
-        # Set field variables
-        self.medal_size = 2 * cell_size
         # Call to super constructor
-        super().__init__(rows, columns, cell_size, margin, group, medals)
+        super().__init__(gui_vars, group, medals)
 
     def add(self, y_coord: int, x_coord: int, portion: int):
         """
@@ -367,7 +349,7 @@ class MedalGrid(SpriteGrid):
         # Check this is the top left of the medal
         if portion is 0:
             # Create Medal sprite
-            medal = Medal(self.medal_size, self.group)
+            medal = Medal(self.gui_vars, self.group)
             # Calculate pixel coordinates it should go at
             y, x = self.grid_to_pixel(y_coord, x_coord)
             # Set correct coordinates
@@ -378,9 +360,11 @@ class MedalGrid(SpriteGrid):
 
 
 class Background:
-    def __init__(self, moves_left: int, medals_left: int, score: int, terminal: bool, win: bool):
-        self.font = pygame.font.Font(None, int(24 * HD_SCALE))
-        self.game_over_font = pygame.font.Font(None, int(60 * HD_SCALE))
+    def __init__(self, gui_vars: GUIVariables, moves_left: int, medals_left: int, score: int,
+                 terminal: bool, win: bool):
+        self.gui_vars = gui_vars
+        self.font = pygame.font.Font(None, int(24 * self.gui_vars.hd_scale))
+        self.game_over_font = pygame.font.Font(None, int(60 * self.gui_vars.hd_scale))
         self.moves_left = 0
         self.moves_left_text = None
         self.medals_left = 0
@@ -389,7 +373,18 @@ class Background:
         self.score_text = None
         self.game_over_text = None
         self.game_over_text_pos = None
-        self.background = util.load_background("stone_light_2.jpg", "ground.png", WINDOW_WIDTH, WINDOW_HEIGHT)
+
+        self.background = util.load_background("stone_light_2.jpg", "ground.png", self.gui_vars.width,
+                                               self.gui_vars.height)
+        self.grid_image_top_left = util.load_image_only("grid_inner_1.png", self.gui_vars.cell_size, rotate=0)
+        self.grid_image_bottom_right = util.load_image_only("grid_inner_2.png", self.gui_vars.cell_size, rotate=0)
+        self.border_top = util.load_border("border_2.png", self.gui_vars.cell_size * 2, self.gui_vars.cell_size * 3 / 4)
+        self.border_bottom = util.load_border("border_2.png", self.gui_vars.cell_size * 2,
+                                              self.gui_vars.cell_size * 3 / 4, rotate=180)
+        self.border_left = util.load_border("border_2.png", self.gui_vars.cell_size * 3 / 4,
+                                            self.gui_vars.cell_size * 2, rotate=90)
+        self.border_right = util.load_border("border_2.png", self.gui_vars.cell_size * 3 / 4,
+                                             self.gui_vars.cell_size * 2, rotate=-90)
         self.gem_images = []
         self.explosions = []
         self.init_gem_images()
@@ -417,42 +412,43 @@ class Background:
     def set_game_over_text(self, terminal: bool, win: bool):
         text = ('You Win!' if win else 'Game Over') if terminal else ''
         self.game_over_text = self.game_over_font.render(text, 1, (10, 10, 10))
-        self.game_over_text_pos = self.game_over_text.get_rect(centery=WINDOW_HEIGHT / 2, centerx=WINDOW_WIDTH / 2)
+        self.game_over_text_pos = self.game_over_text.get_rect(centery=self.gui_vars.height / 2,
+                                                               centerx=self.gui_vars.width / 2)
 
     def init_gem_images(self):
         for i in range(1, 5):
             type_list = []
             for j in range(1, 7):
                 name = f'stones/Stone_0{j}_0{i}.png'
-                image = util.load_image_only(name, GEM_SIZE)
+                image = util.load_image_only(name, self.gui_vars.gem_size)
                 type_list.append(image)
             self.gem_images.append(type_list)
 
     def init_explosions(self):
-        for i in range(EXPLOSION_FRAMES):
+        for i in range(self.gui_vars.explosion_frames):
             back = f'explosions/black_smoke/blackSmoke0{i}.png'
             fore = f'explosions/explosion/explosion0{i}.png'
-            image = util.load_explosion(fore, back, GEM_SIZE)
+            image = util.load_explosion(fore, back, self.gui_vars.gem_size)
             self.explosions.append(image)
 
 
 class GUI:
-    def __init__(self, gems: list, ice, medals: list, text_info: tuple, event_manager: EventManager):
+    def __init__(self, gui_vars: GUIVariables, gems: list, ice, medals: list, text_info: tuple,
+                 event_manager: EventManager):
+        self.gui_vars = gui_vars
         pygame.init()
-        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.screen = pygame.display.set_mode((self.gui_vars.width, self.gui_vars.height))
         pygame.display.set_caption('Gem Island')
-        self.bg = Background(*text_info)
+        self.bg = Background(self.gui_vars, *text_info)
         self.gem_group = pygame.sprite.Group()
-        self.gem_grid = GemGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.bg.gem_images, self.bg.explosions,
-                                self.gem_group, gems)
+        self.gem_grid = GemGrid(self.gui_vars, self.bg.gem_images, self.bg.explosions, self.gem_group, gems)
         self.ice_group = pygame.sprite.Group()
-        self.ice_grid = IceGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.ice_group, ice)
+        self.ice_grid = IceGrid(self.gui_vars, self.ice_group, ice)
         self.medal_group = pygame.sprite.Group()
-        self.medal_grid = MedalGrid(PUZZLE_ROWS, PUZZLE_COLUMNS, CELL_SIZE, MARGIN, self.medal_group, medals)
+        self.medal_grid = MedalGrid(self.gui_vars, self.medal_group, medals)
         self.draw()
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
-        self.gems = copy.deepcopy(gems)
 
     def new_state(self, gems: list, ice, medals: list, text_info: tuple):
         self.gem_grid.new_grid(gems)
@@ -463,17 +459,48 @@ class GUI:
 
     def draw(self):
         self.screen.blit(self.bg.background, (0, 0))
-        self.screen.blit(self.bg.moves_left_text, (10, WINDOW_HEIGHT - MARGIN * 3 / 4))
-        self.screen.blit(self.bg.medals_left_text, (10, WINDOW_HEIGHT - MARGIN * 7 / 6))
-        self.screen.blit(self.bg.score_text, (10, WINDOW_HEIGHT - MARGIN / 3))
+        self.screen.blit(self.bg.moves_left_text, (10, self.gui_vars.height - self.gui_vars.margin * 3 / 4))
+        self.screen.blit(self.bg.medals_left_text, (10, self.gui_vars.height - self.gui_vars.margin * 7 / 6))
+        self.screen.blit(self.bg.score_text, (10, self.gui_vars.height - self.gui_vars.margin / 3))
+
+        # TODO: move it appropriate place
+        rows = self.gui_vars.rows
+        columns = self.gui_vars.columns
+        margin = self.gui_vars.margin
+        cells = self.gui_vars.cell_size
+
+        for j in range(columns):
+            # top border
+            self.screen.blit(self.bg.border_top, (margin * 0.78 + j * cells, margin * 0.85))
+
+        for j in range(columns):
+            # bottom border
+            self.screen.blit(self.bg.border_bottom, (margin * 0.78 + j * cells, margin * 0.84 + rows * cells))
+        for i in range(rows):
+            # left border
+            self.screen.blit(self.bg.border_left, (margin * 0.85, margin * 0.77 + i * cells))
+
+        for i in range(rows):
+            # right border
+            self.screen.blit(self.bg.border_right, (margin * 0.82 + columns * cells, margin * 0.79 + i * cells))
+
+        # TODO: remove the 'minus 1' and centre gems?
+        for i, j in product(range(rows), range(columns)):
+            # grid background
+            self.screen.blit(self.bg.grid_image_top_left, (margin - 1 + j * cells, margin - 1 + i * cells))
+
+        self.screen.blit(self.bg.moves_left_text, (10, self.gui_vars.height - self.gui_vars.margin * 3 / 4))
+        self.screen.blit(self.bg.medals_left_text, (10, self.gui_vars.height - self.gui_vars.margin * 7 / 6))
+        self.screen.blit(self.bg.score_text, (10, self.gui_vars.height - self.gui_vars.margin / 3))
         self.medal_group.draw(self.screen)
         self.ice_group.draw(self.screen)
         self.gem_group.draw(self.screen)
         self.screen.blit(self.bg.game_over_text, self.bg.game_over_text_pos)
         pygame.display.flip()
 
-    def animate_loop(self):
-        for i in range(ANIMATION_SCALE):
+    def animate_loop(self, loop=None):
+        loop = self.gui_vars.animation_scale if loop is None else loop
+        for i in range(loop):
             # loop the number of times we need to animate given
             # by ANIMATION_SCALE
 
@@ -488,7 +515,7 @@ class GUI:
         if len(removals):
             for i, j, _, _, _ in removals:
                 self.gem_grid.grid[i][j].is_exploding = True
-            self.animate_loop()
+            self.animate_loop(self.gui_vars.explosion_frames)
 
     def break_ice(self, ice_broken: list):
         for i, j, layer in ice_broken:
@@ -519,7 +546,7 @@ class GUI:
     def add_bonuses_fix(self, bonuses: list):
         for i, j, *gem in bonuses:
             if self.gem_grid.grid[i][j] == -1:
-                # print('fixed bonus')
+                logging.warning(f'Fixed bonus at ({i}, {j}) type: {gem[1]}')
                 self.gem_grid.add(i, j, gem)
         self.draw()
 
@@ -537,13 +564,12 @@ class GUI:
         for gem in additions:
             self.gem_grid.add(0, gem[1], gem[2:])
             rect = self.gem_grid.grid[0][gem[1]].rect
-            y, x = rect.y - CELL_SIZE, rect.x
+            y, x = rect.y - self.gui_vars.cell_size, rect.x
             self.gem_grid.grid[0][gem[1]].set_rect(y, x)
             self.gem_grid.grid[0][gem[1]].set_origin(y, x)
         self.animate_loop()
 
     def change(self, update_bag: UpdateBag):
-        # self.compare(self.gems, True)
         if len(update_bag.info) is not 0:
             self.bg.set_all(*update_bag.info)
         self.draw()
@@ -555,26 +581,25 @@ class GUI:
         # self.add_bonuses_fix(update_bag.bonuses)
         self.move_and_add(update_bag.movements, update_bag.additions)
         self.compare(update_bag.gems, update_bag)
-        self.gems = copy.deepcopy(update_bag.gems)
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
-            # print(event.update_bag)
             self.change(event.update_bag)
 
     def compare(self, gems, update_bag):
-        for i, j in product(range(PUZZLE_ROWS), range(PUZZLE_COLUMNS)):
+        for i, j in product(range(self.gui_vars.rows), range(self.gui_vars.columns)):
             game_gem = gems[i][j]
             gui_gem = self.gem_grid.grid[i][j]
             if (game_gem == -1) and (gui_gem == -1):
                 continue
             elif type(game_gem) is tuple and type(gui_gem) is Gem:
-                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or game_gem[2] != gui_gem.activation:
+                if game_gem[0] != gui_gem.type or game_gem[1] != gui_gem.bonus_type or \
+                                game_gem[2] != gui_gem.activation:
                     continue
             else:
                 logging.warning('\n\nFrom model gem grid: \n' + build_array_string(gems))
-                logging.warning('\n\nFrom GUI gem grid: \n'+ build_array_string(self.gem_grid.grid))
-                logging.warning('\n\n' + str(update_bag)+ '\n')
+                logging.warning('\n\nFrom GUI gem grid: \n' + build_array_string(self.gem_grid.grid))
+                logging.warning('\n\n' + str(update_bag) + '\n')
                 logging.warning('\n\nComparison failed:')
                 logging.warning(f'row {i} column {j}')
                 logging.warning(game_gem)
