@@ -2,9 +2,11 @@
 This is the file for the game logic of three match.
 """
 import logging
+import os
 from itertools import product
 from operator import itemgetter
 from random import randint, choice, seed
+from time import strftime
 
 from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
 from global_variables import *
@@ -94,7 +96,11 @@ class Board:
 
         # state variables
         self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
+        self.file_name = ''
         self.action = []
+
+        # file operations
+        self.create_file()
 
         # initialise grids
         self.init_gem_grid()
@@ -368,6 +374,7 @@ class Board:
             return update_bag
 
         elif self.terminal_state:
+
             info = self.get_game_info()
             update_bag = UpdateBag([], [], [], [], [], [], info)
             update_bag.gems = self.gem_grid.grid
@@ -381,6 +388,9 @@ class Board:
 
             # if adjacent swap, continue
             if self.check_swap():
+                # save state and chosen action before doing anything
+                self.write_state_action()
+
                 info = self.get_game_info()
                 movements = self.get_swap_movement()
                 update_bag = UpdateBag([], [], [], movements, [], [], info)
@@ -495,10 +505,18 @@ class Board:
                     self.cascade = 0
 
                     if self.medals == 0:
+                        # write state if terminal state
+                        self.action = [(-1, -1), (-1, -1)]
+                        self.write_state_action()
+
                         self.win_state = True
                         self.terminal_state = True
 
                     elif self.moves == 0:
+                        # write state if terminal state
+                        self.action = [(-1, -1), (-1, -1)]
+                        self.write_state_action()
+
                         self.win_state = False
                         self.terminal_state = True
 
@@ -1198,10 +1216,8 @@ class Board:
         score = self.score
 
         # unpack the swap locations to get the 'action'
-        action = ''
-        for elem in self.action:
-            for item in elem:
-                action += str(item)
+        action = self.action
+        action = str(action[0][0]) + '-' + str(action[0][1]) + '-' + str(action[1][0]) + '-' + str(action[1][1])
 
         progress = str(medals_uncovered) + '\t' + str(score) + '\t' + action
 
@@ -1214,7 +1230,43 @@ class Board:
         :return:
         """
         line1 = 'Preamble\n'
-        line2 = '========\n'
+        header_underline = '===============================================================================\n'
         glossary = 't = gem type\nbt = bonus type\ni = ice layer\nmp = medal portion\nmu = medals uncovered\n' + \
-                   's = score\na = action\ntmo = total moves\ntme = total medals'
+                   's = score\na = action\ntmo = total moves\ntme = total medals\n'
 
+        line3 = 'tmo\ttme\n'
+        divider = '-------------------------------------------------------------------------------\n'
+        line5 = str(self.moves) + '\t' + str(self.total_medals) + '\n'
+
+        key_about = '\nKey for state and progress information.\n2 lines represent a state-action pair:\n'
+        header1 = 't\tbt\ti\tmp\tt\tbt\ti\tmp\t...\n'
+        header2 = 'mu\ts\ta\n'
+
+        preamble = line1 + header_underline + glossary + divider + line3 + header_underline + line5 + divider \
+                   + key_about + header1 + header_underline + header2 + header_underline + '\n'
+
+        return preamble
+
+    def create_file(self):
+        main_dir = os.path.split(os.path.abspath(__file__))[0]
+        data_dir = os.path.join(main_dir, 'training_data')
+        name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
+        self.file_name = os.path.join(data_dir, name)
+
+        with open(self.file_name, 'w') as file:
+            file.write(self.file_header())
+
+    def write_state_action(self):
+        """
+        gets the state and the action and
+        write it to the open file.
+        :return:
+        """
+
+        state = self.get_game_state()
+        progress = self.get_progress_state()
+
+        string = state + '\n' + progress + '\n'
+
+        with open(self.file_name, 'a') as file:
+            file.write(string)
