@@ -9,7 +9,9 @@ Once the game is completed, we will build an AI to play and (hopefully) solve it
 
 Game rules are detailed below.
 
-[https://www.python.org/dev/peps/pep-0008/](https://www.python.org/dev/peps/pep-0008/)
+<p align="center">
+  <img src="https://i.imgur.com/2j0mG6i.png">
+</p>
 
 ## Getting Started
 
@@ -56,19 +58,18 @@ in `global_variables.py` under the GUI variables section. Recommended values are
 
 ## Game Rules
 
-* 6 gem types (colours).
-* 3 bonus types (star, cross, diamond)
-* Star bonus removes all gems of the star gem's type
-* The cross bonus removes all gems in the row/column. If the match is horizontal, the row is removed. Vertical 
+1. 6 gem types (colours).
+2. 3 bonus types (star, cross, diamond)
+3. Star bonus removes all gems of the star gem's type
+4. The cross bonus removes all gems in the row/column. If the match is horizontal, the row is removed. Vertical 
 removes the column.
-* The diamond bonus removes the 9 surrounding gems of the diamond gem.
-* If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
-* If a bonus gem removes another bonus gem, it also performs its bonus action. This is done recursively.
-
-1. 3 or more gems in a succession of the same type is a match.
-2. 4 gems in a succession earns you a cross bonus.
-3. 5 gems in a succession earns you a star bonus.
-4. An intersection of a vertical and horizontal match earns you a diamond bonus.
+5. The diamond bonus removes the 9 surrounding gems of the diamond gem.
+6. If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
+7. If a bonus gem removes another bonus gem, it also performs its bonus action. This is done recursively.
+8. 3 or more gems in a succession of the same type is a match.
+9. 4 gems in a succession earns you a cross bonus.
+10. 5 gems in a succession earns you a star bonus.
+11. An intersection of a vertical and horizontal match earns you a diamond bonus.
 
 ## Running tests
 
