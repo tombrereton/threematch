@@ -4,7 +4,7 @@
 
 # Shared variables
 PUZZLE_ROWS = 9  # Number of rows on the board.
-PUZZLE_COLUMNS = 9  # Number of columns on the board.
+PUZZLE_COLUMNS = 16  # Number of columns on the board.
 
 # Game variables
 LEVEL_1_TOTAL_MEDALS = 3
@@ -12,7 +12,7 @@ LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
 MOVES_LEFT = 26
-GEM_TYPES = 2
+GEM_TYPES = 6
 BONUS_TYPES = 3
 ICE_ROWS = 5
 ICE_LAYERS = 1

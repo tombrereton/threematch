@@ -144,7 +144,7 @@ class Board:
             rows = self.rows
             columns = self.columns
             for row, column in product(range(rows), range(columns)):
-                self.gem_grid.grid[row][column] = self.new_gem((row + column) % 2)
+                self.gem_grid.grid[row][column] = self.new_gem()
 
             # find matches
             match_list, bonus_list = self.find_matches()

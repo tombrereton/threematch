@@ -1,14 +1,14 @@
+import logging
 import random
 from itertools import product
 
 import pygame
-import logging
 
 import game_utilities as util
-from events import UpdateBagEvent, EventManager
-from update_bag import UpdateBag
 import global_variables as gv
+from events import UpdateBagEvent, EventManager
 from gui_variables import GUIVariables
+from update_bag import UpdateBag
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -69,7 +69,7 @@ class SpriteGrid:
         # Remove old sprites from group (if any)
         self.group.empty()
         # Add sprites
-        for i, j in product(range(self.gui_vars.columns), range(self.gui_vars.rows)):
+        for i, j in product(range(self.gui_vars.rows), range(self.gui_vars.columns)):
             self.add(i, j, info[i][j])
 
     def add(self, y_coord: int, x_coord: int, info):
