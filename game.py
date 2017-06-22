@@ -2,9 +2,11 @@
 This is the file for the game logic of three match.
 """
 import logging
+import os
 from itertools import product
 from operator import itemgetter
 from random import randint, choice, seed
+from time import strftime
 
 from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
 from global_variables import *
@@ -67,6 +69,7 @@ class Board:
         self.rows = rows
         self.columns = columns
         self.ice_rows = ice_rows
+        self.total_medals = medals
         self.medals = medals
         self.moves = moves
         self.gem_types = gem_types
@@ -90,6 +93,14 @@ class Board:
         self.additions = []
         self.cascade = 0
         self.activated_gems = []
+
+        # state variables
+        self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
+        self.file_name = ''
+        self.action = []
+
+        # file operations
+        self.create_file()
 
         # initialise grids
         self.init_gem_grid()
@@ -288,6 +299,8 @@ class Board:
         :param swap_locations:
         :return:
         """
+        self.action = swap_locations
+
         gem1_row = swap_locations[0][0]
         gem1_col = swap_locations[0][1]
         gem2_row = swap_locations[1][0]
@@ -361,6 +374,7 @@ class Board:
             return update_bag
 
         elif self.terminal_state:
+
             info = self.get_game_info()
             update_bag = UpdateBag([], [], [], [], [], [], info)
             update_bag.gems = self.gem_grid.grid
@@ -374,6 +388,9 @@ class Board:
 
             # if adjacent swap, continue
             if self.check_swap():
+                # save state and chosen action before doing anything
+                self.write_state_action()
+
                 info = self.get_game_info()
                 movements = self.get_swap_movement()
                 update_bag = UpdateBag([], [], [], movements, [], [], info)
@@ -488,10 +505,18 @@ class Board:
                     self.cascade = 0
 
                     if self.medals == 0:
+                        # write state if terminal state
+                        self.action = [(-1, -1), (-1, -1)]
+                        self.write_state_action()
+
                         self.win_state = True
                         self.terminal_state = True
 
                     elif self.moves == 0:
+                        # write state if terminal state
+                        self.action = [(-1, -1), (-1, -1)]
+                        self.write_state_action()
+
                         self.win_state = False
                         self.terminal_state = True
 
@@ -1140,50 +1165,108 @@ class Board:
                 return False
         return True
 
-    def get_movements(self):
-        return self.movements
+    def get_game_state(self):
+        """
+        returns the 3 grids as vectors.
 
-    def get_additions(self):
-        return self.additions
+        The 3 grids are (in order) gems, ice, medals
+        :return:
+        """
+        game_state = ''
 
+        gems = self.gem_grid.grid
+        ice = self.ice_grid.grid
+        medals = self.medal_grid.grid
+        for i in range(self.rows):
+            for j in range(self.columns):
+                # get type, bonus_type, ice_layer
+                s = str(gems[i][j][0]) + '\t' + str(gems[i][j][1]) + '\t' + str(ice[i][j]) + '\t'
 
-# ============================================
-# main
-# ============================================
-def main():
-    b = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT)
+                # get medal portion
+                m = -1
+                if self.medal_state[i][j] != -1:
+                    m = self.medal_state[i][j]
+                elif ice[i][j] == -1:
+                    m = medals[i][j]
+                    self.medal_state[i][j] = m
 
-    def print_grid(grid):
-        for i in range(PUZZLE_ROWS):
-            print(grid[i])
+                # combine to get t, bt, ice_layer, portion
+                s = s + str(m) + '\t'
+                game_state += s
 
-    print("Medal grid:")
-    print_grid(b.medal_grid.grid)
-    print("Ice grid:")
-    print_grid(b.ice_grid.grid)
-    print("Gem grid:")
-    print_grid(b.gem_grid.grid)
+        return game_state
 
-    swap_locations = [(1, 2), (2, 2)]
-    b.set_swap_locations(swap_locations)
+    def get_progress_state(self):
+        """
+        Returns a string representing the progress state
+        in the form:
 
-    # state = b.get_update()
-    # print("State 1:")
-    # print(state)
-    #
-    # state2 = b.get_update()
-    # print("\nState 2:")
-    # print(state2)
+        'medals_uncovered score action' eg:
+        '1 \t 900 \t 0102'
 
-    count = 0
-    while not b.get_update().is_empty():
-        print(f'\nUpdate {count}:')
-        print(b.get_update())
-        count += 1
+        where action is: row1 colum1 row2 column2
 
-        # print("Empty bag:")
-        # print(b.get_update())
+        The action is the action TO BE performed from the
+        current state.
+        :return:
+        """
 
+        # get medals uncovered and score
+        medals_uncovered = self.total_medals - self.medals
+        score = self.score
 
-if __name__ == '__main__':
-    main()
+        # unpack the swap locations to get the 'action'
+        action = self.action
+        action = str(action[0][0]) + '-' + str(action[0][1]) + '-' + str(action[1][0]) + '-' + str(action[1][1])
+
+        progress = str(medals_uncovered) + '\t' + str(score) + '\t' + action
+
+        return progress
+
+    def file_header(self):
+        """
+        This method build a string to be the header of the
+        game state files.
+        :return:
+        """
+        line1 = 'Preamble\n'
+        header_underline = '===============================================================================\n'
+        glossary = 't = gem type\nbt = bonus type\ni = ice layer\nmp = medal portion\nmu = medals uncovered\n' + \
+                   's = score\na = action\ntmo = total moves\ntme = total medals\n'
+
+        line3 = 'tmo\ttme\n'
+        divider = '-------------------------------------------------------------------------------\n'
+        line5 = str(self.moves) + '\t' + str(self.total_medals) + '\n'
+
+        key_about = '\nKey for state and progress information.\n2 lines represent a state-action pair:\n'
+        header1 = 't\tbt\ti\tmp\tt\tbt\ti\tmp\t...\n'
+        header2 = 'mu\ts\ta\n'
+
+        preamble = line1 + header_underline + glossary + divider + line3 + header_underline + line5 + divider \
+                   + key_about + header1 + header_underline + header2 + header_underline + '\n'
+
+        return preamble
+
+    def create_file(self):
+        main_dir = os.path.split(os.path.abspath(__file__))[0]
+        data_dir = os.path.join(main_dir, 'training_data')
+        name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
+        self.file_name = os.path.join(data_dir, name)
+
+        with open(self.file_name, 'w') as file:
+            file.write(self.file_header())
+
+    def write_state_action(self):
+        """
+        gets the state and the action and
+        write it to the open file.
+        :return:
+        """
+
+        state = self.get_game_state()
+        progress = self.get_progress_state()
+
+        string = state + '\n' + progress + '\n'
+
+        with open(self.file_name, 'a') as file:
+            file.write(string)

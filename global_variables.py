@@ -24,7 +24,7 @@ BASE_CELL_SIZE = 30  # Base width of each shape (pixels).
 GEM_RATIO = 0.9  # Gem size / cell size.
 BASE_MARGIN = 70  # Base margin around the board (pixels).
 BASE_TEXT_AREA = 75  # Base text area.
-ANIMATION_SCALE = 15
+ANIMATION_SCALE = 30
 EXPLOSION_FRAMES = 9
 
 # Testing

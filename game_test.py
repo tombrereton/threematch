@@ -1,5 +1,6 @@
 from events import *
 from game import Board
+from gui_variables import GUIVariables
 
 rows0 = 2
 columns0 = 3
@@ -19,7 +20,7 @@ ice_rows2 = 0
 medals2 = 0
 moves_left2 = 30
 
-event_manager = EventManager()
+event_manager = EventManager(gui_vars=GUIVariables)
 b = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b0 = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b2 = Board(rows2, columns2, ice_rows2, medals2, moves_left2, test='horizontal', event_manager=event_manager)
@@ -396,10 +397,10 @@ def test_1_11_diamond_grid():
     b2.bonus_list = actual_bonus
     b2.remove_gems_add_bonuses()
 
-
     print('\n\n second:\n')
     print(actual_removed)
     print(actual_bonus)
+
 
 def test_2_1_ice_removed():
     """
@@ -496,3 +497,80 @@ def test_2_3_remove_ice_when_creating_bonus():
     assert expected_ice_grid == actual_ice_grid
     assert expected_removals == actual_removals
     assert expected_bonuses == actual_bonuses
+
+
+def test_3_1_get_game_state():
+    """
+    The get game state function should
+    return all three states as a string in vector form.
+    :return:
+    """
+    print('\n\nTest 3.1 get state in vector form:\n')
+
+    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+              event_manager=event_manager)
+
+    print(b)
+
+    gems, ice, medals = b.get_game_state()
+    print(gems)
+    print(ice)
+    print(medals)
+
+    expected_gems = '[(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0)]'
+    expected_ice = '[0, 0, 0, 0, 0, 0]'
+    expected_medals = '[0, 0, 0, 0, 0, 0]'
+
+    assert expected_gems == gems
+    assert expected_ice == ice
+    assert expected_medals == medals
+
+
+def test_3_1_get_game_state():
+    """
+    The get game state function should
+    return all three states as a string in vector form.
+    :return:
+    """
+    print('\n\nTest 3.1 get state in vector form:\n')
+
+    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+              event_manager=event_manager)
+
+    print(b)
+
+    game_state = b.get_game_state()
+    print(game_state)
+
+    expected_game_state = '0\t0\t0\t-1\t' + '0\t0\t0\t-1\t' + '0\t0\t0\t-1\t' + '1\t0\t0\t-1\t' + '1\t0\t0\t-1\t' + \
+                          '1\t0\t0\t-1\t'
+
+    assert game_state == expected_game_state
+
+
+def test_3_2_get_game_state():
+    """
+    The get game state function should
+    return all three states as a string in vector form.
+    :return:
+    """
+    print('\n\nTest 3.2 get progress state in vector form:\n')
+
+    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+              event_manager=event_manager)
+
+    swap_location = [(0, 0), (0, 1)]
+    b.set_swap_locations(swap_location)
+
+    action = ''
+    for elem in swap_location:
+        for item in elem:
+            action += str(item)
+
+    expected_progress = '0\t0\t' + action
+
+    progress = b.get_progress_state()
+    print(b)
+    print(progress)
+
+    assert progress == expected_progress
