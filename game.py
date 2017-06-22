@@ -158,7 +158,6 @@ class Board:
             match_count = len(match_list)
             bonus_count = len(bonus_list)
 
-
             count = 0
             while match_count + bonus_count >= 3:
                 self.match_list = match_list
@@ -673,21 +672,25 @@ class Board:
 
         # loop over matches to check for bonuses and perform bonus action
         matches_from_bonus = []
-        for row, column, gem_type, bonus_type, activation in matches:
+        broken = []
+        for gem in matches:
+            row, column, gem_type, bonus_type, activation = gem
             if bonus_type == 1:
                 # add row to matches at location row
                 matches_from_bonus.extend(self.remove_row(row, column))
 
-            if bonus_type == 2:
+            elif bonus_type == 2:
                 # add all gems of this gems type to matches
                 matches_from_bonus.extend(self.remove_all_gems_of_type(gem_type, row, column))
 
-            if bonus_type == 3:
+            elif bonus_type == 3:
                 # add 9 surrounding gems of this gem
                 matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
 
+            broken.append(gem)
+
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, row_first=False))
+        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
 
         # remove duplicates
         matches = list(set(matches))
@@ -741,7 +744,9 @@ class Board:
 
         # loop over matches to check for bonuses and perform bonus action
         matches_from_bonus = []
-        for row, column, gem_type, bonus_type, activation in matches:
+        broken = []
+        for gem in matches:
+            row, column, gem_type, bonus_type, activation = gem
             if bonus_type == 1:
                 # add column to matches at location column
                 matches_from_bonus.extend(self.remove_column(row, column))
@@ -754,8 +759,10 @@ class Board:
                 # add 9 surrounding gems of this gem
                 matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
 
+            broken.append(gem)
+
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, row_first=True))
+        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=True))
 
         # remove duplicates
         matches = list(set(matches))
@@ -803,7 +810,7 @@ class Board:
 
         return broken
 
-    def cascade_bonus_action(self, matches_from_bonus, row_first: bool):
+    def cascade_bonus_action(self, matches_from_bonus, broken, row_first: bool):
         """
         Loops over matches from bonus and performs bonus
         action.
@@ -815,7 +822,7 @@ class Board:
         :return:
         """
         breaking_next = matches_from_bonus[:]
-        broken = []
+        # broken = []
 
         while len(breaking_next):
             breaking_current, breaking_next = breaking_next, []
