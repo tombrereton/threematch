@@ -15,7 +15,7 @@ class Grid:
         Constructor for class
         :param grid: Grid of gem types
         """
-        # Set field variabls
+        # Set field variables
         self.grid = grid
 
     def get_gem(self, i: int, j: int):
@@ -35,8 +35,8 @@ class Grid:
         Method to check if this grid contains matches
         :return: True if grid contains one or matches, False if not
         """
-        for i in range(len(self.a)):
-            for j in range(len(self.a[0])):
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[0])):
                     if self.get_gem(i, j) is self.get_gem(i + 1, j) is self.get_gem(i + 2, j) is not None:
                         return True
                     if self.get_gem(i, j) is self.get_gem(i, j + 1) is self.get_gem(i, j + 2) is not None:
@@ -119,25 +119,25 @@ def moves_two(grid: list):
     # Create empty list for moves
     corners = []
     # These specify patterns where the same gem type must exist for a move to be possible
-    oneOffPatterns = (((0, 1), (1, 0), (2, 0)),
-                      ((0, 1), (1, 1), (2, 0)),
-                      ((0, 0), (1, 1), (2, 0)),
-                      ((0, 1), (1, 0), (2, 1)),
-                      ((0, 0), (1, 0), (2, 1)),
-                      ((0, 0), (1, 1), (2, 1)),
-                      ((0, 0), (0, 2), (0, 3)),
-                      ((0, 0), (0, 1), (0, 3)))
+    one_off_patterns = (((0, 1), (1, 0), (2, 0)),
+                        ((0, 1), (1, 1), (2, 0)),
+                        ((0, 0), (1, 1), (2, 0)),
+                        ((0, 1), (1, 0), (2, 1)),
+                        ((0, 0), (1, 0), (2, 1)),
+                        ((0, 0), (1, 1), (2, 1)),
+                        ((0, 0), (0, 2), (0, 3)),
+                        ((0, 0), (0, 1), (0, 3)))
     # Iterate through all positions and patterns
-    for i, j, pat in product(range(len(a)), range(len(a[0])), oneOffPatterns):
+    for i, j, pat in product(range(len(grid)), range(len(grid[0])), one_off_patterns):
         # Check if pattern exists 
-        if (wrapper.get_gem(i + pat[0][0], j + pat[0][1]) is \
-            wrapper.get_gem(i + pat[1][0], j + pat[1][1]) is \
-            wrapper.get_gem(i + pat[2][0], j + pat[2][1]) is not None) or \
-           (wrapper.get_gem(i + pat[0][1], j + pat[0][0]) is \
-            wrapper.get_gem(i + pat[1][1], j + pat[1][0]) is \
-            wrapper.get_gem(i + pat[2][1], j + pat[2][0]) is not None):
-                # If a move exists here add the corner to the list
-                corners.append((i, j))
+        if (wrapper.get_gem(i + pat[0][0], j + pat[0][1])
+                is wrapper.get_gem(i + pat[1][0], j + pat[1][1])
+                is wrapper.get_gem(i + pat[2][0], j + pat[2][1]) is not None) or (
+                wrapper.get_gem(i + pat[0][1], j + pat[0][0])
+                is wrapper.get_gem(i + pat[1][1], j + pat[1][0])
+                is wrapper.get_gem(i + pat[2][1], j + pat[2][0]) is not None):
+                    # If a move exists here add the corner to the list
+                    corners.append((i, j))
     # Return list of corners
     return corners
 
@@ -166,16 +166,18 @@ def moves_three(grid: list):
             c = Counter(types).most_common()
             # If there are 2 types then must be two of one type, one of another
             if len(c) == 2:
-                # Get the type which occoured twice
+                # Get the type which occurred twice
                 major_type = c[0][0]
-                # Get the type which occoured once
+                # Get the type which occurred once
                 minor_type = c[1][0]
                 # Get the coordinates of the minor_type
                 y1, x1 = to_check[types.index(minor_type)]
                 # Get the coordinates surrounding this
-                surround = [(y1, x1 + offset) for offset in range(-1, 2, 2)] + [(y1 + offset, x1) for offset in range(-1, 2, 2)]
+                surround = [(y1, x1 + offset) for offset in range(-1, 2, 2)] + \
+                           [(y1 + offset, x1) for offset in range(-1, 2, 2)]
                 # Filter this to make sure they are on the grid and not in the section of three
-                surround = [(y2, x2) for y2, x2 in surround if 0 <= y2 < rows and 0 <= x2 < columns and (y2, x2) not in to_check]
+                surround = [(y2, x2) for y2, x2 in surround if 0 <= y2 < rows and 0 <= x2 < columns
+                            and (y2, x2) not in to_check]
                 # Iterate through these locations
                 for y2, x2 in surround:
                     # If a major_type gem is present this can be used to make a match
@@ -192,56 +194,57 @@ def p(grid: list):
     :param grid: Grid to print
     :return: None
     """
-    print('\n'.join([''.join([str(el) for el in row]) for row in grid]))
+    print('\n'.join([''.join([str(el) for el in row]) for row in grid]), end='\n\n')
 
 
-def time_test(grid: list, N: int):
+def time_test(grid: list, n: int):
     """
-    Function to compare runtimes of functions
+    Function to compare run times of functions
     :param grid: Grid to test with
-    :param N: Number of times to test each function
+    :param n: Number of times to test each function
     :return: None
     """
+    m1, m2, m3 = (None,) * 3
     # Create list to store times in
-    t = []
+    t = list()
     # Append start time
     t.append(time())
     # Run moves_one N times
-    for _ in range(N):
-        m1 = moves_one(a)
+    for _ in range(n):
+        m1 = moves_one(grid)
     # Append intermediate time
     t.append(time())
     # Run moves_two N times
-    for _ in range(N):
-        m2 = moves_two(a)
+    for _ in range(n):
+        m2 = moves_two(grid)
     # Append intermediate time
     t.append(time())
     # Run moves_three N times
-    for _ in range(N):
-        m3 = moves_three(a)
+    for _ in range(n):
+        m3 = moves_three(grid)
     # Append end time
     t.append(time())
     # Print results
-    print(m1, m2, m3, sep='\n\n', end='\n')
+    print(m1, m2, m3, sep='\n\n', end='\n\n')
     # Print total times
     print('Total times:')
-    print(*[t[i] - t[i - 1] for i in range(1, len(t))], sep='\t', end='\n')
+    print(*[t[i] - t[i - 1] for i in range(1, len(t))], sep='\t', end='\n\n')
     # Print times for one run
     print('Single time:')
-    print(*[(t[i] - t[i - 1]) / N for i in range(1, len(t))], sep='\t', end='\n')
+    print(*[(t[i] - t[i - 1]) / n for i in range(1, len(t))], sep='\t', end='\n\n')
 
 # Main
 if __name__ == '__main__':
     # Get grid size from command line, default to 5
-    n = int(sys.argv[1]) if 1 < len(sys.argv) else 5
+    n_grid = int(sys.argv[1]) if 1 < len(sys.argv) else 5
     # Generate a grid with no matches (caution with large grid sizes, may run for a long time)
     while True:
-        grid = [[random.randrange(6) for _ in range(n)] for _ in range(n)]
-        if not Normal(grid).match_check():
-            p(grid, end='\n\n')
+        g = [[random.randrange(6) for _ in range(n_grid)] for _ in range(n_grid)]
+        if not Grid(g).match_check():
+            p(g)
             break
 
     # Get number of tests from command line, default to 1000
-    N = int(sys.argv[2]) if 2 < len(sys.argv) else 1000
+    n_tests = int(sys.argv[2]) if 2 < len(sys.argv) else 1000
     # Run tests
-    time_test(grid, N)
+    time_test(g, n_tests)
