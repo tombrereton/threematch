@@ -1,7 +1,7 @@
 # Three Match
 
-A bejeweled/candy crush clone. The aim is to free the medals under the ice by match 3 or more gems of the 
-same type on top of the ice. Matching on top of ice removes it. Once all medals are freed you win the game.
+A bejeweled/candy crush clone. The aim is to free the medals under the ice by matching 3 or more gems of the 
+same type on top of the ice. Matching gems on top of ice removes it. Once all medals are freed you win the game.
 
 This game is in development and is being built for a masters project at the University of Birmingham.
 
