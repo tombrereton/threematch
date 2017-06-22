@@ -37,7 +37,8 @@ To install Gem Island clone the repository to your home directory or wherever yo
 
 1. Clone repo: 
 ```
-git clone ~/https://github.com/tombrereton/threematch.git
+cd ~/
+git clone https://github.com/tombrereton/threematch.git
 ```
 
 2. Run Gem Island
@@ -89,7 +90,7 @@ cd ~/threematch
 python -m pytest
 ```
 
-### Style guide
+## Style guide
 
 Refer to the pep-8 website for a consistent style.
 
