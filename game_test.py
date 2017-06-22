@@ -1,4 +1,4 @@
-from events import *
+from events import EventManager
 from game import Board
 from gui_variables import GUIVariables
 
@@ -546,31 +546,3 @@ def test_3_1_get_game_state():
                           '1\t0\t0\t-1\t'
 
     assert game_state == expected_game_state
-
-
-def test_3_2_get_game_state():
-    """
-    The get game state function should
-    return all three states as a string in vector form.
-    :return:
-    """
-    print('\n\nTest 3.2 get progress state in vector form:\n')
-
-    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
-              event_manager=event_manager)
-
-    swap_location = [(0, 0), (0, 1)]
-    b.set_swap_locations(swap_location)
-
-    action = ''
-    for elem in swap_location:
-        for item in elem:
-            action += str(item)
-
-    expected_progress = '0\t0\t' + action
-
-    progress = b.get_progress_state()
-    print(b)
-    print(progress)
-
-    assert progress == expected_progress
