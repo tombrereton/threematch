@@ -2,6 +2,7 @@ import pygame
 from pygame.constants import QUIT, KEYDOWN, K_ESCAPE, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
 from global_variables import *
+from gui_variables import GUIVariables
 
 
 def debug_print(msg):
@@ -59,7 +60,8 @@ class EventManager:
     """this object is responsible for coordinating most communication
     between the Model, View, and Controller."""
 
-    def __init__(self):
+    def __init__(self, gui_vars: GUIVariables):
+        self.gui_vars = gui_vars
         from weakref import WeakKeyDictionary
         self.listeners = WeakKeyDictionary()
         self.eventQueue = []
@@ -111,7 +113,7 @@ class MouseController:
                     # First click, save coordinates
                     x = event.pos[0]
                     y = event.pos[1]
-                    row, column = pixel_to_grid(y, x)
+                    row, column = self.evManager.gui_vars.pixel_to_grid(y, x)
 
                     if row == -1 or column == -1:
                         # clicked not on grid
@@ -126,7 +128,7 @@ class MouseController:
                     # Second click, create event object to send
                     x = event.pos[0]
                     y = event.pos[1]
-                    row, column = pixel_to_grid(y, x)
+                    row, column = self.evManager.gui_vars.pixel_to_grid(y, x)
                     if row == -1 or column == -1:
                         # clicked not on grid
                         self.is_second_click = False

@@ -18,6 +18,7 @@ from events import EventManager, MouseController, CPUSpinnerController
 from game import Board
 from global_variables import *
 from gui import GUI
+from gui_variables import *
 
 # logging.basicConfig(filename='game.log', filemode='w', level=logging.DEBUG)
 # logging.basicConfig(level=logging.INFO)
@@ -29,12 +30,13 @@ from gui import GUI
 # ------------------------------------------------------------------------------
 def main():
     """..."""
-    evManager = EventManager()
+    gui_vars = GUIVariables.from_global()
+    evManager = EventManager(gui_vars)
 
     mouse_cont = MouseController(evManager)
     spinner = CPUSpinnerController(evManager)
     game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT, event_manager=evManager)
-    view = GUI(*game.state(), event_manager=evManager)
+    view = GUI(gui_vars, *game.state(), event_manager=evManager)
 
     spinner.run()
 

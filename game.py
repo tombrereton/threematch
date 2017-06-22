@@ -363,6 +363,7 @@ class Board:
         elif self.terminal_state:
             info = self.get_game_info()
             update_bag = UpdateBag([], [], [], [], [], [], info)
+            update_bag.gems = self.gem_grid.grid
 
             # send bag to view
             event = UpdateBagEvent(update_bag)
