@@ -1,6 +1,7 @@
 # Three Match
 
-A bejeweled/candy crush clone.
+A bejeweled/candy crush clone. The aim is to free the medals under the ice by match 3 or more gems of the 
+same type on top of the ice. Matching on top of ice removes it. Once all medals are freed you win the game.
 
 This game is in development and is being built for a masters project at the University of Birmingham.
 
@@ -53,7 +54,23 @@ python3 main.py
 3. Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
 in `global_variables.py` under the GLOBAL CONSTANSTS section. Recommended values are between and including 1 and 3.
 
-## Running the tests
+## Game Details
+
+* 6 gem types (colours).
+* 3 bonus types (star, cross, diamond)
+* Star bonus removes all gems of the star gem's type
+* The cross bonus removes all gems in the row/column. If the match is horizontal, the row is removed. Vertical 
+removes the column.
+* The diamond bonus removes the 9 surrounding gems of the diamond gem.
+* If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
+* If a bonus gem removes another bonus gem, it also performs its bonus action. This is done recursively.
+
+1. 3 or more gems in a succession of the same type is a match.
+2. 4 gems in a succession earns you a cross bonus.
+3. 5 gems in a succession earns you a star bonus.
+4. An intersection of a vertical and horizontal match earns you a diamond bonus.
+
+## Running tests
 
 Pytest is required to run the tests.
  
