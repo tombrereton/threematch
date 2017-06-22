@@ -67,6 +67,7 @@ class Board:
         self.rows = rows
         self.columns = columns
         self.ice_rows = ice_rows
+        self.total_medals = medals
         self.medals = medals
         self.moves = moves
         self.gem_types = gem_types
@@ -90,6 +91,10 @@ class Board:
         self.additions = []
         self.cascade = 0
         self.activated_gems = []
+
+        # state variables
+        self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
+        self.action = []
 
         # initialise grids
         self.init_gem_grid()
@@ -288,6 +293,8 @@ class Board:
         :param swap_locations:
         :return:
         """
+        self.action = swap_locations
+
         gem1_row = swap_locations[0][0]
         gem1_col = swap_locations[0][1]
         gem2_row = swap_locations[1][0]
@@ -1140,50 +1147,74 @@ class Board:
                 return False
         return True
 
-    def get_movements(self):
-        return self.movements
+    def get_game_state(self):
+        """
+        returns the 3 grids as vectors.
 
-    def get_additions(self):
-        return self.additions
+        The 3 grids are (in order) gems, ice, medals
+        :return:
+        """
+        game_state = ''
 
+        gems = self.gem_grid.grid
+        ice = self.ice_grid.grid
+        medals = self.medal_grid.grid
+        for i in range(self.rows):
+            for j in range(self.columns):
+                # get type, bonus_type, ice_layer
+                s = str(gems[i][j][0]) + '\t' + str(gems[i][j][1]) + '\t' + str(ice[i][j]) + '\t'
 
-# ============================================
-# main
-# ============================================
-def main():
-    b = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT)
+                # get medal portion
+                m = -1
+                if self.medal_state[i][j] != -1:
+                    m = self.medal_state[i][j]
+                elif ice[i][j] == -1:
+                    m = medals[i][j]
+                    self.medal_state[i][j] = m
 
-    def print_grid(grid):
-        for i in range(PUZZLE_ROWS):
-            print(grid[i])
+                # combine to get t, bt, ice_layer, portion
+                s = s + str(m) + '\t'
+                game_state += s
 
-    print("Medal grid:")
-    print_grid(b.medal_grid.grid)
-    print("Ice grid:")
-    print_grid(b.ice_grid.grid)
-    print("Gem grid:")
-    print_grid(b.gem_grid.grid)
+        return game_state
 
-    swap_locations = [(1, 2), (2, 2)]
-    b.set_swap_locations(swap_locations)
+    def get_progress_state(self):
+        """
+        Returns a string representing the progress state
+        in the form:
 
-    # state = b.get_update()
-    # print("State 1:")
-    # print(state)
-    #
-    # state2 = b.get_update()
-    # print("\nState 2:")
-    # print(state2)
+        'medals_uncovered score action' eg:
+        '1 \t 900 \t 0102'
 
-    count = 0
-    while not b.get_update().is_empty():
-        print(f'\nUpdate {count}:')
-        print(b.get_update())
-        count += 1
+        where action is: row1 colum1 row2 column2
 
-        # print("Empty bag:")
-        # print(b.get_update())
+        The action is the action TO BE performed from the
+        current state.
+        :return:
+        """
 
+        # get medals uncovered and score
+        medals_uncovered = self.total_medals - self.medals
+        score = self.score
 
-if __name__ == '__main__':
-    main()
+        # unpack the swap locations to get the 'action'
+        action = ''
+        for elem in self.action:
+            for item in elem:
+                action += str(item)
+
+        progress = str(medals_uncovered) + '\t' + str(score) + '\t' + action
+
+        return progress
+
+    def file_header(self):
+        """
+        This method build a string to be the header of the
+        game state files.
+        :return:
+        """
+        line1 = 'Preamble\n'
+        line2 = '========\n'
+        glossary = 't = gem type\nbt = bonus type\ni = ice layer\nmp = medal portion\nmu = medals uncovered\n' + \
+                   's = score\na = action\ntmo = total moves\ntme = total medals'
+
