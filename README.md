@@ -96,14 +96,14 @@ Refer to the pep-8 website for a consistent style.
 
 [https://www.python.org/dev/peps/pep-0008/](https://www.python.org/dev/peps/pep-0008/)
 
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
 ## Authors
 
 * **Thomas Brereton** 
 * **Elliott Davies**
+
+## Acknowledgements
+
+* Project Supervisor: **Claudio Zito** 
 
 ## License
 
