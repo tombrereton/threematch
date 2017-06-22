@@ -35,7 +35,7 @@ class Board:
     The ice grid contains a single value in each cell, represented by:
     (layer)
 
-    The medal_grid contains a single value in each cell, represenEted by:
+    The medal_grid contains a single value in each cell, represented by:
     (corner)
 
     Swapped gems is a list of tuples, represented as:
@@ -687,42 +687,22 @@ class Board:
                 temp_matches = self.get_row_match(row, column)
 
                 # Get bonus gems
-                temp_matches_2, temp_bonuses = self.get_bonus_types_1_2_and_matches(row, column, temp_matches)
+                temp_above_3_matches, temp_bonuses = self.get_bonus_types_1_2_and_matches(row, column, temp_matches)
 
                 # Add gems to lists
-                matches.extend(temp_matches_2)
+                matches.extend(temp_above_3_matches)
                 bonuses.extend(temp_bonuses)
 
                 # add length of matches to column
                 column += len(temp_matches)
 
-        # loop over matches to check for bonuses and perform bonus action
-        matches_from_bonus = []
-        broken = []
-        for gem in matches:
-            row, column, gem_type, bonus_type, activation = gem
-            if bonus_type == 1:
-                # add row to matches at location row
-                matches_from_bonus.extend(self.remove_row(row, column))
-
-            elif bonus_type == 2:
-                # add all gems of this gems type to matches
-                matches_from_bonus.extend(self.remove_all_gems_of_type(gem_type, row, column))
-
-            elif bonus_type == 3:
-                # add 9 surrounding gems of this gem
-                matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
-
-            broken.append(gem)
-
-        # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
+        # Get matches from bonuses
+        matches_from_bonus = self.perform_bonus_action(matches, horizontal=True)
 
         # remove duplicates
         matches = list(set(matches))
         matches_from_bonus = list(set(matches_from_bonus))
 
-        # return dictionary after looping over all row matches
         return matches, matches_from_bonus, bonuses
 
     def find_vertical_matches(self):
@@ -768,14 +748,36 @@ class Board:
                 # add length of matches to column
                 row += len(temp_matches)
 
+        # Get matches from bonuses
+        matches_from_bonus = self.perform_bonus_action(matches, horizontal=False)
+
+        # remove duplicates
+        matches = list(set(matches))
+        matches_from_bonus = list(set(matches_from_bonus))
+
+        # return dictionary after looping over all row matches
+        return matches, matches_from_bonus, bonuses
+
+    def perform_bonus_action(self, matches: list, horizontal: bool):
+        """
+        Performs bonus actions for any bonuses in the matches list.
+        :param matches:
+        :param horizontal:
+        :return: matches_from_bonus
+        """
+        if horizontal:
+            remove_line = self.remove_row
+        else:
+            remove_line = self.remove_column
+
         # loop over matches to check for bonuses and perform bonus action
         matches_from_bonus = []
         broken = []
         for gem in matches:
             row, column, gem_type, bonus_type, activation = gem
             if bonus_type == 1:
-                # add column to matches at location column
-                matches_from_bonus.extend(self.remove_column(row, column))
+                # add row to matches at location row
+                matches_from_bonus.extend(remove_line(row, column))
 
             elif bonus_type == 2:
                 # add all gems of this gems type to matches
@@ -788,14 +790,9 @@ class Board:
             broken.append(gem)
 
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=True))
+        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
 
-        # remove duplicates
-        matches = list(set(matches))
-        matches_from_bonus = list(set(matches_from_bonus))
-
-        # return dictionary after looping over all row matches
-        return matches, matches_from_bonus, bonuses
+        return matches_from_bonus
 
     def cascade_bonus_action(self, matches_from_bonus, broken, row_first: bool):
         """
@@ -838,17 +835,6 @@ class Board:
             row_first = not row_first
 
         return broken
-
-    def add_to_activated_gems(self, matches_from_bonuses: list):
-        """
-        Loops over the matches from bonuses list and
-        add any bonuses in it to the activated gems list.
-        :param matches_from_bonuses:
-        :return:
-        """
-        for row, column, gem_type, bonus_type, activation in matches_from_bonuses:
-            if bonus_type > 0:
-                self.activated_gems.append(self.get_gem_info(row, column))
 
     def get_bonus_types_1_2_and_matches(self, row: int, column: int, temp_matches: list):
         """
