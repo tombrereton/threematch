@@ -1,6 +1,4 @@
 import logging
-import copy
-import logging
 import random
 from itertools import product
 
@@ -362,7 +360,6 @@ class MedalGrid(SpriteGrid):
 
 
 class Background:
-
     def __init__(self, gui_vars: GUIVariables, moves_left: int, medals_left: int, score: int,
                  terminal: bool, win: bool):
         self.gui_vars = gui_vars
@@ -377,7 +374,8 @@ class Background:
         self.game_over_text = None
         self.game_over_text_pos = None
 
-        self.background = util.load_background("stone_light_2.jpg", "ground.png", self.gui_vars.width, self.gui_vars.height)
+        self.background = util.load_background("stone_light_2.jpg", "ground.png", self.gui_vars.width,
+                                               self.gui_vars.height)
         self.grid_image_top_left = util.load_image_only("grid_inner_1.png", self.gui_vars.cell_size, rotate=0)
         self.grid_image_bottom_right = util.load_image_only("grid_inner_2.png", self.gui_vars.cell_size, rotate=0)
         self.border_top = util.load_border("border_2.png", self.gui_vars.cell_size * 2, self.gui_vars.cell_size * 3 / 4)
@@ -435,7 +433,6 @@ class Background:
 
 
 class GUI:
-
     def __init__(self, gui_vars: GUIVariables, gems: list, ice, medals: list, text_info: tuple,
                  event_manager: EventManager):
         self.gui_vars = gui_vars
@@ -467,30 +464,30 @@ class GUI:
         self.screen.blit(self.bg.score_text, (10, self.gui_vars.height - self.gui_vars.margin / 3))
 
         # TODO: move it appropriate place
-        for j in range(self.gui_vars.columns):
-            self.screen.blit(self.bg.border_top, (self.gui_vars.margin * 0.78 + j * self.gui_vars.cell_size,
-                                                  self.gui_vars.margin * 0.85))
-
-        for j in range(self.gui_vars.columns):
-            self.screen.blit(self.bg.border_bottom, (self.gui_vars.margin * 0.78 + j * self.gui_vars.cell_size,
-                                                     self.gui_vars.margin * 0.84 + self.gui_vars.margin *
-                                                     self.gui_vars.cell_size))
-
         rows = self.gui_vars.rows
         columns = self.gui_vars.columns
         margin = self.gui_vars.margin
         cells = self.gui_vars.cell_size
+
+        for j in range(columns):
+            # top border
+            self.screen.blit(self.bg.border_top, (margin * 0.78 + j * cells, margin * 0.85))
+
+        for j in range(columns):
+            # bottom border
+            self.screen.blit(self.bg.border_bottom, (margin * 0.78 + j * cells, margin * 0.84 + rows * cells))
         for i in range(rows):
+            # left border
             self.screen.blit(self.bg.border_left, (margin * 0.85, margin * 0.77 + i * cells))
 
         for i in range(rows):
-            self.screen.blit(self.bg.border_right, (margin * 0.82 + columns * cells,
-                                                    margin * 0.79 + i * cells))
+            # right border
+            self.screen.blit(self.bg.border_right, (margin * 0.82 + columns * cells, margin * 0.79 + i * cells))
 
         # TODO: remove the 'minus 1' and centre gems?
-        for i, j in product(range(rows ), range(columns )):
-            # rest
-            self.screen.blit(self.bg.grid_image_top_left, (margin - 1 + i * cells, margin - 1 + j * cells))
+        for i, j in product(range(rows), range(columns)):
+            # grid background
+            self.screen.blit(self.bg.grid_image_top_left, (margin - 1 + j * cells, margin - 1 + i * cells))
 
         self.screen.blit(self.bg.moves_left_text, (10, self.gui_vars.height - self.gui_vars.margin * 3 / 4))
         self.screen.blit(self.bg.medals_left_text, (10, self.gui_vars.height - self.gui_vars.margin * 7 / 6))
@@ -501,7 +498,7 @@ class GUI:
         self.screen.blit(self.bg.game_over_text, self.bg.game_over_text_pos)
         pygame.display.flip()
 
-    def animate_loop(self, loop = None):
+    def animate_loop(self, loop=None):
         loop = self.gui_vars.animation_scale if loop is None else loop
         for i in range(loop):
             # loop the number of times we need to animate given
@@ -587,7 +584,6 @@ class GUI:
 
     def notify(self, event):
         if isinstance(event, UpdateBagEvent):
-            print(event.update_bag)
             self.change(event.update_bag)
 
     def compare(self, gems, update_bag):
