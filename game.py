@@ -166,11 +166,23 @@ class Board:
 
             # find matches
             match_list, bonus_list = self.find_matches()
-            match_count = len(match_list)
-            bonus_count = len(bonus_list)
+            '''
+            # match_count = len(match_list)
+            # bonus_count = len(bonus_list)
 
             count = 0
-            while match_count + bonus_count >= 3:
+            '''
+            while len(match_list) + len(bonus_list):
+                for gem in match_list:
+                    i, j = gem[:2]
+                    self.gem_grid.grid[i][j] = self.new_gem()
+
+                for gem in bonus_list:
+                    i, j = gem[:2]
+                    self.gem_grid.grid[i][j] = self.new_gem()
+
+                match_list, bonus_list = self.find_matches()
+                '''
                 self.match_list = match_list
                 self.bonus_list = bonus_list
                 self.remove_gems_add_bonuses(init=True)
@@ -187,6 +199,7 @@ class Board:
                 bonus_count = len(bonus_list)
 
                 count += 1
+                '''
 
     def test_grid_vertical(self):
         """
