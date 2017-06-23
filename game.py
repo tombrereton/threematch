@@ -657,7 +657,7 @@ class Board:
                 column += len(temp_matches)
 
         # Get matches from bonuses
-        matches_from_bonus = self.perform_bonus_action(matches, horizontal=True)
+        matches_from_bonus = self.cascade_bonus_action(matches, row_first=True)
 
         # remove duplicates
         matches = list(set(matches))
@@ -709,7 +709,7 @@ class Board:
                 row += len(temp_matches)
 
         # Get matches from bonuses
-        matches_from_bonus = self.perform_bonus_action(matches, horizontal=False)
+        matches_from_bonus = self.cascade_bonus_action(matches, row_first=False)
 
         # remove duplicates
         matches = list(set(matches))
@@ -754,7 +754,7 @@ class Board:
 
         return matches_from_bonus
 
-    def cascade_bonus_action(self, matches_from_bonus, broken, row_first: bool):
+    def cascade_bonus_action(self, matches, row_first: bool):
         """
         Loops over matches from bonus and performs bonus
         action.
@@ -763,10 +763,11 @@ class Board:
         matches from bonuses
         :param broken:
         :param row_first:
-        :param matches_from_bonus:
+        :param matches:
         :return:
         """
-        breaking_next = matches_from_bonus[:]
+        breaking_next = matches[:]
+        broken = []
 
         while len(breaking_next):
             breaking_current, breaking_next = breaking_next, []
