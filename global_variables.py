@@ -7,7 +7,7 @@ PUZZLE_ROWS = 15  # Number of rows on the board.
 PUZZLE_COLUMNS = 15  # Number of columns on the board.
 
 # Game variables
-LEVEL_1_TOTAL_MEDALS = 5
+LEVEL_1_TOTAL_MEDALS = 1
 LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
