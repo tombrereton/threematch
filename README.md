@@ -1,90 +1,119 @@
-Three Match
----
+# Three Match
 
-A bejeweled/candy crush clone.
+A bejeweled/candy crush clone. The aim is to free the medals under the ice by matching 3 or more gems of the 
+same type on top of the ice. Matching gems on top of ice removes it. Once all medals are freed you win the game.
 
 This game is in development and is being built for a masters project at the University of Birmingham.
 
-Dependencies are python3 and pygame. Install pygame with:
-```python
-pip3 install pygame
-```
+Once the game is completed, we will build an AI to play and (hopefully) solve it.
 
-Or if python3 is default
-```python
+Game rules are detailed below.
+
+<p align="center">
+  <img src="https://i.imgur.com/2j0mG6i.png">
+</p>
+
+## Getting Started
+
+### Prerequisites
+
+Pygame - install via pip
+
+Python 3.x - install via website or your computer's package manager
+
+Once Python 3 is installed, install pygame
+```
 pip install pygame
 ```
 
-To run the game on mac and linux, type:
-```python
-python3 ~/threematch/threematch.py
+or on some machines
+```
+pip3 install pygame
 ```
 
-For windows, you should be able to double click on threematch.py to run it.
+### Installing
 
----
+To install Gem Island clone the repository to your home directory or wherever you prefer, then run main.py with python.
 
-Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
-in `threematch.py` under the GLOBAL CONSTANSTS section. Recommended values are between and including 1 and 2.
+1. Clone repo: 
+```
+cd ~/
+git clone https://github.com/tombrereton/threematch.git
+```
 
-<p align="center">
-  <img src="https://i.imgur.com/rHAjkpt.png">
-</p>
+2. Run Gem Island
+```
+cd ~/threematch
+python main.py
+```
+or
+```
+cd ~/threematch
+python3 main.py
+```
 
----
-Style guide
----
+3. Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
+in `global_variables.py` under the GUI variables section. Recommended values are between and including 1 and 3.
+
+## Game Rules
+
+1. 6 gem types (colours).
+2. 3 bonus types (star, cross, diamond)
+3. Star bonus removes all gems of the star gem's type
+4. The cross bonus removes all gems in the row/column. If the match is horizontal, the row is removed. Vertical 
+removes the column.
+5. The diamond bonus removes the 9 surrounding gems of the diamond gem.
+6. If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
+7. If a bonus gem removes another bonus gem, it also performs its bonus action. This is done recursively.
+8. 3 or more gems in a succession of the same type is a match.
+9. 4 gems in a succession earns you a cross bonus.
+10. 5 gems in a succession earns you a star bonus.
+11. An intersection of a vertical and horizontal match earns you a diamond bonus.
+
+## Running tests
+
+Pytest is required to run the tests.
+ 
+To install pytest use pip:
+
+1. Install pytest
+```
+pip install pytest
+```
+
+2. Run pytest 
+
+To run the test change into the threematch directory and run pytest.
+You need to run pytest as a python command so that it adds the current directory to PYTHONPATH.
+```
+cd ~/threematch
+python -m pytest
+```
+
+## Style guide
 
 Refer to the pep-8 website for a consistent style.
 
 [https://www.python.org/dev/peps/pep-0008/](https://www.python.org/dev/peps/pep-0008/)
 
-Some sections included below.
+## Authors
 
-**Function Names**
+* **Thomas Brereton** 
+* **Elliott Davies**
 
-Function names should be lowercase, with words separated by underscores as necessary to improve readability.
+## Acknowledgements
 
-```python
-def method_name():
-    ...
-```
+* Project Supervisor: **Claudio Zito** 
 
-mixedCase is allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards 
-compatibility.
+## License
 
-**Function and method arguments**
+The MIT License (MIT)
 
-Always use self for the first argument to instance methods.
+Copyright (c) 2017 Thomas Brereton Elliott Davies
 
-**For our methods, always declare the type of the parameters, for example:**
-```python
-def instance_method(self, arg_one: int):
-    ...
-```
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Always use cls for the first argument to class methods.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-If a function argument's name clashes with a reserved keyword, it is generally better to append a single trailing 
-underscore rather than use an abbreviation or spelling corruption. Thus class_ is better than clss . (Perhaps better 
-is to avoid such clashes by using a synonym.)
-
-**Method Names and Instance Variables**
-
-Use the function naming rules: lowercase with words separated by underscores as necessary to improve readability.
-
-Use one leading underscore only for non-public methods and instance variables.
-
-```python
-def _private_method(self, arg_one: str):
-    ...
-```
-
-To avoid name clashes with subclasses, use two leading underscores to invoke Python's name mangling rules.
-
-Python mangles these names with the class name: if class Foo has an attribute named __a , it cannot be accessed by 
-Foo.__a . (An insistent user could still gain access by calling Foo._Foo__a .) Generally, double leading underscores 
-should be used only to avoid name conflicts with attributes in classes designed to be subclassed.
-
-Note: there is some controversy about the use of __names (see below).
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
