@@ -359,27 +359,58 @@ class Board:
 
         self.score += bonus_points
 
-    def get_updates(self):
+    def get_update(self):
         """
         Gets the updates
         :param swap_queue:
         :param update_queue:
         :return:
         """
-        while True:
-            # swap_loc = swap_queue.get()
 
-            # self.set_swap_locations(swap_loc)
+        update_bag = UpdateBag([], [], [], [], [], [], [])
+        update_bag.gems = self.gem_grid.grid
 
-            if self.terminal_state:
-                # do nothing if terminal state
-                continue
+        # ---------------------------------------
+        if not self.game_state == "input_received":
+            # do nothing
+            return update_bag
 
-            if not self.check_swap():
-                continue
+        if self.terminal_state:
+            # do nothing if terminal state
+            return update_bag
 
-            # save state and chosen action before doing anything
-            self.write_state_action()
+        if not self.check_swap():
+            # do nothing if user clicked on non adjacent gem
+            self.game_state = "waiting_for_input"
+            return update_bag
+
+        self.game_state = "doing_stuff"
+        # ---------------------------------------
+        # Swap is adjacent, send some update bags:
+
+        # save state and chosen action before doing anything
+        self.write_state_action()
+
+        # create bag
+        info = self.get_game_info()
+        movements = self.get_swap_movement()
+        update_bag = UpdateBag([], [], [], movements, [], [], info)
+        update_bag.gems = self.gem_grid.grid
+
+        # send bag to view
+        event = UpdateBagEvent(update_bag)
+        self.event_manager.post(event)
+
+        # swap gems and find matches
+        self.swap_gems()
+        matches, bonuses = self.find_matches()
+        match_count = len(matches)
+        bonus_count = len(bonuses)
+
+        # ---------------------------------------
+        if match_count + bonus_count < 3:
+            # swap gems back and add bag to queue
+            self.swap_gems()
 
             # create bag
             info = self.get_game_info()
@@ -387,80 +418,103 @@ class Board:
             update_bag = UpdateBag([], [], [], movements, [], [], info)
             update_bag.gems = self.gem_grid.grid
 
-            # add bag to queue
-            # update_queue.put(update_bag)
+            # send bag to view and return
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
+            self.game_state = "waiting_for_input"
+            return update_bag
 
-            # swap gems and find matches
-            self.swap_gems()
-            matches, bonuses = self.find_matches()
-            match_count = len(matches)
-            bonus_count = len(bonuses)
+        # ---------------------------------------
+        else:
+            self.move_made()
 
-            if match_count + bonus_count < 3:
-                # swap gems and add bag to queue
-                self.swap_gems()
+            # do until no more pull downs
+            # TODO Generate queue of update bags and then send them 1 at a time?
+            self.cascade = 0
 
-                # create bag
-                info = self.get_game_info()
-                movements = self.get_swap_movement()
-                update_bag = UpdateBag([], [], [], movements, [], [], info)
-                update_bag.gems = self.gem_grid.grid
+            while match_count + bonus_count > 0:
+                first_loop = True
+                self.cascade += 1
 
-                # add bag to queue
-                # update_queue.put(update_bag)
-
-            else:
-                # set match and bonus lists
+                # find more matches after pulling down
+                matches, bonuses = self.find_matches()
                 self.match_list = matches
                 self.bonus_list = bonuses
-                self.move_made()
+                match_count = len(matches)
+                bonus_count = len(bonuses)
 
-                # do until no more pull downs
+                # remove gems in grid that are in matches_list
+                self.remove_gems_add_bonuses()
+
+                # set variables
+                match_list = self.match_list
+                bonus_list = self.bonus_list
+                ice = self.ice_removed
+                medals = self.medals_removed
+                info = self.get_game_info()
+
                 repeat = True
-                self.cascade = 0
                 while repeat:
-                    self.cascade += 1
-
-                    # remove gems in grid that are in matches_list
-                    self.remove_gems_add_bonuses()
 
                     # pull gems down
                     repeat = self.pull_gems_down()
 
                     # create bag
-                    match_list = self.match_list
-                    bonus_list = self.bonus_list
+                    if not first_loop:
+                        match_list = []
+                        bonus_list = []
+
+                    # else:
                     additions = self.additions
                     movements = self.movements
-                    ice = self.ice_removed
-                    medals = self.medals_removed
-                    info = self.get_game_info()
                     update_bag = UpdateBag(match_list, bonus_list, additions, movements, ice, medals, info)
                     update_bag.gems = self.gem_grid.grid
 
-                    # add bag to queue
-                    # update_queue.put(update_bag)
+                    # send bag to view
+                    event = UpdateBagEvent(update_bag)
+                    self.event_manager.post(event)
 
-                # check for terminal state
-                if self.medals == 0:
-                    # write state if terminal state
-                    self.action = [(-1, -1), (-1, -1)]
-                    self.write_state_action()
+                    # don't send anymore matches, bonuses
+                    first_loop = False
 
-                    self.win_state = True
-                    self.terminal_state = True
+            # ---------------------------------------
+            # check for terminal state
+            if self.medals == 0:
+                # WON
 
-                elif self.moves == 0:
-                    # write state if terminal state
-                    self.action = [(-1, -1), (-1, -1)]
-                    self.write_state_action()
+                # write state if terminal state
+                self.action = [(-1, -1), (-1, -1)]
+                self.write_state_action()
 
-                    self.win_state = False
-                    self.terminal_state = True
+                self.win_state = True
+                self.terminal_state = True
 
-    # ----------------------------------------------------------------------
+                # give bonus points for moves remaining
+                self.extrapolate_score()
 
-    def get_update(self):
+            elif self.moves == 0:
+                # LOST
+
+                # write state if terminal state
+                self.action = [(-1, -1), (-1, -1)]
+                self.write_state_action()
+
+                self.win_state = False
+                self.terminal_state = True
+
+            # Create bag
+            info = self.get_game_info()
+            update_bag = UpdateBag([], [], [], [], [], [], info)
+            update_bag.gems = self.gem_grid.grid
+
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
+            self.game_state = "waiting_for_input"
+            return update_bag
+            # ----------------------------------------------------------------------
+
+    def get_updates(self):
         """
         Returns an UpdateBag and processes what action to take.
         :return:
@@ -622,7 +676,6 @@ class Board:
                         self.terminal_state = True
 
                     info = self.get_game_info()
-
                     update_bag = UpdateBag([], [], [], [], [], [], info)
                     update_bag.gems = self.gem_grid.grid
 
