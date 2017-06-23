@@ -14,7 +14,7 @@ SCORE = 0
 MOVES_LEFT = 20
 GEM_TYPES = 6
 BONUS_TYPES = 3
-ICE_ROWS = 8
+ICE_ROWS = 5
 ICE_LAYERS = 1
 RANDOM_SEED = None  # Set to NONE to use current system time
 

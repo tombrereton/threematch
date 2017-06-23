@@ -1336,7 +1336,7 @@ class Board:
                    's = score\na = action\ntmo = total moves\ntme = total medals\nr = row\nc = columns\n'
 
         line3 = 'tmo\ttme\tr\tc\n'
-        divider = '-------------------------------------------------------------------------------\n'
+        divider = '\n'
         line5 = str(self.moves) + '\t' + str(self.total_medals) + '\t' + str(self.rows) + '\t' + str(
             self.columns) + '\n'
 
@@ -1375,3 +1375,17 @@ class Board:
 
             with open(self.file_name, 'a') as file:
                 file.write(string)
+
+    def move_to_completed(self):
+        """
+        if game finishes, move the training data to the completed
+        directory.
+        :return:
+        """
+        main_dir = os.path.split(os.path.abspath(__file__))[0]
+        data_dir = os.path.join(main_dir, 'training_data')
+        completed_dir = os.path.join(data_dir, 'completed')
+
+        old_file_name = os.path.join(data_dir, self.file_name)
+        new_file_name = os.path.join(completed_dir, self.file_name)
+        os.rename(old_file_name, new_file_name)
