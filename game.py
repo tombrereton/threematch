@@ -8,7 +8,8 @@ from operator import itemgetter
 from random import randint, choice
 from time import strftime
 
-from events import TickEvent, SwapGemsRequest, UpdateBagEvent, EventManager
+from event_manager import EventManager
+from events import TickEvent, SwapGemsRequest, UpdateBagEvent
 from global_variables import *
 from update_bag import UpdateBag
 

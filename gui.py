@@ -1,18 +1,19 @@
 import logging
 import random
+from itertools import product
+
 import pygame
 
 import global_variables as gv
-
-from events import UpdateBagEvent, EventManager
-from gui_variables import GUIVariables
-from update_bag import UpdateBag
-from itertools import product
+from background import Background
+from event_manager import EventManager
+from events import UpdateBagEvent
 from gem_grid import Gem
 from gem_grid import GemGrid
+from gui_variables import GUIVariables
 from ice_grid import IceGrid
 from medal_grid import MedalGrid
-from background import Background
+from update_bag import UpdateBag
 
 
 # Functions for testing

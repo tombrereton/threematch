@@ -7,11 +7,11 @@ PUZZLE_ROWS = 9  # Number of rows on the board.
 PUZZLE_COLUMNS = 9  # Number of columns on the board.
 
 # Game variables
-LEVEL_1_TOTAL_MEDALS = 1
+LEVEL_1_TOTAL_MEDALS = 3
 LEVEL_2_TOTAL_MEDALS = 4
 LEVEL_3_TOTAL_MEDALS = 5
 SCORE = 0
-MOVES_LEFT = 30
+MOVES_LEFT = 20
 GEM_TYPES = 6
 BONUS_TYPES = 3
 ICE_ROWS = 8

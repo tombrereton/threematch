@@ -1,4 +1,4 @@
-from events import EventManager
+from event_manager import EventManager
 from game import Board
 from gui_variables import GUIVariables
 

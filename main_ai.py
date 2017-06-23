@@ -1,4 +1,5 @@
-from events import EventManager, CPUSpinnerController, NaiveAIControllerV1, MouseController
+from controllers import NaiveAIControllerV1, MouseController, CPUSpinnerController
+from event_manager import EventManager
 from game import Board
 from global_variables import *
 from gui import GUI

@@ -14,7 +14,8 @@ and calls get_update within notify and send Update Bag to view
 call get_update and send Update Bag to view.
 """
 
-from events import EventManager, MouseController, CPUSpinnerController
+from controllers import MouseController, CPUSpinnerController
+from event_manager import EventManager
 from game import Board
 from global_variables import *
 from gui import GUI
