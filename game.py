@@ -71,6 +71,7 @@ class Board:
         self.ice_rows = ice_rows
         self.total_medals = medals
         self.medals = medals
+        self.total_moves = moves
         self.moves = moves
         self.gem_types = gem_types
         self.bonus_types = bonus_types
@@ -166,12 +167,7 @@ class Board:
 
             # find matches
             match_list, bonus_list = self.find_matches()
-            '''
-            # match_count = len(match_list)
-            # bonus_count = len(bonus_list)
 
-            count = 0
-            '''
             while len(match_list) + len(bonus_list):
                 for gem in match_list:
                     i, j = gem[:2]
@@ -182,24 +178,6 @@ class Board:
                     self.gem_grid.grid[i][j] = self.new_gem()
 
                 match_list, bonus_list = self.find_matches()
-                '''
-                self.match_list = match_list
-                self.bonus_list = bonus_list
-                self.remove_gems_add_bonuses(init=True)
-
-                remove = True
-                while remove:
-                    remove = self.pull_gems_down()
-
-                # debug logging line
-                logging.debug(f"\nInit gem loop {count}:\n\n{self}")
-
-                match_list, bonus_list = self.find_matches()
-                match_count = len(match_list)
-                bonus_count = len(bonus_list)
-
-                count += 1
-                '''
 
     def test_grid_vertical(self):
         """
@@ -361,10 +339,6 @@ class Board:
         the number of gems.
 
         Future implementation: multipliers for combos
-        :param match_list:
-        :param bonus_list:
-        :param medals_freed:
-        :param cascade:
         :return:
         """
         match_list = self.match_list
@@ -372,6 +346,18 @@ class Board:
         medals_freed = len(self.medals_removed)
         bonus_removed = len([0 for y, x, t, bt, activation in match_list if bt is not 0])
         self.score += 100 * self.cascade * (len(match_list) + len(bonus_list) + 2 * bonus_removed + 5 * medals_freed)
+
+    def extrapolate_score(self):
+        """
+        Extrapolates the score by finding the players
+        average score per move and adding that to the score
+        for the number of moves left.
+        :return:
+        """
+        avg_per_move = self.score / (self.total_moves - self.moves)
+        bonus_points = avg_per_move * self.moves
+
+        self.score += bonus_points
 
     def get_update(self):
         """
@@ -524,6 +510,7 @@ class Board:
 
                         self.win_state = True
                         self.terminal_state = True
+                        self.extrapolate_score()
 
                     elif self.moves == 0:
                         # write state if terminal state
@@ -643,7 +630,7 @@ class Board:
         bonus type 3 = (remove 9 surrounding gems)
 
         We return matches and matches_from_bonus separately
-        so we dont get lots of intersection bonuses.
+        so we don't get lots of intersection bonuses.
         :return: matches, matches_from_bonus, bonuses
         """
         matches = []
@@ -695,7 +682,7 @@ class Board:
         bonus type 3 = (remove 9 surrounding gems)
 
         We return matches and matches_from_bonus separately
-        so we dont get lots of intersection bonuses.
+        so we don't get lots of intersection bonuses.
         :return: matches, matches_from_bonus, bonuses
         """
         matches = []
@@ -763,7 +750,7 @@ class Board:
             broken.append(gem)
 
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
+        # matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
 
         return matches_from_bonus
 
@@ -774,7 +761,6 @@ class Board:
 
         Gems removed from bonus action are appended to
         matches from bonuses
-        :param broken:
         :param row_first:
         :param matches:
         :return:
@@ -1164,7 +1150,7 @@ class Board:
         'medals_uncovered score action' eg:
         '1 \t 900 \t 0102'
 
-        where action is: row1 colum1 row2 column2
+        where action is: row1 column1 row2 column2
 
         The action is the action TO BE performed from the
         current state.
@@ -1203,8 +1189,9 @@ class Board:
         header1 = 't\tbt\ti\tmp\t' * self.rows * self.columns + '\n'
         header2 = 'mu\ts\ta\n'
 
-        preamble = line1 + header_underline + glossary + divider + line3 + header_underline + line5 + divider \
-                   + key_about + header1 + header_underline + header2 + header_underline + '\n'
+        preamble = line1 + header_underline + glossary + divider + line3 + \
+                   header_underline + line5 + divider + key_about + header1 + \
+                   header_underline + header2 + header_underline + '\n'
 
         return preamble
 
