@@ -72,7 +72,7 @@ class Gem(pygame.sprite.Sprite):
         x = int(self.origin[1] + self.i * (self.target[1] - self.origin[1]) / self.gui_vars.animation_scale)
         self.rect.top = y
         self.rect.left = x
-        if self.i == self.gui_vars.animation_time:
+        if self.i == self.gui_vars.animation_scale:
             self.i = 0
             self.origin = self.target
 

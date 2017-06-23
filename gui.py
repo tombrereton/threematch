@@ -8,6 +8,7 @@ from events import UpdateBagEvent, EventManager
 from gui_variables import GUIVariables
 from update_bag import UpdateBag
 from itertools import product
+from gem_grid import Gem
 from gem_grid import GemGrid
 from ice_grid import IceGrid
 from medal_grid import MedalGrid
