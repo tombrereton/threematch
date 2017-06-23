@@ -348,10 +348,6 @@ class Board:
         the number of gems.
 
         Future implementation: multipliers for combos
-        :param match_list:
-        :param bonus_list:
-        :param medals_freed:
-        :param cascade:
         :return:
         """
         match_list = self.match_list
@@ -630,7 +626,7 @@ class Board:
         bonus type 3 = (remove 9 surrounding gems)
 
         We return matches and matches_from_bonus separately
-        so we dont get lots of intersection bonuses.
+        so we don't get lots of intersection bonuses.
         :return: matches, matches_from_bonus, bonuses
         """
         matches = []
@@ -682,7 +678,7 @@ class Board:
         bonus type 3 = (remove 9 surrounding gems)
 
         We return matches and matches_from_bonus separately
-        so we dont get lots of intersection bonuses.
+        so we don't get lots of intersection bonuses.
         :return: matches, matches_from_bonus, bonuses
         """
         matches = []
@@ -750,7 +746,7 @@ class Board:
             broken.append(gem)
 
         # perform bonus action for any gem in matches_from_bonus list
-        matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
+        # matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
 
         return matches_from_bonus
 
@@ -761,7 +757,6 @@ class Board:
 
         Gems removed from bonus action are appended to
         matches from bonuses
-        :param broken:
         :param row_first:
         :param matches:
         :return:
@@ -1151,7 +1146,7 @@ class Board:
         'medals_uncovered score action' eg:
         '1 \t 900 \t 0102'
 
-        where action is: row1 colum1 row2 column2
+        where action is: row1 column1 row2 column2
 
         The action is the action TO BE performed from the
         current state.
@@ -1190,8 +1185,9 @@ class Board:
         header1 = 't\tbt\ti\tmp\t' * self.rows * self.columns + '\n'
         header2 = 'mu\ts\ta\n'
 
-        preamble = line1 + header_underline + glossary + divider + line3 + header_underline + line5 + divider \
-                   + key_about + header1 + header_underline + header2 + header_underline + '\n'
+        preamble = line1 + header_underline + glossary + divider + line3 + \
+                   header_underline + line5 + divider + key_about + header1 + \
+                   header_underline + header2 + header_underline + '\n'
 
         return preamble
 
