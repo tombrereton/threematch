@@ -359,6 +359,107 @@ class Board:
 
         self.score += bonus_points
 
+    def get_updates(self):
+        """
+        Gets the updates
+        :param swap_queue:
+        :param update_queue:
+        :return:
+        """
+        while True:
+            # swap_loc = swap_queue.get()
+
+            # self.set_swap_locations(swap_loc)
+
+            if self.terminal_state:
+                # do nothing if terminal state
+                continue
+
+            if not self.check_swap():
+                continue
+
+            # save state and chosen action before doing anything
+            self.write_state_action()
+
+            # create bag
+            info = self.get_game_info()
+            movements = self.get_swap_movement()
+            update_bag = UpdateBag([], [], [], movements, [], [], info)
+            update_bag.gems = self.gem_grid.grid
+
+            # add bag to queue
+            # update_queue.put(update_bag)
+
+            # swap gems and find matches
+            self.swap_gems()
+            matches, bonuses = self.find_matches()
+            match_count = len(matches)
+            bonus_count = len(bonuses)
+
+            if match_count + bonus_count < 3:
+                # swap gems and add bag to queue
+                self.swap_gems()
+
+                # create bag
+                info = self.get_game_info()
+                movements = self.get_swap_movement()
+                update_bag = UpdateBag([], [], [], movements, [], [], info)
+                update_bag.gems = self.gem_grid.grid
+
+                # add bag to queue
+                # update_queue.put(update_bag)
+
+            else:
+                # set match and bonus lists
+                self.match_list = matches
+                self.bonus_list = bonuses
+                self.move_made()
+
+                # do until no more pull downs
+                repeat = True
+                self.cascade = 0
+                while repeat:
+                    self.cascade += 1
+
+                    # remove gems in grid that are in matches_list
+                    self.remove_gems_add_bonuses()
+
+                    # pull gems down
+                    repeat = self.pull_gems_down()
+
+                    # create bag
+                    match_list = self.match_list
+                    bonus_list = self.bonus_list
+                    additions = self.additions
+                    movements = self.movements
+                    ice = self.ice_removed
+                    medals = self.medals_removed
+                    info = self.get_game_info()
+                    update_bag = UpdateBag(match_list, bonus_list, additions, movements, ice, medals, info)
+                    update_bag.gems = self.gem_grid.grid
+
+                    # add bag to queue
+                    # update_queue.put(update_bag)
+
+                # check for terminal state
+                if self.medals == 0:
+                    # write state if terminal state
+                    self.action = [(-1, -1), (-1, -1)]
+                    self.write_state_action()
+
+                    self.win_state = True
+                    self.terminal_state = True
+
+                elif self.moves == 0:
+                    # write state if terminal state
+                    self.action = [(-1, -1), (-1, -1)]
+                    self.write_state_action()
+
+                    self.win_state = False
+                    self.terminal_state = True
+
+    # ----------------------------------------------------------------------
+
     def get_update(self):
         """
         Returns an UpdateBag and processes what action to take.
