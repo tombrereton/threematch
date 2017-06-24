@@ -1,5 +1,6 @@
-from gui_variables import GUIVariables
 from itertools import product
+
+from view.gui_variables import GUIVariables
 
 
 class SpriteGrid:

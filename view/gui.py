@@ -5,15 +5,15 @@ from itertools import product
 import pygame
 
 import global_variables as gv
-from background import Background
-from event_manager import EventManager
-from events import UpdateBagEvent
-from gem_grid import Gem
-from gem_grid import GemGrid
-from gui_variables import GUIVariables
-from ice_grid import IceGrid
-from medal_grid import MedalGrid
-from update_bag import UpdateBag
+from events.event_manager import EventManager
+from events.events import UpdateBagEvent
+from events.update_bag import UpdateBag
+from view.background import Background
+from view.gem_grid import Gem
+from view.gem_grid import GemGrid
+from view.gui_variables import GUIVariables
+from view.ice_grid import IceGrid
+from view.medal_grid import MedalGrid
 
 
 # Functions for testing

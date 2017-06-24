@@ -1,5 +1,5 @@
-import random
 import functools
+import random
 
 
 def rand(rows, columns):

@@ -1,7 +1,7 @@
 import pygame
 
-from gui_variables import GUIVariables
-from sprite_grid import SpriteGrid
+from view.gui_variables import GUIVariables
+from view.sprite_grid import SpriteGrid
 
 
 class Gem(pygame.sprite.Sprite):

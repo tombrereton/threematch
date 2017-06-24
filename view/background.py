@@ -1,8 +1,8 @@
 import pygame
 
 import game_utilities as util
+from view.gui_variables import GUIVariables
 
-from gui_variables import GUIVariables
 
 class Background:
     def __init__(self, gui_vars: GUIVariables, moves_left: int, medals_left: int, score: int,
