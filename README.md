@@ -1,6 +1,6 @@
 # Three Match
 
-A bejeweled/candy crush type game. The aim is to free the medals under the ice by matching 3 or more gems of the 
+A bejeweled/candy crush type game. The aim is to free the medals underneath the ice by matching 3 or more gems of the 
 same type. Matching gems on top of ice removes it and once a medal is fully uncovered it is freed.
 
 This game is in development and is being built for a masters project at the University of Birmingham.
@@ -57,18 +57,23 @@ in `global_variables.py` under the GUI variables section. Recommended values are
 
 ## Game Rules
 
-1. 6 gem types (colours).
-2. 3 bonus types (star, cross, diamond)
-3. Star bonus removes all gems of the star gem's type
-4. The cross bonus removes all gems in the row/column. If the match is horizontal, the row is removed. Vertical 
+#### Gem Types
+* 6 gem types (colours).
+* 3 bonus types (star, cross, diamond)
+
+#### Bonus Actions
+* Star bonus removes all gems of the star gem's type
+* The cross bonus removes all gems in the row/column. If the match is horizontal, the row is removed. Vertical 
 removes the column.
-5. The diamond bonus removes the 9 surrounding gems of the diamond gem.
-6. If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
-7. If a bonus gem removes another bonus gem, it also performs its bonus action. This is done recursively.
-8. 3 or more gems in a succession of the same type is a match.
-9. 4 gems in a succession earns you a cross bonus.
-10. 5 gems in a succession earns you a star bonus.
-11. An intersection of a vertical and horizontal match earns you a diamond bonus.
+* The diamond bonus removes the 9 surrounding gems of the diamond gem.
+
+#### Earning Bonuses
+* If a bonus gem removes another bonus gem, it also performs its bonus action. This is done recursively.
+* 3 or more gems in a succession of the same type is a match.
+* 4 gems in a succession earns you a cross bonus.
+* 5 gems in a succession earns you a star bonus.
+* An intersection of a vertical and horizontal match earns you a diamond bonus.
+* If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
 
 ## Running tests
 
