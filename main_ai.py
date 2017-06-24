@@ -1,10 +1,10 @@
-from controllers import NaiveAIControllerV1, MouseController, CPUSpinnerController
-from event_manager import EventManager
-from game import Board
+from ai.move_finder import pick_move
+from controller.controllers import NaiveAIControllerV1, MouseController, CPUSpinnerController
+from events.event_manager import EventManager
 from global_variables import *
-from gui import GUI
-from gui_variables import *
-from move_finder import pick_move
+from model.game import Board
+from view.gui import GUI
+from view.gui_variables import *
 
 
 # ------------------------------------------------------------------------------

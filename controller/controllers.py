@@ -1,7 +1,7 @@
 import pygame
 from pygame.constants import QUIT, KEYDOWN, K_ESCAPE, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
-from events import TickEvent, SwapGemsRequest, QuitEvent
+from events.events import TickEvent, SwapGemsRequest, QuitEvent
 
 
 class NaiveAIControllerV1:

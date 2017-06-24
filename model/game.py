@@ -8,10 +8,10 @@ from operator import itemgetter
 from random import randint, choice
 from time import strftime
 
-from event_manager import EventManager
-from events import TickEvent, SwapGemsRequest, UpdateBagEvent
+from events.event_manager import EventManager
+from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent
+from events.update_bag import UpdateBag
 from global_variables import *
-from update_bag import UpdateBag
 
 
 class Grid:

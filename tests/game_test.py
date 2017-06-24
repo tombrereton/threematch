@@ -1,6 +1,6 @@
-from event_manager import EventManager
-from game import Board
-from gui_variables import GUIVariables
+from events.event_manager import EventManager
+from model.game import Board
+from view.gui_variables import GUIVariables
 
 rows0 = 2
 columns0 = 3
