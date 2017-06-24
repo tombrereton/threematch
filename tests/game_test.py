@@ -50,16 +50,10 @@ def test_1_1_use_bonus_type_1():
     swap_locations = [(0, 0), (0, 1)]
     b1.set_swap_locations(swap_locations)
 
-    # find matches by calling get update twice
-    bag1 = b1.get_update()
-    bag = b1.get_update()
-    print(bag)
-
     expected_removals = [(0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 1, 0), (0, 4, 1, 0, 0)]
     expected_bonuses = [(0, 0, 0, 1, 0)]
 
-    actual_removals = bag.removals
-    actual_bonuses = bag.bonuses
+    actual_removals, actual_bonuses = b1.find_matches()
 
     assert expected_removals == actual_removals
     assert expected_bonuses == actual_bonuses
@@ -133,17 +127,14 @@ def test_1_4_use_4_match_intersect():
     # swap to allow matches to be found
     swap_locations = [(2, 2), (2, 3)]
     b2.set_swap_locations(swap_locations)
+    b2.swap_gems()
 
     # find matches by calling get update twice
-    bag = b2.get_update()
-    bag = b2.get_update()
-    print(bag)
+    actual_removals, actual_bonuses = b2.find_matches()
 
     expected_removals = [(0, 2, 2, 0, 0), (1, 2, 2, 0, 0), (2, 0, 2, 0, 0), (2, 1, 2, 0, 0), (3, 2, 2, 0, 0)]
     expected_bonuses = [(2, 2, 2, 1, 0)]
 
-    actual_removals = bag.removals
-    actual_bonuses = bag.bonuses
 
     assert expected_removals == actual_removals
     assert expected_bonuses == actual_bonuses
