@@ -1324,7 +1324,7 @@ class Board:
             name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
             self.file_name = os.path.join(data_dir, name)
 
-            with open(self.file_name, 'w') as file:
+            with open(self.file_name, 'x') as file:
                 file.write(self.file_header())
 
     def write_state_action(self):
