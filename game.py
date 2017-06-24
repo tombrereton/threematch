@@ -1319,7 +1319,7 @@ class Board:
 
     def create_file(self):
         if self.test is None:
-            main_dir = os.path.split(os.path.abspath(__file__))[0]
+            main_dir = os.getcwd()
             data_dir = os.path.join(main_dir, 'training_data')
             name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
             self.file_name = os.path.join(data_dir, name)
