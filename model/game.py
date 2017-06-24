@@ -110,10 +110,6 @@ class Board:
         self.init_medal_grid()
 
     # ----------------------------------------------------------------------
-    def state(self):
-        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
-            self.moves, self.medals, self.score, False, False)
-
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
         ice_grid = self.print_grid(self.ice_grid.grid)
@@ -121,6 +117,16 @@ class Board:
 
         s = "Medal grid:\n{}\nIce grid:\n{}\nGem grid:\n{}".format(medal_grid, ice_grid, gem_grid)
         return s
+
+    def print_grid(self, grid):
+        s = ''
+        for i in range(self.rows):
+            s += f'{grid[i]}\n'
+        return s
+
+    def state(self):
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
+            self.moves, self.medals, self.score, False, False)
 
     def notify(self, event):
         if isinstance(event, SwapGemsRequest):
@@ -130,17 +136,13 @@ class Board:
             if self.game_state != "waiting_for_input":
                 self.get_update()
 
-    def print_grid(self, grid):
-        s = ''
-        for i in range(self.rows):
-            s += f'{grid[i]}\n'
-        return s
-
     def new_gem(self, gem_type=None):
         """
         Creates a tuple to represent a gem.
 
         The gem type is randomised.
+
+        (gem type, bonus type, activation)
         :return:
         """
         if gem_type is not None:
@@ -452,13 +454,6 @@ class Board:
                 # remove gems in grid that are in matches_list
                 self.remove_gems_add_bonuses()
 
-                # set variables
-                match_list = self.match_list
-                bonus_list = self.bonus_list
-                ice = self.ice_removed
-                medals = self.medals_removed
-                info = self.get_game_info()
-
                 repeat = True
                 while repeat:
 
@@ -467,13 +462,14 @@ class Board:
 
                     # create bag
                     if not first_loop:
-                        match_list = []
-                        bonus_list = []
+                        matches = []
+                        bonuses = []
 
                     # else:
                     additions = self.additions
                     movements = self.movements
-                    update_bag = UpdateBag(match_list, bonus_list, additions, movements, ice, medals, info)
+                    update_bag = UpdateBag(matches, bonuses, additions, movements,
+                                           self.ice_removed, self.medals_removed, self.get_game_info())
                     update_bag.gems = self.gem_grid.grid
 
                     # send bag to view
