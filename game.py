@@ -109,6 +109,7 @@ class Board:
         self.init_ice_grid()
         self.init_medal_grid()
 
+    # ----------------------------------------------------------------------
     def state(self):
         return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
             self.moves, self.medals, self.score, False, False)
@@ -121,7 +122,6 @@ class Board:
         s = "Medal grid:\n{}\nIce grid:\n{}\nGem grid:\n{}".format(medal_grid, ice_grid, gem_grid)
         return s
 
-    # ----------------------------------------------------------------------
     def notify(self, event):
         if isinstance(event, SwapGemsRequest):
             if self.game_state == "waiting_for_input":
@@ -362,9 +362,14 @@ class Board:
 
     def get_update(self):
         """
-        Gets the updates
-        :param swap_queue:
-        :param update_queue:
+        Gets the updates.
+
+        This method swaps the gems, looks for matches,
+        removes gems, and pulls them down. This is done
+        until no more successive matches are found.
+
+        Update bags are posted to registered listeners after
+        every pull down and also if it is not a valid swap.
         :return:
         """
 
@@ -515,7 +520,7 @@ class Board:
             return update_bag
             # ----------------------------------------------------------------------
 
-    def get_updates(self):
+    def get_update_old(self):
         """
         Returns an UpdateBag and processes what action to take.
         :return:
@@ -722,8 +727,6 @@ class Board:
 
         If the vertical and horizontal matches intersect, create
         a bonus of type 3.
-
-        # TODO: try to remove ice and medals
         :return:
         """
         h, h_from_bonus, h_bonuses = self.find_horizontal_matches()
@@ -872,42 +875,6 @@ class Board:
 
         # return dictionary after looping over all row matches
         return matches, matches_from_bonus, bonuses
-
-    def perform_bonus_action(self, matches: list, horizontal: bool):
-        """
-        Performs bonus actions for any bonuses in the matches list.
-        :param matches:
-        :param horizontal:
-        :return: matches_from_bonus
-        """
-        if horizontal:
-            remove_line = self.remove_row
-        else:
-            remove_line = self.remove_column
-
-        # loop over matches to check for bonuses and perform bonus action
-        matches_from_bonus = []
-        broken = []
-        for gem in matches:
-            row, column, gem_type, bonus_type, activation = gem
-            if bonus_type == 1:
-                # add row to matches at location row
-                matches_from_bonus.extend(remove_line(row, column))
-
-            elif bonus_type == 2:
-                # add all gems of this gems type to matches
-                matches_from_bonus.extend(self.remove_all_gems_of_type(gem_type, row, column))
-
-            elif bonus_type == 3:
-                # add 9 surrounding gems of this gem
-                matches_from_bonus.extend(self.remove_surrounding_gems(row, column))
-
-            broken.append(gem)
-
-        # perform bonus action for any gem in matches_from_bonus list
-        # matches_from_bonus.extend(self.cascade_bonus_action(matches_from_bonus, broken, row_first=False))
-
-        return matches_from_bonus
 
     def cascade_bonus_action(self, matches, row_first: bool):
         """
