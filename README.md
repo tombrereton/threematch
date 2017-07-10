@@ -109,6 +109,10 @@ Refer to the pep-8 website for a consistent style.
 ## Acknowledgements
 
 * Project Supervisor: **Claudio Zito** 
+<a href="http://www.freepik.com">Designed by 0melapics / Freepik</a>
+<a href="1001.com">Gem design by 1001.com</a>
+<a href="www.kenney.nl">Explosion design by kenney</a>
+
 
 ## License
 
