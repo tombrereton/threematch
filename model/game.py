@@ -416,8 +416,8 @@ class Board:
         bonus_count = len(bonuses)
 
         # ---------------------------------------
+        # if not match, swap back and send bag
         if match_count + bonus_count < 3:
-            # swap gems back and add bag to queue
             self.swap_gems()
 
             # create bag
@@ -433,11 +433,11 @@ class Board:
             return update_bag
 
         # ---------------------------------------
+        # else, match - perform remove gems, pull down, etc, and send bag
         else:
             self.move_made()
 
             # do until no more pull downs
-            # TODO Generate queue of update bags and then send them 1 at a time?
             self.cascade = 0
 
             while match_count + bonus_count > 0:
