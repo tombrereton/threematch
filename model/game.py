@@ -1,8 +1,8 @@
 """
 This is the file for the game logic of three match.
 """
-import logging
 import os
+from copy import deepcopy
 from itertools import product
 from operator import itemgetter
 from random import randint, choice
@@ -59,6 +59,7 @@ class Board:
                  random_seed=RANDOM_SEED):
         # grids
         self.gem_grid = Grid(rows, columns)
+        self.gem_grid_copy = []
         self.ice_grid = Grid(rows, columns)
         self.medal_grid = Grid(rows, columns)
 
@@ -100,6 +101,7 @@ class Board:
         self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
         self.file_name = ''
         self.action = []
+        self.line_number = 0
 
         # file operations
         self.create_file()
@@ -377,6 +379,7 @@ class Board:
 
         update_bag = UpdateBag([], [], [], [], [], [], [])
         update_bag.gems = self.gem_grid.grid
+        self.gem_grid_copy = deepcopy(self.gem_grid.grid)
 
         # ---------------------------------------
         if not self.game_state == "input_received":
@@ -515,178 +518,6 @@ class Board:
             self.game_state = "waiting_for_input"
             return update_bag
             # ----------------------------------------------------------------------
-
-    def get_update_old(self):
-        """
-        Returns an UpdateBag and processes what action to take.
-        :return:
-        """
-        update_bag = UpdateBag([], [], [], [], [], [], [])
-        update_bag.gems = self.gem_grid.grid
-
-        # if waiting for input, block
-        if self.game_state == "waiting_for_input":
-            logging.warning(update_bag)
-            return update_bag
-
-        elif self.terminal_state:
-
-            info = self.get_game_info()
-            update_bag = UpdateBag([], [], [], [], [], [], info)
-            update_bag.gems = self.gem_grid.grid
-
-            # send bag to view
-            event = UpdateBagEvent(update_bag)
-            self.event_manager.post(event)
-
-        # if input received state, return swap movements, make swap, and try to find matches
-        elif self.game_state == "input_received":
-
-            # if adjacent swap, continue
-            if self.check_swap():
-                # save state and chosen action before doing anything
-                self.write_state_action()
-
-                info = self.get_game_info()
-                movements = self.get_swap_movement()
-                update_bag = UpdateBag([], [], [], movements, [], [], info)
-                update_bag.gems = self.gem_grid.grid
-
-                # send bag to view
-                event = UpdateBagEvent(update_bag)
-                self.event_manager.post(event)
-
-                self.swap_gems()
-
-                # find matches
-                match_list, bonus_list = self.find_matches()
-                match_count = len(match_list)
-                bonus_count = len(bonus_list)
-
-                # logging
-                logging.info("Input received state:")
-                logging.info(match_count)
-                logging.info(len(bonus_list))
-
-                if match_count + bonus_count >= 3:
-                    self.match_list = match_list
-                    self.bonus_list = bonus_list
-                    self.move_made()
-                    self.game_state = "matches_found"
-                else:
-                    self.swap_gems()
-                    self.game_state = "not_valid_swap"
-
-            else:
-                # swap locations not adjacent
-                self.game_state = "waiting_for_input"
-
-        # if not valid swap state, return inverse swap movement
-        elif self.game_state == "not_valid_swap":
-            info = self.get_game_info()
-            movements = self.get_swap_movement()
-            update_bag = UpdateBag([], [], [], movements, [], [], info)
-            update_bag.gems = self.gem_grid.grid
-
-            # send bag to view
-            event = UpdateBagEvent(update_bag)
-            self.event_manager.post(event)
-
-            self.game_state = "waiting_for_input"
-
-        # if matches found state, return matches, bonuses, etc, then pull gems down
-        elif self.game_state == "matches_found":
-            self.cascade += 1
-
-            # remove gems in grid that are in matches_list
-            self.remove_gems_add_bonuses()
-
-            match_list = self.match_list
-            bonus_list = self.bonus_list
-            ice = self.ice_removed
-            medals = self.medals_removed
-            info = self.get_game_info()
-            update_bag = UpdateBag(match_list, bonus_list, [], [], ice, medals, info)
-            update_bag.gems = self.gem_grid.grid
-
-            # send bag to view
-            event = UpdateBagEvent(update_bag)
-            self.event_manager.post(event)
-
-            # pull gems down
-            _ = self.pull_gems_down()
-
-            # enter pulled down state
-            self.game_state = "pulled_down"
-
-        # if pulled down state, return additions, movements, etc, then try to pull down again
-        elif self.game_state == "pulled_down":
-            additions = self.additions
-            movements = self.movements
-
-            info = self.get_game_info()
-
-            update_bag = UpdateBag([], [], additions, movements, [], [], info)
-            update_bag.gems = self.gem_grid.grid
-
-            # send bag to view
-            event = UpdateBagEvent(update_bag)
-            self.event_manager.post(event)
-
-            # check for more pull downs
-            more_pull_downs = self.pull_gems_down()
-
-            if more_pull_downs:
-                # if true, game state still pulled down
-                self.game_state = "pulled_down"
-            else:
-                # if false, check for matches
-                # find matches
-                match_list, bonus_list = self.find_matches()
-                match_count = len(match_list)
-                bonus_count = len(bonus_list)
-
-                # logging
-                logging.info("Pulled down state:")
-                logging.info(match_count)
-                logging.info(len(bonus_list))
-
-                if match_count + bonus_count >= 3:
-                    self.match_list = match_list
-                    self.bonus_list = bonus_list
-                    self.game_state = "matches_found"
-                else:
-                    # no more matches, then wait for user input
-                    self.game_state = "waiting_for_input"
-                    self.cascade = 0
-
-                    if self.medals == 0:
-                        # write state if terminal state
-                        self.action = [(-1, -1), (-1, -1)]
-                        self.write_state_action()
-
-                        self.win_state = True
-                        self.terminal_state = True
-                        self.extrapolate_score()
-
-                    elif self.moves == 0:
-                        # write state if terminal state
-                        self.action = [(-1, -1), (-1, -1)]
-                        self.write_state_action()
-
-                        self.win_state = False
-                        self.terminal_state = True
-
-                    info = self.get_game_info()
-                    update_bag = UpdateBag([], [], [], [], [], [], info)
-                    update_bag.gems = self.gem_grid.grid
-
-                    # send bag to view
-                    event = UpdateBagEvent(update_bag)
-                    self.event_manager.post(event)
-
-        # Leave in for testing
-        return update_bag
 
     def check_swap(self):
         """
@@ -1236,9 +1067,13 @@ class Board:
         The 3 grids are (in order) gems, ice, medals
         :return:
         """
-        game_state = ''
+        # get medals uncovered and score
+        medals_uncovered = self.total_medals - self.medals
+        score = self.score
 
-        gems = self.gem_grid.grid
+        game_state = str(score) + '\t' + str(medals_uncovered) + '\t'
+
+        gems = self.gem_grid_copy
         ice = self.ice_grid.grid
         medals = self.medal_grid.grid
         for i in range(self.rows):
@@ -1275,17 +1110,11 @@ class Board:
         :return:
         """
 
-        # get medals uncovered and score
-        medals_uncovered = self.total_medals - self.medals
-        score = self.score
-
         # unpack the swap locations to get the 'action'
         action = self.action
         action = str(action[0][0]) + '-' + str(action[0][1]) + '-' + str(action[1][0]) + '-' + str(action[1][1])
 
-        progress = str(medals_uncovered) + '\t' + str(score) + '\t' + action
-
-        return progress
+        return action
 
     def file_header(self):
         """
@@ -1304,8 +1133,8 @@ class Board:
             self.columns) + '\n'
 
         key_about = '\nKey for state and progress information.\n2 lines represent a state-action pair:\n'
-        header1 = 't\tbt\ti\tmp\t' * self.rows * self.columns + '\n'
-        header2 = 'mu\ts\ta\n'
+        header1 = 's\tmu\t' + 't\tbt\ti\tmp\t' * self.rows * self.columns + '\n'
+        header2 = 'a\n'
 
         preamble = line1 + header_underline + glossary + divider + line3 + \
                    header_underline + line5 + divider + key_about + header1 + \
