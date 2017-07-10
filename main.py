@@ -14,12 +14,11 @@ and calls get_update within notify and send Update Bag to view
 call get_update and send Update Bag to view.
 """
 
-from gui import GUI
-
 from controller.controllers import MouseController, CPUSpinnerController
 from events.event_manager import EventManager
 from global_variables import *
 from model.game import Board
+from view.gui import GUI
 from view.gui_variables import *
 
 
