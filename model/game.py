@@ -24,94 +24,32 @@ class Grid:
         self.grid = [[-1] * columns for _ in range(rows)]
 
 
-class Board:
-    """
-    The class which contains all the grids for gems, ice, and medals.
+class SimpleBoard:
+    def __init__(self, rows, columns, gem_types, medals):
 
-    -1 represents an empty cell in all grids.
-
-    The gem grid contains tuples in each cell, which represent:
-    (type, bonus_type, activation)
-
-    The ice grid contains a single value in each cell, represented by:
-    (layer)
-
-    The medal_grid contains a single value in each cell, represented by:
-    (corner)
-
-    Swapped gems is a list of tuples, represented as:
-    [(row, column, type, bonus_type, activation),(same again)]
-
-    test parameter should be "vertical" or "horizontal" to specify test grid type.
-    """
-
-    def __init__(self,
-                 rows: int,
-                 columns: int,
-                 ice_rows: int,
-                 medals: int,
-                 moves: int,
-                 event_manager: EventManager,
-                 gem_types: int = GEM_TYPES,
-                 bonus_types: int = BONUS_TYPES,
-                 ice_layers=ICE_LAYERS,
-                 test=None,
-                 random_seed=RANDOM_SEED):
         # grids
         self.gem_grid = Grid(rows, columns)
-        self.gem_grid_copy = []
         self.ice_grid = Grid(rows, columns)
         self.medal_grid = Grid(rows, columns)
 
-        # event manager
-        self.event_manager = event_manager
-        self.event_manager.register_listener(self)
-
-        # game variables
+        # board variables
         self.rows = rows
         self.columns = columns
-        self.ice_rows = ice_rows
+        self.gem_types = gem_types
         self.total_medals = medals
         self.medals = medals
-        self.total_moves = moves
-        self.moves = moves
-        self.gem_types = gem_types
-        self.bonus_types = bonus_types
-        self.score = 0
-        self.terminal_state = False
-        self.win_state = False
-        self.game_state = "waiting_for_input"
-        self.ice_layers = ice_layers - 1
-        self.test = test
-        self.random_seed = random_seed
 
-        # helper variables
-        self.medal_locations = []
-        self.swapped_gems = [(), ()]
-        self.match_list = []
-        self.bonus_list = []
-        self.ice_removed = []
         self.medals_removed = []
-        self.movements = []
-        self.additions = []
+        self.match_list = []
+        self.gem_grid_copy = []
         self.cascade = 0
-        self.activated_gems = []
-
-        # state variables
-        self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
-        self.file_name = ''
+        self.medal_locations = []
         self.action = []
-        self.line_number = 0
+        self.score = 0
+        self.bonus_list = []
+        self.swapped_gems = [(), ()]
+        self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
 
-        # file operations
-        self.create_file()
-
-        # initialise grids
-        self.init_gem_grid()
-        self.init_ice_grid()
-        self.init_medal_grid()
-
-    # ----------------------------------------------------------------------
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
         ice_grid = self.print_grid(self.ice_grid.grid)
@@ -125,18 +63,6 @@ class Board:
         for i in range(self.rows):
             s += f'{grid[i]}\n'
         return s
-
-    def state(self):
-        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
-            self.moves, self.medals, self.score, False, False)
-
-    def notify(self, event):
-        if isinstance(event, SwapGemsRequest):
-            if self.game_state == "waiting_for_input":
-                self.set_swap_locations(event.swap_locations)
-        elif isinstance(event, TickEvent):
-            if self.game_state != "waiting_for_input":
-                self.get_update()
 
     def new_gem(self, gem_type=None):
         """
@@ -155,133 +81,6 @@ class Board:
         bonus_type = 0
         activation = 0
         return gem_type, bonus_type, activation
-
-    def init_gem_grid(self):
-        """
-        Initialises the gem grid with tuples.
-        """
-        if self.test == "vertical":
-            self.test_grid_vertical()
-        elif self.test == "horizontal":
-            self.test_grid_horizontal()
-        else:
-            rows = self.rows
-            columns = self.columns
-            for row, column in product(range(rows), range(columns)):
-                self.gem_grid.grid[row][column] = self.new_gem()
-
-            # find matches
-            match_list, bonus_list = self.find_matches()
-
-            while len(match_list) + len(bonus_list):
-                for gem in match_list:
-                    i, j = gem[:2]
-                    self.gem_grid.grid[i][j] = self.new_gem()
-
-                for gem in bonus_list:
-                    i, j = gem[:2]
-                    self.gem_grid.grid[i][j] = self.new_gem()
-
-                match_list, bonus_list = self.find_matches()
-
-    def test_grid_vertical(self):
-        """
-        Creates a test grid where all the columns are
-        the same type of gem.
-        :return:
-        """
-        for j, i in product(range(self.columns), range(self.rows)):
-            gem_type = j % self.gem_types
-            gem = self.new_gem(gem_type)
-            self.gem_grid.grid[i][j] = gem
-
-    def test_grid_horizontal(self):
-        """
-        Creates a test grid where all the rows are
-        the same type of gem.
-        :return:
-        """
-        for i, j in product(range(self.rows), range(self.columns)):
-            gem_type = i % self.gem_types
-            gem = self.new_gem(gem_type)
-            self.gem_grid.grid[i][j] = gem
-
-    def init_ice_grid(self):
-        """
-        Initialises the ice grid with the number of layers.
-
-        The ice is initialised from the bottom row first,
-        up to the number of ICE_ROWS.
-        :return:
-        """
-        rows = self.rows - 1
-        columns = self.columns
-        ice_rows = rows - self.ice_rows
-        for row in range(rows, ice_rows, -1):
-            for col in range(columns):
-                self.ice_grid.grid[row][col] = self.ice_layers
-
-    def init_medal_grid(self):
-        """
-        Initialises the medal grid with portions of medals.
-
-        Each medal is represented by a portion and a 2x2 medal
-        is represented by the following 4 portions.
-
-        |0|1|
-        -----
-        |2|3|
-        :return:
-        """
-        rows = self.rows
-        columns = self.columns
-        i = 0
-        while i < self.medals:
-            # get random choice
-            row = choice(range(rows - self.ice_rows, rows - 1))
-            column = choice(range(columns - 1))
-            if self.check_medal_boundaries(row, column):
-                # if no medal already there, add medal
-                self.add_medal(row, column)
-                i = i + 1
-
-    def check_medal_boundaries(self, y_coord: int, x_coord: int):
-        """
-        Method to check is a medal can be added at a certain location
-        :param y_coord: y coordinate to check (top left of medal)
-        :param x_coord: x coordinate to check (top left of medal)
-        :return: None
-        """
-        rows = self.rows
-        columns = self.columns
-        if x_coord < columns - 1 and y_coord < rows - 1:
-            for i in range(2):
-                for j in range(2):
-                    if self.medal_grid.grid[y_coord + i][x_coord + j] != -1:
-                        return False
-            return True
-        return False
-
-    def add_medal(self, row: int, column: int):
-        """
-        Method to add a medal (four medal portions) to the grid. The medal
-        portions will appear like the following:
-
-        |0|1|
-        -----
-        |2|3|
-
-        :param row: y coordinate to add medal at (top left of medal)
-        :param column: x coordinate to add beat at (top left of medal)
-        :return: None
-        """
-        for i in range(2):
-            for j in range(2):
-                portion = j + 2 * i
-                self.medal_grid.grid[row + i][column + j] = portion
-
-                # add portion to medal location list
-                self.medal_locations.append((row + i, column + j, portion))
 
     def set_swap_locations(self, swap_locations: list):
         """
@@ -318,26 +117,6 @@ class Board:
         self.gem_grid.grid[gem1_row][gem1_col], self.gem_grid.grid[gem2_row][gem2_col] = \
             self.gem_grid.grid[gem2_row][gem2_col], self.gem_grid.grid[gem1_row][gem1_col]
 
-    def get_swap_movement(self):
-        """
-        Returns a list of lists which represents movement.
-
-        The first inner list is the original positions,
-        the second inner list is the new position.
-        :return:
-        """
-        original = self.swapped_gems
-        new = [self.swapped_gems[1], self.swapped_gems[0]]
-        return [original, new]
-
-    def get_game_info(self):
-        """
-        Simple getter to get game information
-        :return:
-        """
-        self.update_score()
-        return self.moves, self.medals, self.score, self.terminal_state, self.win_state
-
     def update_score(self):
         """
         Takes in match list. Adds points based on
@@ -351,202 +130,6 @@ class Board:
         medals_freed = len(self.medals_removed)
         bonus_removed = len([0 for y, x, t, bt, activation in match_list if bt is not 0])
         self.score += 100 * self.cascade * (len(match_list) + len(bonus_list) + 2 * bonus_removed + 5 * medals_freed)
-
-    def extrapolate_score(self):
-        """
-        Extrapolates the score by finding the players
-        average score per move and adding that to the score
-        for the number of moves left.
-        :return:
-        """
-        avg_per_move = self.score / (self.total_moves - self.moves)
-        bonus_points = avg_per_move * self.moves
-
-        self.score += bonus_points
-
-    def get_update(self):
-        """
-        Gets the updates.
-
-        This method swaps the gems, looks for matches,
-        removes gems, and pulls them down. This is done
-        until no more successive matches are found.
-
-        Update bags are posted to registered listeners after
-        every pull down and also if it is not a valid swap.
-        :return:
-        """
-
-        update_bag = UpdateBag([], [], [], [], [], [], [])
-        update_bag.gems = self.gem_grid.grid
-        self.gem_grid_copy = deepcopy(self.gem_grid.grid)
-
-        # ---------------------------------------
-        if not self.game_state == "input_received":
-            # do nothing
-            return update_bag
-
-        if self.terminal_state:
-            # do nothing if terminal state
-            return update_bag
-
-        if not self.check_swap():
-            # do nothing if user clicked on non adjacent gem
-            self.game_state = "waiting_for_input"
-            return update_bag
-
-        self.game_state = "doing_stuff"
-        # ---------------------------------------
-        # Swap is adjacent, send some update bags:
-
-        # save state and chosen action before doing anything
-        self.write_state_action()
-
-        # create bag
-        info = self.get_game_info()
-        movements = self.get_swap_movement()
-        update_bag = UpdateBag([], [], [], movements, [], [], info)
-        update_bag.gems = self.gem_grid.grid
-
-        # send bag to view
-        event = UpdateBagEvent(update_bag)
-        self.event_manager.post(event)
-
-        # swap gems and find matches
-        self.swap_gems()
-        matches, bonuses = self.find_matches()
-        match_count = len(matches)
-        bonus_count = len(bonuses)
-
-        # ---------------------------------------
-        # if not match, swap back and send bag
-        if match_count + bonus_count < 3:
-            self.swap_gems()
-
-            # create bag
-            info = self.get_game_info()
-            movements = self.get_swap_movement()
-            update_bag = UpdateBag([], [], [], movements, [], [], info)
-            update_bag.gems = self.gem_grid.grid
-
-            # send bag to view and return
-            event = UpdateBagEvent(update_bag)
-            self.event_manager.post(event)
-            self.game_state = "waiting_for_input"
-            return update_bag
-
-        # ---------------------------------------
-        # else, match - perform remove gems, pull down, etc, and send bag
-        else:
-            self.move_made()
-
-            # do until no more pull downs
-            self.cascade = 0
-
-            while match_count + bonus_count > 0:
-                first_loop = True
-                self.cascade += 1
-
-                # find more matches after pulling down
-                matches, bonuses = self.find_matches()
-                self.match_list = matches
-                self.bonus_list = bonuses
-                match_count = len(matches)
-                bonus_count = len(bonuses)
-
-                # remove gems in grid that are in matches_list
-                self.remove_gems_add_bonuses()
-
-                repeat = True
-                while repeat:
-
-                    # pull gems down
-                    repeat = self.pull_gems_down()
-
-                    # create bag
-                    if not first_loop:
-                        matches = []
-                        bonuses = []
-
-                    # else:
-                    additions = self.additions
-                    movements = self.movements
-                    update_bag = UpdateBag(matches, bonuses, additions, movements,
-                                           self.ice_removed, self.medals_removed, self.get_game_info())
-                    update_bag.gems = self.gem_grid.grid
-
-                    # send bag to view
-                    event = UpdateBagEvent(update_bag)
-                    self.event_manager.post(event)
-
-                    # don't send anymore matches, bonuses
-                    first_loop = False
-
-            # ---------------------------------------
-            # check for terminal state
-            if self.medals == 0:
-                # WON
-
-                # write state if terminal state
-                self.action = [(-1, -1), (-1, -1)]
-                self.write_state_action()
-
-                self.win_state = True
-                self.terminal_state = True
-
-                # give bonus points for moves remaining
-                self.extrapolate_score()
-
-            elif self.moves == 0:
-                # LOST
-
-                # write state if terminal state
-                self.action = [(-1, -1), (-1, -1)]
-                self.write_state_action()
-
-                self.win_state = False
-                self.terminal_state = True
-
-            # Create bag
-            info = self.get_game_info()
-            update_bag = UpdateBag([], [], [], [], [], [], info)
-            update_bag.gems = self.gem_grid.grid
-
-            # send bag to view
-            event = UpdateBagEvent(update_bag)
-            self.event_manager.post(event)
-            self.game_state = "waiting_for_input"
-            return update_bag
-            # ----------------------------------------------------------------------
-
-    def check_swap(self):
-        """
-        return true if swap locations are adjacent, false if not
-        :return:
-        """
-        row1 = self.swapped_gems[0][0]
-        column1 = self.swapped_gems[0][1]
-        row2 = self.swapped_gems[1][0]
-        column2 = self.swapped_gems[1][1]
-
-        if row2 == row1 - 1 and column2 == column1:
-            # swap up
-            return True
-
-        elif row2 == row1 + 1 and column2 == column1:
-            # swap down
-            return True
-
-        elif row2 == row1 and column2 == column1 + 1:
-            # swap right
-            return True
-
-        elif row2 == row1 and column2 == column1 - 1:
-            # swap left
-            return True
-
-        else:
-            return False
 
     def find_matches(self):
         """
@@ -990,9 +573,6 @@ class Board:
         self.movements = [original_positions, new_positions]
         return repeat
 
-    def move_made(self):
-        self.moves -= 1
-
     def remove_ice(self, row: int, column: int):
         """
         If ice is present in the grid cell,
@@ -1116,6 +696,436 @@ class Board:
 
         return action
 
+
+class Board(SimpleBoard):
+    """
+    The class which contains all the grids for gems, ice, and medals.
+
+    -1 represents an empty cell in all grids.
+
+    The gem grid contains tuples in each cell, which represent:
+    (type, bonus_type, activation)
+
+    The ice grid contains a single value in each cell, represented by:
+    (layer)
+
+    The medal_grid contains a single value in each cell, represented by:
+    (corner)
+
+    Swapped gems is a list of tuples, represented as:
+    [(row, column, type, bonus_type, activation),(same again)]
+
+    test parameter should be "vertical" or "horizontal" to specify test grid type.
+    """
+
+    def __init__(self,
+                 rows: int,
+                 columns: int,
+                 ice_rows: int,
+                 medals: int,
+                 moves: int,
+                 event_manager: EventManager,
+                 gem_types: int = GEM_TYPES,
+                 bonus_types: int = BONUS_TYPES,
+                 ice_layers=ICE_LAYERS,
+                 test=None,
+                 random_seed=RANDOM_SEED):
+        super().__init__(rows, columns, gem_types, medals)
+
+        # event manager
+        self.event_manager = event_manager
+        self.event_manager.register_listener(self)
+
+        # game variables
+        self.ice_rows = ice_rows
+        self.total_moves = moves
+        self.moves = moves
+        self.bonus_types = bonus_types
+        self.terminal_state = False
+        self.win_state = False
+        self.game_state = "waiting_for_input"
+        self.ice_layers = ice_layers - 1
+        self.test = test
+        self.random_seed = random_seed
+
+        # helper variables
+        self.ice_removed = []
+        self.movements = []
+        self.additions = []
+        self.activated_gems = []
+
+        # state variables
+        self.file_name = ''
+        self.line_number = 0
+
+        # file operations
+        self.create_file()
+
+        # initialise grids
+        self.init_gem_grid()
+        self.init_ice_grid()
+        self.init_medal_grid()
+
+    # ----------------------------------------------------------------------
+
+    def state(self):
+        return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
+            self.moves, self.medals, self.score, False, False)
+
+    def notify(self, event):
+        if isinstance(event, SwapGemsRequest):
+            if self.game_state == "waiting_for_input":
+                self.set_swap_locations(event.swap_locations)
+        elif isinstance(event, TickEvent):
+            if self.game_state != "waiting_for_input":
+                self.get_update()
+
+    def init_gem_grid(self):
+        """
+        Initialises the gem grid with tuples.
+        """
+        if self.test == "vertical":
+            self.test_grid_vertical()
+        elif self.test == "horizontal":
+            self.test_grid_horizontal()
+        else:
+            rows = self.rows
+            columns = self.columns
+            for row, column in product(range(rows), range(columns)):
+                self.gem_grid.grid[row][column] = self.new_gem()
+
+            # find matches
+            match_list, bonus_list = self.find_matches()
+
+            while len(match_list) + len(bonus_list):
+                for gem in match_list:
+                    i, j = gem[:2]
+                    self.gem_grid.grid[i][j] = self.new_gem()
+
+                for gem in bonus_list:
+                    i, j = gem[:2]
+                    self.gem_grid.grid[i][j] = self.new_gem()
+
+                match_list, bonus_list = self.find_matches()
+
+    def test_grid_vertical(self):
+        """
+        Creates a test grid where all the columns are
+        the same type of gem.
+        :return:
+        """
+        for j, i in product(range(self.columns), range(self.rows)):
+            gem_type = j % self.gem_types
+            gem = self.new_gem(gem_type)
+            self.gem_grid.grid[i][j] = gem
+
+    def test_grid_horizontal(self):
+        """
+        Creates a test grid where all the rows are
+        the same type of gem.
+        :return:
+        """
+        for i, j in product(range(self.rows), range(self.columns)):
+            gem_type = i % self.gem_types
+            gem = self.new_gem(gem_type)
+            self.gem_grid.grid[i][j] = gem
+
+    def init_ice_grid(self):
+        """
+        Initialises the ice grid with the number of layers.
+
+        The ice is initialised from the bottom row first,
+        up to the number of ICE_ROWS.
+        :return:
+        """
+        rows = self.rows - 1
+        columns = self.columns
+        ice_rows = rows - self.ice_rows
+        for row in range(rows, ice_rows, -1):
+            for col in range(columns):
+                self.ice_grid.grid[row][col] = self.ice_layers
+
+    def init_medal_grid(self):
+        """
+        Initialises the medal grid with portions of medals.
+
+        Each medal is represented by a portion and a 2x2 medal
+        is represented by the following 4 portions.
+
+        |0|1|
+        -----
+        |2|3|
+        :return:
+        """
+        rows = self.rows
+        columns = self.columns
+        i = 0
+        while i < self.medals:
+            # get random choice
+            row = choice(range(rows - self.ice_rows, rows - 1))
+            column = choice(range(columns - 1))
+            if self.check_medal_boundaries(row, column):
+                # if no medal already there, add medal
+                self.add_medal(row, column)
+                i = i + 1
+
+    def check_medal_boundaries(self, y_coord: int, x_coord: int):
+        """
+        Method to check is a medal can be added at a certain location
+        :param y_coord: y coordinate to check (top left of medal)
+        :param x_coord: x coordinate to check (top left of medal)
+        :return: None
+        """
+        rows = self.rows
+        columns = self.columns
+        if x_coord < columns - 1 and y_coord < rows - 1:
+            for i in range(2):
+                for j in range(2):
+                    if self.medal_grid.grid[y_coord + i][x_coord + j] != -1:
+                        return False
+            return True
+        return False
+
+    def add_medal(self, row: int, column: int):
+        """
+        Method to add a medal (four medal portions) to the grid. The medal
+        portions will appear like the following:
+
+        |0|1|
+        -----
+        |2|3|
+
+        :param row: y coordinate to add medal at (top left of medal)
+        :param column: x coordinate to add beat at (top left of medal)
+        :return: None
+        """
+        for i in range(2):
+            for j in range(2):
+                portion = j + 2 * i
+                self.medal_grid.grid[row + i][column + j] = portion
+
+                # add portion to medal location list
+                self.medal_locations.append((row + i, column + j, portion))
+
+    def get_swap_movement(self):
+        """
+        Returns a list of lists which represents movement.
+
+        The first inner list is the original positions,
+        the second inner list is the new position.
+        :return:
+        """
+        original = self.swapped_gems
+        new = [self.swapped_gems[1], self.swapped_gems[0]]
+        return [original, new]
+
+    def get_game_info(self):
+        """
+        Simple getter to get game information
+        :return:
+        """
+        self.update_score()
+        return self.moves, self.medals, self.score, self.terminal_state, self.win_state
+
+    def extrapolate_score(self):
+        """
+        Extrapolates the score by finding the players
+        average score per move and adding that to the score
+        for the number of moves left.
+        :return:
+        """
+        avg_per_move = self.score / (self.total_moves - self.moves)
+        bonus_points = avg_per_move * self.moves
+
+        self.score += bonus_points
+
+    def get_update(self):
+        """
+        Gets the updates.
+
+        This method swaps the gems, looks for matches,
+        removes gems, and pulls them down. This is done
+        until no more successive matches are found.
+
+        Update bags are posted to registered listeners after
+        every pull down and also if it is not a valid swap.
+        :return:
+        """
+
+        update_bag = UpdateBag([], [], [], [], [], [], [])
+        update_bag.gems = self.gem_grid.grid
+        self.gem_grid_copy = deepcopy(self.gem_grid.grid)
+
+        # ---------------------------------------
+        if not self.game_state == "input_received":
+            # do nothing
+            return update_bag
+
+        if self.terminal_state:
+            # do nothing if terminal state
+            return update_bag
+
+        if not self.check_swap():
+            # do nothing if user clicked on non adjacent gem
+            self.game_state = "waiting_for_input"
+            return update_bag
+
+        self.game_state = "doing_stuff"
+        # ---------------------------------------
+        # Swap is adjacent, send some update bags:
+
+        # save state and chosen action before doing anything
+        self.write_state_action()
+
+        # create bag
+        info = self.get_game_info()
+        movements = self.get_swap_movement()
+        update_bag = UpdateBag([], [], [], movements, [], [], info)
+        update_bag.gems = self.gem_grid.grid
+
+        # send bag to view
+        event = UpdateBagEvent(update_bag)
+        self.event_manager.post(event)
+
+        # swap gems and find matches
+        self.swap_gems()
+        matches, bonuses = self.find_matches()
+        match_count = len(matches)
+        bonus_count = len(bonuses)
+
+        # ---------------------------------------
+        # if not match, swap back and send bag
+        if match_count + bonus_count < 3:
+            self.swap_gems()
+
+            # create bag
+            info = self.get_game_info()
+            movements = self.get_swap_movement()
+            update_bag = UpdateBag([], [], [], movements, [], [], info)
+            update_bag.gems = self.gem_grid.grid
+
+            # send bag to view and return
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
+            self.game_state = "waiting_for_input"
+            return update_bag
+
+        # ---------------------------------------
+        # else, match - perform remove gems, pull down, etc, and send bag
+        else:
+            self.move_made()
+
+            # do until no more pull downs
+            self.cascade = 0
+
+            while match_count + bonus_count > 0:
+                first_loop = True
+                self.cascade += 1
+
+                # find more matches after pulling down
+                matches, bonuses = self.find_matches()
+                self.match_list = matches
+                self.bonus_list = bonuses
+                match_count = len(matches)
+                bonus_count = len(bonuses)
+
+                # remove gems in grid that are in matches_list
+                self.remove_gems_add_bonuses()
+
+                repeat = True
+                while repeat:
+
+                    # pull gems down
+                    repeat = self.pull_gems_down()
+
+                    # create bag
+                    if not first_loop:
+                        matches = []
+                        bonuses = []
+
+                    # else:
+                    additions = self.additions
+                    movements = self.movements
+                    update_bag = UpdateBag(matches, bonuses, additions, movements,
+                                           self.ice_removed, self.medals_removed, self.get_game_info())
+                    update_bag.gems = self.gem_grid.grid
+
+                    # send bag to view
+                    event = UpdateBagEvent(update_bag)
+                    self.event_manager.post(event)
+
+                    # don't send anymore matches, bonuses
+                    first_loop = False
+
+            # ---------------------------------------
+            # check for terminal state
+            if self.medals == 0:
+                # WON
+
+                # write state if terminal state
+                self.action = [(-1, -1), (-1, -1)]
+                self.write_state_action()
+
+                self.win_state = True
+                self.terminal_state = True
+
+                # give bonus points for moves remaining
+                self.extrapolate_score()
+
+            elif self.moves == 0:
+                # LOST
+
+                # write state if terminal state
+                self.action = [(-1, -1), (-1, -1)]
+                self.write_state_action()
+
+                self.win_state = False
+                self.terminal_state = True
+
+            # Create bag
+            info = self.get_game_info()
+            update_bag = UpdateBag([], [], [], [], [], [], info)
+            update_bag.gems = self.gem_grid.grid
+
+            # send bag to view
+            event = UpdateBagEvent(update_bag)
+            self.event_manager.post(event)
+            self.game_state = "waiting_for_input"
+            return update_bag
+            # ----------------------------------------------------------------------
+
+    def check_swap(self):
+        """
+        return true if swap locations are adjacent, false if not
+        :return:
+        """
+        row1 = self.swapped_gems[0][0]
+        column1 = self.swapped_gems[0][1]
+        row2 = self.swapped_gems[1][0]
+        column2 = self.swapped_gems[1][1]
+
+        if row2 == row1 - 1 and column2 == column1:
+            # swap up
+            return True
+
+        elif row2 == row1 + 1 and column2 == column1:
+            # swap down
+            return True
+
+        elif row2 == row1 and column2 == column1 + 1:
+            # swap right
+            return True
+
+        elif row2 == row1 and column2 == column1 - 1:
+            # swap left
+            return True
+
+        else:
+            return False
+
+    def move_made(self):
+        self.moves -= 1
+
     def file_header(self):
         """
         This method build a string to be the header of the
@@ -1181,3 +1191,4 @@ class Board:
         old_file_name = os.path.join(data_dir, self.file_name)
         new_file_name = os.path.join(completed_dir, self.file_name)
         os.rename(old_file_name, new_file_name)
+
