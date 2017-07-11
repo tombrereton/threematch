@@ -29,11 +29,11 @@ class StateParser:
         with open(file_name) as f:
             initial_state = f.readlines()[26:]
 
-        state = initial_state[0][4:].split('\t')
+        state = initial_state[0].split('\t')
         state.remove('\n')
         state = list(map(int, state))
 
-        for i in range(0, len(state) - 4, 4):
+        for i in range(2, len(state), 4):
             # get = (type, bonus_type)
             gem = [state[i], state[i + 1]]
             ice = [state[i + 2]]

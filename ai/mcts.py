@@ -1,5 +1,6 @@
 from itertools import product
 
+from ai.move_finder import moves_three
 from ai.state_parser import StateParser
 from model.game import Grid
 from model.game import SimpleBoard
@@ -18,7 +19,7 @@ class State:
         self.medal_state = ()
         self.parser = StateParser()
 
-    def start(self):
+    def first_state(self):
         # Returns a representation of the starting state of the game.
         state = self.parser.get_initial_state(1)
         return state
@@ -42,38 +43,47 @@ class State:
         board = SimpleBoard(self.rows, self.cols, self.gem_types, self.total_medals)
         board.gem_grid.grid = gem_grid
         board.ice_grid.grid = ice_grid
-        board.medal_grid.grid = gem_grid
+        board.medal_grid.grid = medal_grid
 
         board.set_swap_locations(action)
         board.swap_gems()
 
         while True:
-            matches, bonuses = self.board.find_matches()
-            self.board.remove_gems_add_bonuses()
+            matches, bonuses = board.find_matches()
+            board.match_list = matches
+            board.bonuses = bonuses
+            board.remove_gems_add_bonuses()
 
             while True:
-                repeat = self.board.pull_gems_down()
+                repeat = board.pull_gems_down()
                 if not repeat:
                     break
 
             if len(matches) + len(bonuses) == 0:
                 break
 
-        gem_grid = self.board.gem_grid.grid
-        ice_grid = self.board.ice_grid.grid
-        medal_grid = self.board.medal_grid.grid
+        gem_grid = board.gem_grid.grid
+        ice_grid = board.ice_grid.grid
+        medal_grid = board.medal_grid.grid
 
         next_state = self.grid_to_state(gem_grid, ice_grid, medal_grid)
 
         return next_state
 
-    def legal_plays(self, state_history):
-        # Takes a sequence of game states representing the full
-        # game history, and returns the full list of moves that
-        # are legal plays for the current player.
-        pass
+    def legal_moves(self, state):
+        """
+        Takes in a state, converts it to grids, and returns a list of legal moves
+        where each item is 2 coordinates.
+        item = ((r1,c1),(r2,c2))
+        :param gem_grid:
+        :return:
+        """
+        # print(state)
+        gem_grid, _, _ = self.state_to_grid(state)
+        legal_moves = moves_three(gem_grid)
+        return legal_moves
 
-    def winner(self, state_history):
+    def winner(self, state):
         # Takes a sequence of game states representing the full
         # game history.  If the game is now won, return the player
         # number.  If the game is still ongoing, return zero.  If
@@ -116,11 +126,11 @@ class State:
         for i, j in product(range(self.rows), range(self.cols)):
             item = (gem_grid[i][j][0],
                     gem_grid[i][j][1],
-                    ice_grid[i][j][0],
-                    medal_grid[i][j][0])
-            grid[i][j] = item
+                    ice_grid[i][j],
+                    medal_grid[i][j])
+            grid.grid[i][j] = item
 
-        state = tuple(map(tuple, grid))
+        state = tuple(map(tuple, grid.grid))
         return state
 
     def __str__(self):
@@ -133,16 +143,16 @@ class State:
 
 
 if __name__ == '__main__':
+    # get initial state
     s = State()
-    cs = s.start()
-    print(f'current state: {cs}')
-
+    cs = s.first_state()
     s.current_state = cs
-    print(s)
 
-    # move = [[0, 5], [0, 6]]
-    # ns = s.next_state(cs, move)
-    # print(ns)
+    # get legal moves
+    legal_moves = s.legal_moves(cs)
+    print(legal_moves)
 
-    # g, i, m = s.state_to_grid(cs)
-    # print(g)
+    # get next state from move 0
+    move0 = legal_moves[0]
+    ns = s.next_state(cs, move0)
+
