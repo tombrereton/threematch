@@ -618,7 +618,7 @@ class SimpleBoard:
         """
         for i, j in product(range(2), range(2)):
             # remove from grid
-            self.medal_grid.grid[row + i][column + j] = -1
+            # self.medal_grid.grid[row + i][column + j] = -1
 
             # remove from medal locations list
             portion = j + 2 * i

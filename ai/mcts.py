@@ -226,7 +226,7 @@ class State:
 if __name__ == '__main__':
     # get initial state
     s = State()
-    cs = s.get_state_from_data(7, 8)
+    cs = s.get_state_from_data(0, 5)
     s.current_state = cs
     print(s)
 
