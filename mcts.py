@@ -16,9 +16,9 @@ class MonteCarlo:
 
         moves = self.board.moves(self.states)
         next_states = [self.board.transition(self.states, move) for moves]
-        stats = [self.statistics.get((state, move)) for move, state in zip(moves, next_states)]
+        stats = [self.statistics.get(state) for state in next_states]
         
-        move, *_ = max(zip(moves, next_states, stats), key=(lambda el: el[2][1] / el[2][0]))
+        move, *_ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0]))
         
         return move
 
@@ -31,26 +31,28 @@ class MonteCarlo:
 
             if not moves:
                 break
-            
-            next_states = [self.board.transition(self.states, move) for moves]
-            stats = [self.statistics.get((state, move), False) for move, state in zip(moves, next_states)]
-            
-            if all(stats):
-                top = 2 * math.log(sum(stat[0] for stat in stats))
-                move, _ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0] + math.sqrt(top / el[1][1])))
+            elif len(moves) == 1:
+                move = moves[0]
             else:
-                move = random.choice(move for move, stat in zip(moves, stats) if not stat)
+                stats = [self.statistics.get(self.board.transition(self.states, move), False) for move in moves]
+                
+                if all(stats):
+                    top = 2 * math.log(sum(stat[0] for stat in stats))
+                    move, _ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0] + math.sqrt(top / el[1][1])))
+                else:
+                    move = random.choice([move for move, stat in zip(moves, stats) if not stat])
 
             state = self.board.transition(states, move)
             states.add(state)
-            visisted.add((state, move))
+            visisted.add(state)
 
         winner = self.board.winner(states)
 
-        for state, move in visisted:
-            if self.statistics.get(state, False):
-                self.statistics[state][0] += 1
+        for state in visisted:
+            stat = self.statistics.get(state, False)
+            if stat:
+                stat[0] += 1
                 if winner:
-                    self.statistics[state][1] += 1
+                    stat[1] += 1
             else:
                 self.statistics[state] = [1, 1 if winner else 0]
