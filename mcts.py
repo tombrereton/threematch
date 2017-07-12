@@ -15,10 +15,10 @@ class MonteCarlo:
             self.play(move_limit)
 
         moves = self.board.moves(self.states)
-        child_states = [self.board.transition(self.states, move) for moves]
-        stats = [self.statistics.get((state, move)) for state, move in zip(child_states, moves)]
+        next_states = [self.board.transition(self.states, move) for moves]
+        stats = [self.statistics.get((state, move)) for move, state in zip(moves, next_states)]
         
-        move, *_ = max(zip(moves, child_states, stats), key=(lambda el: el[2][1] / el[2][0]))
+        move, *_ = max(zip(moves, next_states, stats), key=(lambda el: el[2][1] / el[2][0]))
         
         return move
 
