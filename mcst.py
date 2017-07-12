@@ -10,12 +10,14 @@ class MonteCarlo:
         self.states.append(state)
 
     def play(self, move_limit):
-        state = self.states[-1]
+        states = self.states[:]
+        state = states[-1]
         
         for _ in range(move_limit):
-            moves = self.board.moves(state)
+            moves = self.board.moves(states)
             
-            if moves:
-                state = self.board.transition(state, random.choice(moves))
-            else:
-                return
+            if not moves:
+                break
+            
+            move = random.choice(moves)
+            state = self.board.transition(states, move)
