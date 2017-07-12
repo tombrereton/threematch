@@ -1,4 +1,4 @@
-import random
+import random, math
 
 class MonteCarlo:
 
@@ -31,8 +31,16 @@ class MonteCarlo:
 
             if not moves:
                 break
+            
+            next_states = [self.board.transition(self.states, move) for moves]
+            stats = [self.statistics.get((state, move), False) for move, state in zip(moves, next_states)]
+            
+            if all(stats):
+                top = 2 * math.log(sum(stat[0] for stat in stats))
+                move, _ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0] + math.sqrt(top / el[1][1])))
+            else:
+                move = random.choice(move for move, stat in zip(moves, stats) if not stat)
 
-            move = random.choice(moves)
             state = self.board.transition(states, move)
             states.add(state)
             visisted.add((state, move))
