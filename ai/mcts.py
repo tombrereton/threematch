@@ -6,6 +6,8 @@ from model.game import Grid
 from model.game import SimpleBoard
 
 
+# TODO: update score when going to next state
+
 class State:
     def __init__(self):
         self.current_state = ()
@@ -13,10 +15,9 @@ class State:
         self.cols = 9
         self.gem_types = 6
         self.total_medals = 3
+        self.current_move = 0
+        self.total_moves = 20
         self.board = SimpleBoard(self.rows, self.cols, self.gem_types, self.total_medals)
-        self.gem_state = ()
-        self.ice_state = ()
-        self.medal_state = ()
         self.parser = StateParser()
 
     def __str__(self):
@@ -25,7 +26,9 @@ class State:
         b.gem_grid.grid = gem_grid
         b.ice_grid.grid = ice_grid
         b.medal_grid.grid = medal_grid
-        return b.__str__()
+
+        s = f'Score, medals: {score_medals}\n' + b.__str__()
+        return s
 
     def first_state(self, file_index):
         # Returns a representation of the starting state of the game.
@@ -93,7 +96,6 @@ class State:
         :param state:
         :return:
         """
-        # print(state)
         gem_grid, _, _, _ = self.state_to_grid(state)
         legal_moves = moves_three(gem_grid)
         return legal_moves
@@ -103,14 +105,15 @@ class State:
         takes in the state and checks if the medals uncovered
         is equal to the total medals for the level.
         :param state:
-        :return:
+        :return: 2 for win, 1 for loss, 0 for ongoing
         """
         medals_uncovered = state[9][1]
-        print(medals_uncovered)
         if medals_uncovered == self.total_medals:
-            return True
+            return 2
+        elif self.current_move == self.total_moves:
+            return 1
         else:
-            return False
+            return 0
 
     def state_to_grid(self, state):
         """
@@ -226,15 +229,18 @@ class State:
 if __name__ == '__main__':
     # get initial state
     s = State()
-    cs = s.get_state_from_data(0, 5)
+    cs = s.get_state_from_data(2, 16)
     s.current_state = cs
-    print(s)
+    # print(s)
 
     # get legal moves
     legal_moves = s.legal_moves(cs)
+    print(legal_moves[23])
 
     # get next state from move 0
-    move0 = legal_moves[0]
+    move0 = legal_moves[23]
     ns = s.next_state(cs, move0)
 
-    s.is_winner(ns)
+    s.current_state = ns
+    # print(s)
+    print(s.is_winner(s.current_state))
