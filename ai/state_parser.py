@@ -1,6 +1,9 @@
+import logging
 import os
 
 from model.game import Grid
+
+logging.basicConfig(level=logging.INFO)
 
 
 class StateParser:
@@ -13,25 +16,37 @@ class StateParser:
 
     def get_file_list(self):
         os.chdir(os.getcwd() + '/../training_data')
+        logging.debug(f'files in directory: \n{os.listdir()}\n')
         return os.listdir()
 
-    def get_initial_state(self, file_index):
+    def get_state(self, file_index, state_index):
+        # skip every second line
+        state_index *= 2
+
+        file_name = self.get_file_list()[file_index]
+
+        logging.debug(f'File name of initial state: {file_name}')
+
+        with open(file_name) as f:
+            initial_state = f.readlines()[26:]
+
+        first_state = initial_state[state_index]
+
+        return self.parse_state(first_state)
+
+    def parse_state(self, string_state):
         """
-        returns the first state without the
-        score ad medals uncovered (the first 2 integers
-        of the game state)
-        :param file_index:
+        parses a string representing the state and returns it
+        as a 2d array of tuples, the last row is a tuple
+        of (score, medals uncovered).
+        :param string_state:
         :return:
         """
         grid = Grid(self.rows, self.cols)
 
-        file_name = self.get_file_list()[file_index]
-        with open(file_name) as f:
-            initial_state = f.readlines()[26:]
-
-        state = initial_state[0].split('\t')
-        state.remove('\n')
-        state = list(map(int, state))
+        first_state = string_state.split('\t')
+        first_state.remove('\n')
+        state = list(map(int, first_state))
 
         for i in range(2, len(state), 4):
             # get = (type, bonus_type)
@@ -45,6 +60,7 @@ class StateParser:
             col_index = (i // 4) % 9
             grid.grid[row_index][col_index] = item
 
+        grid.grid.append(state[:2])
         parsed_state = tuple(map(tuple, grid.grid))
         return parsed_state
 

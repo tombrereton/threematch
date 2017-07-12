@@ -1,3 +1,5 @@
+from itertools import product
+
 from events.event_manager import EventManager
 from model.game import Board
 from view.gui_variables import GUIVariables
@@ -134,7 +136,6 @@ def test_1_4_use_4_match_intersect():
 
     expected_removals = [(0, 2, 2, 0, 0), (1, 2, 2, 0, 0), (2, 0, 2, 0, 0), (2, 1, 2, 0, 0), (3, 2, 2, 0, 0)]
     expected_bonuses = [(2, 2, 2, 1, 0)]
-
 
     assert expected_removals == actual_removals
     assert expected_bonuses == actual_bonuses
@@ -530,10 +531,46 @@ def test_3_1_get_game_state():
 
     print(b)
 
+    b.gem_grid_copy = b.gem_grid.grid
     game_state = b.get_game_state()
     print(game_state)
 
-    expected_game_state = '0\t0\t0\t-1\t' + '0\t0\t0\t-1\t' + '0\t0\t0\t-1\t' + '1\t0\t0\t-1\t' + '1\t0\t0\t-1\t' + \
-                          '1\t0\t0\t-1\t'
+    expected_game_state = '0\t0\t' + '0\t0\t0\t-1\t' + '0\t0\t0\t-1\t' + '0\t0\t0\t-1\t' + '1\t0\t0\t-1\t' + \
+                          '1\t0\t0\t-1\t' + '1\t0\t0\t-1\t'
+
+    assert game_state == expected_game_state
+
+
+def test_3_2_get_game_state():
+    """
+    The get game state function should
+    return all three states as a string in vector form.
+    :return:
+    """
+    print('\n\nTest 3.1 get state in vector form:\n')
+
+    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+              event_manager=event_manager)
+
+    for i, j in product(range(2), range(3)):
+        b.ice_grid.grid[i][j] = -1
+        b.medal_grid.grid[i][j] = -1
+
+    b.medal_grid.grid[0][0] = 0
+    b.medal_grid.grid[0][1] = 1
+    b.medal_grid.grid[1][0] = 2
+    b.medal_grid.grid[1][1] = 3
+
+    b.ice_grid.grid[0][1] = 0
+    b.ice_grid.grid[1][1] = 0
+
+    print(b)
+
+    b.gem_grid_copy = b.gem_grid.grid
+    game_state = b.get_game_state()
+    print(game_state)
+
+    expected_game_state = '0\t0\t' + '0\t0\t-1\t0\t' + '0\t0\t0\t-1\t' + '0\t0\t-1\t-1\t' + '1\t0\t-1\t2\t' + \
+                          '1\t0\t0\t-1\t' + '1\t0\t-1\t-1\t'
 
     assert game_state == expected_game_state

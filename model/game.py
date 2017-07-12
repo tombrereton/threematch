@@ -645,6 +645,7 @@ class SimpleBoard:
         returns the 3 grids as vectors.
 
         The 3 grids are (in order) gems, ice, medals
+        (gem_type, bonus_type, ice, medal_portion)
         :return:
         """
         # get medals uncovered and score
@@ -1191,4 +1192,3 @@ class Board(SimpleBoard):
         old_file_name = os.path.join(data_dir, self.file_name)
         new_file_name = os.path.join(completed_dir, self.file_name)
         os.rename(old_file_name, new_file_name)
-
