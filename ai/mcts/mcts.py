@@ -17,14 +17,15 @@ class MonteCarlo:
         moves = self.board.moves(self.states)
         next_states = [self.board.transition(self.states, move) for moves]
         stats = [self.statistics.get(state) for state in next_states]
-        
+
         move, *_ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0]))
-        
+
         return move
 
     def play(self, move_limit):
         visited = set()
         states = [*self.states]
+        state = states[-1]
 
         for _ in range(move_limit):
             moves = self.board.moves(states)
@@ -34,25 +35,25 @@ class MonteCarlo:
             elif len(moves) == 1:
                 move = moves[0]
             else:
-                stats = [self.statistics.get(self.board.transition(self.states, move), False) for move in moves]
-                
+                stats = [self.statistics.get((state, move), False) for move in moves]
+
                 if all(stats):
                     top = 2 * math.log(sum(stat[0] for stat in stats))
-                    move, _ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0] + math.sqrt(top / el[1][1])))
+                    move, _ = max(zip(moves, stats), key=(lambda el: el[1][1] / el[1][0] + math.sqrt(top / el[1][0])))
                 else:
                     move = random.choice([move for move, stat in zip(moves, stats) if not stat])
 
+            visited.add((state, move))
             state = self.board.transition(states, move)
             states.add(state)
-            visisted.add(state)
 
         winner = self.board.winner(states)
 
-        for state in visisted:
-            stat = self.statistics.get(state, False)
+        for (state, move) in visisted:
+            stat = self.statistics.get((state, move), False)
             if stat:
                 stat[0] += 1
                 if winner:
                     stat[1] += 1
             else:
-                self.statistics[state] = [1, 1 if winner else 0]
+                self.statistics[(state, move)] = [1, 1 if winner else 0]
