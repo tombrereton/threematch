@@ -7,6 +7,7 @@ from model.game import SimpleBoard
 
 
 # TODO: update score when going to next state
+# TODO: keep track of the next state which is sampled from the game logic
 
 class State:
     def __init__(self):
@@ -17,7 +18,6 @@ class State:
         self.total_medals = 3
         self.current_move = 0
         self.total_moves = 20
-        self.board = SimpleBoard(self.rows, self.cols, self.gem_types, self.total_medals)
         self.parser = StateParser()
 
     def __str__(self):
@@ -231,16 +231,13 @@ if __name__ == '__main__':
     s = State()
     cs = s.get_state_from_data(2, 16)
     s.current_state = cs
-    # print(s)
+    print(s)
 
     # get legal moves
     legal_moves = s.legal_moves(cs)
-    print(legal_moves[23])
 
-    # get next state from move 0
-    move0 = legal_moves[23]
-    ns = s.next_state(cs, move0)
+    # get next state from move 23
+    move = legal_moves[23]
+    ns = s.next_state(cs, move)
+    print(s.is_winner(ns))
 
-    s.current_state = ns
-    # print(s)
-    print(s.is_winner(s.current_state))
