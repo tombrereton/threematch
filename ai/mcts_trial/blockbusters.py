@@ -1,7 +1,7 @@
 import random
 import sys
-
 from itertools import product
+
 from board import Board
 from mcts import MonteCarlo
 

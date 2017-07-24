@@ -1,4 +1,6 @@
-import random, math
+import math
+import random
+
 
 def pick_move_helper(element):
     return (element[1][1] / element[1][0], random.random()) if element[1] else (0, random.random())
