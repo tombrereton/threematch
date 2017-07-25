@@ -16,7 +16,7 @@ class MonteCarlo(object):
         # arguments.  Initializes the list of game states and the
         # statistics tables.
         self.board = board
-        cs = board.get_state_from_data(2, 16)
+        cs = board.get_state_from_data(2, 0)
         self.state_list = [cs]
         self.calculation_time = kwargs.get('timer', 30)
         self.max_moves = kwargs.get('max_moves', 20)
@@ -131,11 +131,11 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         timer, max_moves, C = sys.argv[0], sys.argv[1], sys.argv[2]
     else:
-        timer, max_moves, C = 3, 20, 1.4
+        timer, max_moves, C = 5, 20, 1.4
     print('timer, max_moves, C:', timer, max_moves, C)
 
     s = State()
-    cs = s.get_state_from_data(2, 16)
+    cs = s.get_state_from_data(2, 0)
     s.current_state = cs
     # print(s)
 
