@@ -1,9 +1,9 @@
 import random
 import sys
-
 from itertools import product
-from board import Board
-from mcts import MonteCarlo
+
+from ai.mcts_trial.board import Board
+from ai.mcts_trial.mcts import MonteCarlo
 
 size = int(sys.argv[1])
 
