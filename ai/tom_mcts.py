@@ -75,10 +75,10 @@ class MonteCarlo(object):
 
         visited_states = set()
         state_list_copy = self.state_list[:]
-        current_state = state_list_copy[-1]
 
         expand = True
         for t in range(self.max_moves):
+            current_state = state_list_copy[-1]
             moves = self.board.legal_moves(current_state)
             move_states = [(move, self.board.next_state(current_state, move)) for move in moves]
 
@@ -135,8 +135,8 @@ if __name__ == '__main__':
     print('timer, max_moves, C:', timer, max_moves, C)
 
     s = State()
-    cs = s.get_state_from_data(2, 0)
-    s.current_state = cs
+    # cs = s.get_state_from_data(0, 0)
+    # s.current_state = cs
     # print(s)
 
     mc = MonteCarlo(State(), timer=timer, max_moves=max_moves, C=C)

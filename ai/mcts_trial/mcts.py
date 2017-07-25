@@ -3,16 +3,21 @@ import random
 
 
 def pick_move_helper(element):
-    return element[1][1] / element[1][0] if element[1] else 0
+    # element = (move, stat)
+    # stat = [plays, wins]
+    # wins / plays
+    return element[1][1] / element[1][0]
+
 
 def interim_move_helper(stats):
     top = 2 * math.log(sum(stat[0] for stat in stats))
+
     def foo(element):
-        return (element[1][1] / element[1][0] + math.sqrt(top / element[1][0]), random.random())
+        return element[1][1] / element[1][0] + math.sqrt(top / element[1][0]), random.random()
     return foo
 
-class MonteCarlo:
 
+class MonteCarlo:
     def __init__(self, board, game_limit, move_limit):
         self.board = board
         self.game_limit = game_limit
@@ -56,6 +61,8 @@ class MonteCarlo:
                 expand = False
             state = self.board.transition(states, move)
             states.append(state)
+
+        # Game over or move limit reached
 
         winner = self.board.winner(states)
 
