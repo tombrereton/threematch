@@ -7,11 +7,13 @@ from mcts import MonteCarlo
 
 size = int(sys.argv[1])
 
+
 def print_board(state):
     global size
     print('*' * size)
     print('\n'.join([''.join([' ' if el == 0 else str(el) for el in row]) for row in state[0]]))
     print('*' * size)
+
 
 class Blockbusters(Board):
 
@@ -20,13 +22,13 @@ class Blockbusters(Board):
 
     def start(self):
         global size
-        return (((0,) * size,) * size, 1)
+        return ((0,) * size,) * size, 1
+
+    def players(self):
+        return (1, 2)
 
     def player(self, states):
         return states[-1][1]
-    
-    def players(self):
-        return (1, 2)
     
     def winner(self, states):
         global size

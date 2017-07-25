@@ -1,7 +1,7 @@
 import random, math
 
 def pick_move_helper(element):
-    return (element[1][1] / element[1][0], random.random()) if element[1] else (0, random.random())
+    return element[1][1] / element[1][0] if element[1] else 0
 
 def interim_move_helper(stats):
     top = 2 * math.log(sum(stat[0] for stat in stats))
