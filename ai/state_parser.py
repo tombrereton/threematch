@@ -45,7 +45,10 @@ class StateParser:
         grid = Grid(self.rows, self.cols)
 
         first_state = string_state.split('\t')
-        first_state.remove('\n')
+        if 'n' in first_state:
+            first_state.remove('\n')
+        if '' in first_state:
+            first_state.remove('')
         state = list(map(int, first_state))
 
         for i in range(2, len(state), 4):

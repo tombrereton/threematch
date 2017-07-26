@@ -1,7 +1,7 @@
 import pygame
 from pygame.constants import QUIT, KEYDOWN, K_ESCAPE, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
-from events.events import TickEvent, SwapGemsRequest, QuitEvent, UpdateBagEvent
+from events.events import TickEvent, SwapGemsRequest, QuitEvent
 
 
 class NaiveAIControllerV1:
@@ -38,26 +38,27 @@ class MonteCarloController:
     To do
     """
 
-    def __init__(self, event_manager, monte_carlo_move_finder, state_parser):
+    def __init__(self, event_manager, monte_carlo_move_finder, state_parser, board):
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
         # self.board = board_simulator
         self.move_finder = monte_carlo_move_finder
         self.state_parser = state_parser
+        self.board = board
 
         # ----------------------------------------------------------------------
 
     def notify(self, event):
-        if isinstance(event, UpdateBagEvent):
+        if isinstance(event, TickEvent):
             ev = None
-            # if self.board.game_state == "waiting_for_input":
-
-            # if state param not empty get state from event
-            raw_state = event.state
-            if raw_state:
-                print(raw_state)
+            if self.board.game_state == "waiting_for_input":
+                # if state param not empty get state from event
+                # raw_state = event.state
+                # if raw_state:
+                #     print(raw_state)
                 # parse state
-                current_state = self.state_parser(raw_state)
+                raw_state = self.board.get_game_state()
+                current_state = self.state_parser.parse_state(raw_state)
 
                 # instantiate monte carlo object and update to current state
                 mc = self.move_finder

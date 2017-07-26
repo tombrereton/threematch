@@ -30,7 +30,7 @@ def main():
     # ai setup
     b = State()
     mcts_cont = MonteCarloController(evManager, MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c),
-                                     StateParser())
+                                     StateParser(), game_board)
 
     # ai_cont = NaiveAIControllerV1(evManager, game_board, pick_move)
     mouse_cont = MouseController(evManager)

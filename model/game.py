@@ -778,8 +778,8 @@ class Board(SimpleBoard):
             if self.game_state == "waiting_for_input":
                 self.set_swap_locations(event.swap_locations)
         elif isinstance(event, TickEvent):
-            if self.game_state != "waiting_for_input":
-                self.get_update()
+            # if self.game_state != "waiting_for_input":
+            self.get_update()
 
     def init_gem_grid(self):
         """
@@ -953,10 +953,10 @@ class Board(SimpleBoard):
         :return:
         """
 
+        self.gem_grid_copy = deepcopy(self.gem_grid.grid)
         state = self.get_game_state()
         update_bag = UpdateBag([], [], [], [], [], [], [], state)
         update_bag.gems = self.gem_grid.grid
-        self.gem_grid_copy = deepcopy(self.gem_grid.grid)
 
         # ---------------------------------------
         if not self.game_state == "input_received":
