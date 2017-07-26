@@ -109,8 +109,6 @@ class State:
         """
         medals_uncovered = state[9][1]
         if medals_uncovered == self.total_medals:
-            return 2
-        elif self.current_move == self.total_moves:
             return 1
         else:
             return 0

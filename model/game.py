@@ -953,7 +953,8 @@ class Board(SimpleBoard):
         :return:
         """
 
-        update_bag = UpdateBag([], [], [], [], [], [], [])
+        state = self.get_game_state()
+        update_bag = UpdateBag([], [], [], [], [], [], [], state)
         update_bag.gems = self.gem_grid.grid
         self.gem_grid_copy = deepcopy(self.gem_grid.grid)
 
@@ -1085,7 +1086,8 @@ class Board(SimpleBoard):
 
             # Create bag
             info = self.get_game_info()
-            update_bag = UpdateBag([], [], [], [], [], [], info)
+            state = self.get_game_state()
+            update_bag = UpdateBag([], [], [], [], [], [], info, state)
             update_bag.gems = self.gem_grid.grid
 
             # send bag to view

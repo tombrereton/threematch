@@ -4,7 +4,7 @@ class UpdateBag:
     the Game and GUI class.
     """
 
-    def __init__(self, removals, bonuses, additions, movements, ice_removed, medals_removed, info):
+    def __init__(self, removals, bonuses, additions, movements, ice_removed, medals_removed, info, state=()):
         self.removals = removals
         self.bonuses = bonuses
         self.additions = additions
@@ -12,6 +12,7 @@ class UpdateBag:
         self.ice_removed = ice_removed
         self.medals_removed = medals_removed
         self.info = info
+        self.state = state
 
     def __str__(self):
         return "Removals:\n" \
