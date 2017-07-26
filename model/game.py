@@ -778,6 +778,7 @@ class Board(SimpleBoard):
             if self.game_state == "waiting_for_input":
                 self.set_swap_locations(event.swap_locations)
         elif isinstance(event, TickEvent):
+            # TODO check
             # if self.game_state != "waiting_for_input":
             self.get_update()
 
