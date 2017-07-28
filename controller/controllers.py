@@ -64,7 +64,8 @@ class MonteCarloController:
 
                 # instantiate monte carlo object and update to current state
                 mc = self.move_finder
-                mc.update(current_state)
+                if not mc.update(current_state):
+                    return
 
                 # pick move from mcts
                 move = mc.pick_move()

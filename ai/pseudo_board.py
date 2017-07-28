@@ -59,6 +59,7 @@ class PseudoBoard:
         board.gem_grid.grid = gem_grid
         board.ice_grid.grid = ice_grid
         board.medal_grid.grid = medal_grid
+        orig_medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
 
         board.set_swap_locations(action)
         board.swap_gems()
@@ -81,10 +82,11 @@ class PseudoBoard:
         ice_grid = board.ice_grid.grid
         medal_grid = board.medal_grid.grid
 
-        medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
-        score_medals = [score_medals_init[0], medals_uncovered]
+        new_medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
+        # score_medals = [score_medals_init[0], medals_uncovered]
+        moves_medals = (state[9][0] - 1, state[9][1] - (new_medals_uncovered - orig_medals_uncovered))
 
-        next_state = self.grid_to_state(gem_grid, ice_grid, medal_grid, score_medals)
+        next_state = self.grid_to_state(gem_grid, ice_grid, medal_grid, moves_medals)
 
         return next_state
 
@@ -96,7 +98,8 @@ class PseudoBoard:
         :param state:
         :return:
         """
-        print(state)
+        # print('state 9', state[9])
+        # print(all(state[9]))
         if all(state[9]):
             gem_grid, _, _, _ = self.state_to_grid(state)
             legal_moves = moves_three(gem_grid)

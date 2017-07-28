@@ -67,7 +67,11 @@ class MonteCarlo:
         :return: None
         """
         # Add new state to list of states
-        self.states.append(state)
+        if self.states and state[9][0] == self.states[-1][9][0]:
+            return False
+        else:
+            self.states.append(state)
+            return True
 
     def interim_move(self, state):
         """
@@ -103,6 +107,7 @@ class MonteCarlo:
         """
         # Copy the states list
         states = [*self.states]
+        # print('start length', len(states))
         # Get the last state
         state = states[-1]
         # Create and empty set for the state/move pairs
@@ -115,6 +120,8 @@ class MonteCarlo:
             move = self.interim_move(state)
             if move is None:
                 # No valid moves available, game is over
+                # print('move limit', self.move_limit)
+                # print(_, state[9][0])
                 break
             if expand:
                 # Still expanding, add this to visited set

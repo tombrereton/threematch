@@ -21,7 +21,7 @@ def main():
     if len(sys.argv) > 1:
         game_limit, move_limit, c = sys.argv[0], sys.argv[1], sys.argv[2]
     else:
-        game_limit, move_limit, c = 20, 19, 1.4
+        game_limit, move_limit, c = 20, 21, 1.4
 
     gui_vars = GUIVariables.from_global()
     evManager = EventManager(gui_vars)
