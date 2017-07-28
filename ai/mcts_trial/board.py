@@ -11,7 +11,7 @@ class Board:
         """
         raise NotImplementedError()
 
-    def players(self, states):
+    def players(self):
         """
         Returns all players
         """
