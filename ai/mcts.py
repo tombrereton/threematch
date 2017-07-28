@@ -128,7 +128,8 @@ class MonteCarlo:
         states = [*self.states]
         # print('start length', len(states))
         # Get the last state
-        state = states[-1]
+        old_state = states[-1]
+        state = self.board.simulate_medals(old_state)
         p(f'Medals: {state[9][1]}')
         # Create and empty set for the state/move pairs
         visited = set()
@@ -137,7 +138,7 @@ class MonteCarlo:
 
         # This is used to only expand the first new state/move
         expand = True
-        for _ in range(self.move_limit):
+        for move_count in range(self.move_limit):
             # Get the list of all possible moves at this point
             move = self.interim_move(state)
             if move is None:
@@ -145,12 +146,12 @@ class MonteCarlo:
                 # print('move limit', self.move_limit)
                 p('No moves available, terminal game state')
                 break
-            if expand:
+            if move_count == 0:
                 # Still expanding, add this to visited set
-                visited.add((state, move))
-            if expand and not self.statistics.get((state, move)):
-                # New state/move pair encountered, stop expanding
-                expand = False
+                visited.add((old_state, move))
+            # if expand and not self.statistics.get((state, move)):
+            #     # New state/move pair encountered, stop expanding
+            #     expand = False
             # Update state
             state = self.board.next_state(state, move)
             # Add new state to list of states
@@ -163,9 +164,9 @@ class MonteCarlo:
         p(f'Winner: {winner}')
 
         # Update statistics
-        for state, move in visited:
+        for old_state, move in visited:
             # Get statistics for this player/state/move
-            stat = self.statistics.get((state, move))
+            stat = self.statistics.get((old_state, move))
             if stat:
                 # Statistics exist, increment plays
                 stat[0] += 1
@@ -174,7 +175,7 @@ class MonteCarlo:
                     stat[1] += 1
             else:
                 # If statistics did not exist add them now
-                self.statistics[(state, move)] = [1, 1 if winner == 1 else 0]
+                self.statistics[(old_state, move)] = [1, 1 if winner == 1 else 0]
 
     def pick_move(self):
         """
@@ -193,14 +194,14 @@ class MonteCarlo:
         moves = self.board.legal_moves(current_state)
 
         count = 0
-        print('\nNext move:\n')
+        print('\nNext move:')
         for move in moves:
-            plays = self.statistics.get((current_state, move))[0]
-            wins = self.statistics.get((current_state, move))[1]
-            win_rate = wins / plays
-            # print(plays, wins)
-            print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
-            count += 1
+            play_wins = self.statistics.get((current_state, move))
+            if play_wins:
+                plays, wins = play_wins
+                win_rate = wins / plays
+                print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
+                count += 1
 
         if not moves:
             # If there are no moves return None
@@ -209,7 +210,7 @@ class MonteCarlo:
         elif len(moves) == 1:
             # If there is only one possible move return this
             p('Only one move')
-            move =  moves[0]
+            move = moves[0]
         else:
             # Get the last state
             state = self.states[-1]
@@ -231,7 +232,7 @@ class MonteCarlo:
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
                 p('Move picked at random')
 
-        p(f'Move: {move}')
+        print('Move: ', move)
         return move
 
 

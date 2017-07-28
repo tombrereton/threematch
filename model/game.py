@@ -1204,6 +1204,10 @@ class Board(SimpleBoard):
         os.rename(old_file_name, new_file_name)
 
     def get_game_state_tuple(self):
+        """
+        returns (gem info) as 2d tuple, (moves, medals) as index 9
+        :return:
+        """
         gems = self.gem_grid.grid
         ice = self.ice_grid.grid
         medals = self.medal_grid.grid
