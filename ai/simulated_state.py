@@ -1,6 +1,6 @@
 import random
 
-from ai.mcts import PseudoBoard
+from ai.pseudo_board import PseudoBoard
 
 
 def simulated_state(state):

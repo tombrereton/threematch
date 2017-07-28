@@ -1,247 +1,212 @@
-from itertools import product
+import math
+import random
+import sys
 
-from ai.move_finder import moves_three
-from ai.state_parser import StateParser
-from model.game import Grid
-from model.game import SimpleBoard
+from ai.pseudo_board import PseudoBoard
 
 
-# TODO: update score when going to next state
-# TODO: keep track of the next state which is sampled from the game logic
+def pick_move_helper(element):
+    """
+    Key to be used in pick move helper
+    :param element: An element in the list of moves and their associated statistics: (move, stat)
+                    stat is a list of the plays and wins: [plays, wins]
+    :return: Tuple comprising the win rate of this move (wins / plays) and a random number
+    """
+    return element[1][1] / element[1][0], random.random()
 
-class PseudoBoard:
-    def __init__(self):
-        self.current_state = ()
-        self.rows = 9
-        self.cols = 9
-        self.gem_types = 6
-        self.total_medals = 3
-        self.current_move = 0
-        self.total_moves = 20
-        self.parser = StateParser()
 
-    def __str__(self):
-        gem_grid, ice_grid, medal_grid, score_medals = self.state_to_grid(self.current_state)
-        b = SimpleBoard(self.rows, self.cols, self.gem_types, self.total_medals)
-        b.gem_grid.grid = gem_grid
-        b.ice_grid.grid = ice_grid
-        b.medal_grid.grid = medal_grid
+def interim_move_helper(stats, c):
+    """
+    Function to return a key for the interim move helper
+    :param stats: List of stats
+    :param c: Exploration parameter
+    :return: Function for interim move helper to use as a key
+    """
+    top = math.log(sum(stat[0] for stat in stats))
 
-        s = f'Score, medals: {score_medals}\n' + b.__str__()
-        return s
-
-    def first_state(self, file_index):
-        # Returns a representation of the starting state of the game.
-        state = self.parser.get_state(file_index, 0)
-        return state
-
-    def get_state_from_data(self, file_index, state_index):
-        state = self.parser.get_state(file_index, state_index)
-        return state
-
-    def current_player(self, state):
-        # Takes the game state and returns the current player's
-        # number.
-        pass
-
-    def next_state(self, state, action):
+    def foo(element):
         """
-        Takes the game state, and the move to be applied.
-        Returns the new game state.
-        Move is a list of the gems to swap (r,c,r,c).
-        :param state:
-        :param action:
-        :return:
+        Key to be used in interim move helper
+        :param element: An element in the list of moves and their associated statistics: (move, stat)
+                    stat is a list of the plays and wins: [plays, wins]
+        :return: Tuple comprising the score of this move (win rate of this move plus an adjustment to encourage
+                 exploration: (wins / plays + sqrt(top / plays))) and a random number
         """
-        gem_grid, ice_grid, medal_grid, score_medals_init = self.state_to_grid(state)
+        return element[1][1] / element[1][0] + c * math.sqrt(top / element[1][0]), random.random()
 
-        board = SimpleBoard(self.rows, self.cols, self.gem_types, self.total_medals)
-        board.gem_grid.grid = gem_grid
-        board.ice_grid.grid = ice_grid
-        board.medal_grid.grid = medal_grid
+    return foo
 
-        board.set_swap_locations(action)
-        board.swap_gems()
 
-        while True:
-            matches, bonuses = board.find_matches()
-            board.match_list = matches
-            board.bonuses = bonuses
-            board.remove_gems_add_bonuses()
+class MonteCarlo:
+    """
+    Monte Carlo Tree Search class
+    """
 
-            while True:
-                repeat = board.pull_gems_down()
-                if not repeat:
-                    break
+    def __init__(self, board: PseudoBoard, game_limit, move_limit, c):
+        """
+        Constructor for the class
+        :param board: Board object containing the game
+        :param game_limit: The number of games to play per move choice
+        :param move_limit: Maximum depth to play to
+        :param c: Parameter to control exploration
+        """
+        # Set field variables
+        self.board = board
+        self.game_limit = game_limit
+        self.move_limit = move_limit
+        self.c = c
+        # Initialise list of states
+        self.states = []
+        # Initialise dictionary of statistics
+        self.statistics = {}
 
-            if len(matches) + len(bonuses) == 0:
+    def update(self, state):
+        """
+        Method to add a new state to the list of states
+        :param state: New state to be added
+        :return: None
+        """
+        # Add new state to list of states
+        self.states.append(state)
+
+    def interim_move(self, state):
+        """
+        Method to pick a move whilst building the tree
+        :param state: current state
+        :return: Move to make during simulation
+        """
+        # Get the list of all possible moves at this point
+        moves = self.board.legal_moves(state)
+
+        if not moves:
+            # If there are no moves return None
+            return None
+        elif len(moves) == 1:
+            # If there is only one possible move return this
+            return moves[0]
+        else:
+            # There are multiple moves to choose from
+            # Get the statistics associated with all these moves
+            stats = [self.statistics.get((state, m)) for m in moves]
+
+            if all(stats):
+                # If statistics exist for all these moves use UCB to pick the move
+                return max(zip(moves, stats), key=interim_move_helper(stats, self.c))[0]
+            else:
+                # If not then pick a move at random from the unexplored moves
+                return random.choice([move for move, stat in zip(moves, stats) if not stat])
+
+    def play(self):
+        """
+        Simulates a game to build up the tree
+        :return: None
+        """
+        # Copy the states list
+        states = [*self.states]
+        # Get the last state
+        state = states[-1]
+        # Create and empty set for the state/move pairs
+        visited = set()
+
+        # This is used to only expand the first new state/move
+        expand = True
+        for _ in range(self.move_limit):
+            # Get the list of all possible moves at this point
+            move = self.interim_move(state)
+            if move is None:
+                # No valid moves available, game is over
                 break
+            if expand:
+                # Still expanding, add this to visited set
+                visited.add((state, move))
+            if expand and not self.statistics.get((state, move)):
+                # New state/move pair encountered, stop expanding
+                expand = False
+            # Update state
+            state = self.board.next_state(state, move)
+            # Add new state to list of states
+            states.append(state)
 
-        gem_grid = board.gem_grid.grid
-        ice_grid = board.ice_grid.grid
-        medal_grid = board.medal_grid.grid
+        # Game over or move limit reached
+        # Find the winner of the game
+        # 1 == win, 0 == loss
+        # TODO: check this reaches the last state
+        winner = self.board.is_winner(states[-1])
+        print(len(states), winner)
 
-        medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
-        score_medals = [score_medals_init[0], medals_uncovered]
+        # Update statistics
+        # for player in self.board.players():
+        #     # Go through all of the games players
+        #     # See if they won
+        #     win = winner == player
+        for state, move in visited:
+            # Get statistics for this player/state/move
+            stat = self.statistics.get((state, move))
+            if stat:
+                # Statistics exist, increment plays
+                stat[0] += 1
+                if winner == 1:
+                    # If this was a win increment wins
+                    stat[1] += 1
+            else:
+                # If statistics did not exist add them now
+                self.statistics[(state, move)] = [1, 1 if winner == 1 else 0]
 
-        next_state = self.grid_to_state(gem_grid, ice_grid, medal_grid, score_medals)
-
-        return next_state
-
-    def legal_moves(self, state):
+    def pick_move(self):
         """
-        Takes in a state, converts it to grids, and returns a list of legal moves
-        where each item is 2 coordinates.
-        item = ((r1,c1),(r2,c2))
-        :param state:
-        :return:
+        Simulates some games and picks a move
+        :return: Picked move
         """
-        print(state)
-        if all(state[9]):
-            gem_grid, _, _, _ = self.state_to_grid(state)
-            legal_moves = moves_three(gem_grid)
-            return legal_moves
+        # Simulate games, builds tree
+        for _ in range(self.game_limit):
+            # Simulate one game
+            self.play()
+
+        # Get the list of all possible moves at this point
+        moves = self.board.legal_moves(self.states[-1])
+
+        if not moves:
+            # If there are no moves return None
+            return None
+        elif len(moves) == 1:
+            # If there is only one possible move return this
+            return moves[0]
         else:
-            return []
+            # Get the last state
+            state = self.states[-1]
+            # Get the statistics associated with all moves
+            stats = [self.statistics.get((state, move)) for move in moves]
+            # How many of these moves had statistics
+            stats_number = sum(1 for stat in stats if stat)
 
-    def is_winner(self, state):
-        """
-        takes in the state and checks if the medals uncovered
-        is equal to the total medals for the level.
-        :param state:
-        :return: 2 for win, 1 for loss, 0 for ongoing
-        """
-        moves_left = state[9][0]
-        medals_left = state[9][1]
-        if medals_left == 0:
-            return 1
-        elif moves_left == 0:
-            return -1
-        else:
-            return 0
-
-    def state_to_grid(self, state):
-        """
-        converts the state (t,bt,i,mp) to 3 grids
-        :param state:
-        :return:
-        """
-        gem_grid = Grid(self.rows, self.cols)
-        ice_grid = Grid(self.rows, self.cols)
-        medal_grid = Grid(self.rows, self.cols)
-
-        for i, j in product(range(self.rows), range(self.cols)):
-            # get = (type, bonus_type)
-            act = 0
-            gem = (state[i][j][0], state[i][j][1], act)
-            ice = state[i][j][2]
-            medal_portion = state[i][j][3]
-
-            gem_grid.grid[i][j] = gem
-            ice_grid.grid[i][j] = ice
-            medal_grid.grid[i][j] = medal_portion
-
-        score_medals = state[9]
-
-        return gem_grid.grid, ice_grid.grid, medal_grid.grid, score_medals
-
-    def grid_to_state(self, gem_grid, ice_grid, medal_grid, score_medals):
-        """
-        converts the 3 grids into a state
-        :param score_medals:
-        :param gem_grid:
-        :param ice_grid:
-        :param medal_grid:
-        :return:
-        """
-        grid = Grid(self.rows, self.cols)
-
-        for i, j in product(range(self.rows), range(self.cols)):
-            item = (gem_grid[i][j][0],
-                    gem_grid[i][j][1],
-                    ice_grid[i][j],
-                    medal_grid[i][j])
-            grid.grid[i][j] = item
-
-        grid.grid.append(score_medals)
-        state = tuple(map(tuple, grid.grid))
-        return state
-
-    def medal_portion_search(self, medal_grid):
-        """
-        Looks for a medal portion and fills in the
-        remaining portions if not done already.
-        :param medal_grid:
-        :return: A state with additional medal portions, or the same
-        """
-        for i, j in product(range(self.rows), range(self.cols)):
-            if medal_grid[i][j] != -1:
-                row_origin, col_origin = self.get_medal_portion_origin(i, j, medal_grid[i][j])
-                medal_grid = self.fill_out_portions(row_origin, col_origin, medal_grid)
-
-        return medal_grid
-
-    def fill_out_portions(self, row, col, medal_grid):
-        """
-        fills out medal grid with portions
-        :param row:
-        :param col:
-        :param medal_grid:
-        :return: returns a grid with additional medal portions
-        """
-
-        for i, j in product(range(2), range(2)):
-            portion = i * 2 + j
-            medal_grid[row + i][col + j] = portion
-
-        return medal_grid
-
-    def get_medal_portion_origin(self, row, col, portion):
-
-        new_row = (portion // 2 * -1) + row
-        new_col = (portion % 2 * -1) + col
-
-        return new_row, new_col
-
-    def count_medals_uncovered(self, ice_grid, medal_grid):
-        """
-        Counts how many medal portions are uncovered
-        when ice is removed and a medal portion exists.
-        :param medal_grid:
-        :param ice_grid:
-        :param state:
-        :return: Returns a state with updated medals uncovered, or same
-        """
-        medals_uncovered = 0
-
-        medal_grid = self.medal_portion_search(medal_grid)
-
-        for i, j in product(range(self.rows), range(self.cols)):
-            portion = medal_grid[i][j]
-
-            if portion == 0 and self.check_uncovered(i, j, ice_grid, medal_grid):
-                medals_uncovered += 1
-
-        return medals_uncovered
-
-    def check_uncovered(self, row, col, ice_grid, medal_grid):
-        for i, j in product(range(2), range(2)):
-            if ice_grid[row + i][col + j] != -1 or medal_grid[row + i][col + j] == -1:
-                return False
-        return True
+            # Either pick the move with the best win rate or one at random depending on if there were enough statistics
+            if random.random() < stats_number / len(stats):
+                # Return move with the best win rate
+                return max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)[0]
+            else:
+                # Return a random move from the moves without statistics
+                return random.choice([move for move, stat in zip(moves, stats) if not stat])
 
 
 if __name__ == '__main__':
-    # get initial state
-    s = PseudoBoard()
-    cs = s.get_state_from_data(2, 16)
-    s.current_state = cs
-    print(s)
+    b = PseudoBoard()
+    states = [b.get_state_from_data(2, 0)]
+    if len(sys.argv) > 1:
+        game_limit, move_limit, c = sys.argv[0], sys.argv[1], sys.argv[2]
+    else:
+        game_limit, move_limit, c = 20, 19, 1.4
 
-    # get legal moves
-    legal_moves = s.legal_moves(cs)
+    mc = MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c)
+    mc.update(states[-1])
 
-    # get next state from move 23
-    move = legal_moves[23]
-    ns = s.next_state(cs, move)
-    print(s.is_winner(ns))
+    total_moves = 20
+    i = 0
+    while i < total_moves:
+        move = mc.pick_move()
+        print(f'move picked: {move}')
+
+        new_state = b.next_state(states[-1], move)
+        states.append(new_state)
+        mc.update(new_state)
+        i += 1
+        # print board

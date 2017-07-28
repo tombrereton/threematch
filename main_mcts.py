@@ -1,7 +1,7 @@
 import sys
 
-from ai.mcts import PseudoBoard
-from ai.mcts_threematch import MonteCarlo
+from ai.mcts import MonteCarlo
+from ai.pseudo_board import PseudoBoard
 from ai.state_parser import StateParser
 from controller.controllers import MouseController, CPUSpinnerController, MonteCarloController
 from events.event_manager import EventManager
