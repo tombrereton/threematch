@@ -1195,3 +1195,26 @@ class Board(SimpleBoard):
         old_file_name = os.path.join(data_dir, self.file_name)
         new_file_name = os.path.join(completed_dir, self.file_name)
         os.rename(old_file_name, new_file_name)
+
+    def get_game_state_tuple(self):
+        gems = self.gem_grid_copy
+        ice = self.ice_grid.grid
+        medals = self.medal_grid.grid
+
+        state = []
+        for i in range(self.rows):
+            row = []
+            for j in range(self.columns):
+                m = -1
+                if self.medal_state[i][j] != -1:
+                    m = self.medal_state[i][j]
+                elif ice[i][j] == -1:
+                    m = medals[i][j]
+                    self.medal_state[i][j] = m
+
+                row.append((gems[i][j][0], gems[i][j][1], ice[i][j], m))
+            state.append(tuple(row))
+
+        state.append((self.moves, self.medals))
+
+        return tuple(state)
