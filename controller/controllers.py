@@ -1,7 +1,7 @@
 import pygame
 from pygame.constants import QUIT, KEYDOWN, K_ESCAPE, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 
-from events.events import TickEvent, SwapGemsRequest, QuitEvent
+from events.events import TickEvent, SwapGemsRequest, QuitEvent, StateEvent
 
 
 class NaiveAIControllerV1:
@@ -38,40 +38,31 @@ class MonteCarloController:
     To do
     """
 
-    def __init__(self, event_manager, monte_carlo_move_finder, state_parser, board):
+    def __init__(self, event_manager, monte_carlo_move_finder, state_parser):
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
         # self.board = board_simulator
         self.move_finder = monte_carlo_move_finder
         self.state_parser = state_parser
-        self.board = board
+        # self.board = board
 
         # ----------------------------------------------------------------------
 
     def notify(self, event):
-        if isinstance(event, TickEvent):
+        if isinstance(event, StateEvent):
             ev = None
-            if self.board.game_state == "waiting_for_input":
-                # if state param not empty get state from event
-                # raw_state = event.state
-                # if raw_state:
-                #     print(raw_state)
-                # parse state
+            current_state = event.state
 
-                # raw_state = self.board.get_game_state()
-                # current_state = self.state_parser.parse_state(raw_state)
-                current_state = self.board.get_game_state_tuple()
+            # instantiate monte carlo object and update to current state
+            mc = self.move_finder
+            mc.update(current_state)
+                # return
 
-                # instantiate monte carlo object and update to current state
-                mc = self.move_finder
-                if not mc.update(current_state):
-                    return
+            # pick move from mcts
+            move = mc.pick_move()
 
-                # pick move from mcts
-                move = mc.pick_move()
-
-                # create swap gems reqest
-                ev = SwapGemsRequest(move)
+            # create swap gems reqest
+            ev = SwapGemsRequest(move)
 
             if ev is not None:
                 self.event_manager.post(ev)

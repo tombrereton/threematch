@@ -9,7 +9,7 @@ from random import randint, choice
 from time import strftime
 
 from events.event_manager import EventManager
-from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent
+from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent, StateEvent
 from events.update_bag import UpdateBag
 from global_variables import *
 
@@ -766,6 +766,8 @@ class Board(SimpleBoard):
         self.init_gem_grid()
         self.init_ice_grid()
         self.init_medal_grid()
+        state_event = StateEvent(self.get_game_state_tuple())
+        self.event_manager.post(state_event)
 
     # ----------------------------------------------------------------------
 
@@ -779,8 +781,8 @@ class Board(SimpleBoard):
                 self.set_swap_locations(event.swap_locations)
         elif isinstance(event, TickEvent):
             # TODO check
-            # if self.game_state != "waiting_for_input":
-            self.get_update()
+            if self.game_state != "waiting_for_input":
+                self.get_update()
 
     def init_gem_grid(self):
         """
@@ -1095,6 +1097,11 @@ class Board(SimpleBoard):
             event = UpdateBagEvent(update_bag)
             self.event_manager.post(event)
             self.game_state = "waiting_for_input"
+
+            # send state to MCTS controller
+            state_event = StateEvent(self.get_game_state_tuple())
+            self.event_manager.post(state_event)
+
             return update_bag
             # ----------------------------------------------------------------------
 
@@ -1197,7 +1204,7 @@ class Board(SimpleBoard):
         os.rename(old_file_name, new_file_name)
 
     def get_game_state_tuple(self):
-        gems = self.gem_grid_copy
+        gems = self.gem_grid.grid
         ice = self.ice_grid.grid
         medals = self.medal_grid.grid
 

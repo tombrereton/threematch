@@ -28,3 +28,7 @@ class UpdateBagEvent(Event):
         self.update_bag = update_bag
 
 
+class StateEvent(Event):
+    def __init__(self, state):
+        self.name = "State Event"
+        self.state = state

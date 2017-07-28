@@ -68,10 +68,9 @@ class MonteCarlo:
         """
         # Add new state to list of states
         if self.states and state[9][0] == self.states[-1][9][0]:
-            return False
-        else:
-            self.states.append(state)
-            return True
+            print('state', state)
+            print('state in list', self.states[-1])
+        self.states.append(state)
 
     def interim_move(self, state):
         """

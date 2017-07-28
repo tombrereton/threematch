@@ -24,18 +24,21 @@ def main():
         game_limit, move_limit, c = 20, 21, 1.4
 
     gui_vars = GUIVariables.from_global()
-    evManager = EventManager(gui_vars)
-    game_board = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT, event_manager=evManager)
+    event_manager = EventManager(gui_vars)
 
-    # ai setup
+    # ai controller setup
     b = PseudoBoard()
-    mcts_cont = MonteCarloController(evManager, MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c),
-                                     StateParser(), game_board)
+    mcts_cont = MonteCarloController(event_manager, MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c),
+                                     StateParser())
+    # mouse controller setup
+    mouse_cont = MouseController(event_manager)
 
-    # ai_cont = NaiveAIControllerV1(evManager, game_board, pick_move)
-    mouse_cont = MouseController(evManager)
-    spinner = CPUSpinnerController(evManager)
-    view = GUI(gui_vars, *game_board.state(), event_manager=evManager)
+    # board setup
+    game_board = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT,
+                       event_manager=event_manager)
+
+    spinner = CPUSpinnerController(event_manager)
+    view = GUI(gui_vars, *game_board.state(), event_manager=event_manager)
 
     spinner.run()
 
