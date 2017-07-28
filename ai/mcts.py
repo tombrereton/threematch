@@ -136,15 +136,9 @@ class MonteCarlo:
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        # TODO: check this reaches the last state
         winner = self.board.is_winner(states[-1])
-        print(len(states), winner)
 
         # Update statistics
-        # for player in self.board.players():
-        #     # Go through all of the games players
-        #     # See if they won
-        #     win = winner == player
         for state, move in visited:
             # Get statistics for this player/state/move
             stat = self.statistics.get((state, move))
@@ -164,12 +158,23 @@ class MonteCarlo:
         :return: Picked move
         """
         # Simulate games, builds tree
-        for _ in range(self.game_limit):
+        for game in range(self.game_limit):
             # Simulate one game
             self.play()
 
         # Get the list of all possible moves at this point
-        moves = self.board.legal_moves(self.states[-1])
+        current_state = self.states[-1]
+        moves = self.board.legal_moves(current_state)
+
+        count = 0
+        print('\nNext move:\n')
+        for move in moves:
+            plays = self.statistics.get((current_state, move))[0]
+            wins = self.statistics.get((current_state, move))[1]
+            win_rate = wins / plays
+            # print(plays, wins)
+            print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
+            count += 1
 
         if not moves:
             # If there are no moves return None
