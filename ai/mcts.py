@@ -9,7 +9,7 @@ from model.game import SimpleBoard
 # TODO: update score when going to next state
 # TODO: keep track of the next state which is sampled from the game logic
 
-class State:
+class PseudoBoard:
     def __init__(self):
         self.current_state = ()
         self.rows = 9
@@ -100,16 +100,21 @@ class State:
         legal_moves = moves_three(gem_grid)
         return legal_moves
 
-    def is_winner(self, state):
+    def is_winner(self, state, moves_made, total_moves, total_medals):
         """
         takes in the state and checks if the medals uncovered
         is equal to the total medals for the level.
+        :param total_medals:
+        :param total_moves:
+        :param moves_made:
         :param state:
         :return: 2 for win, 1 for loss, 0 for ongoing
         """
         medals_uncovered = state[9][1]
-        if medals_uncovered == self.total_medals:
+        if medals_uncovered == total_medals:
             return 1
+        elif moves_made == total_moves:
+            return -1
         else:
             return 0
 
@@ -226,7 +231,7 @@ class State:
 
 if __name__ == '__main__':
     # get initial state
-    s = State()
+    s = PseudoBoard()
     cs = s.get_state_from_data(2, 16)
     s.current_state = cs
     print(s)
@@ -238,4 +243,3 @@ if __name__ == '__main__':
     move = legal_moves[23]
     ns = s.next_state(cs, move)
     print(s.is_winner(ns))
-

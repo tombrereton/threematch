@@ -518,7 +518,7 @@ def test_3_1_get_game_state():
     assert expected_medals == medals
 
 
-def test_3_1_get_game_state():
+def test_3_2_get_game_state():
     """
     The get game state function should
     return all three states as a string in vector form.
@@ -541,7 +541,7 @@ def test_3_1_get_game_state():
     assert game_state == expected_game_state
 
 
-def test_3_2_get_game_state():
+def test_3_3_get_game_state():
     """
     The get game state function should
     return all three states as a string in vector form.
@@ -574,3 +574,6 @@ def test_3_2_get_game_state():
                           '1\t0\t0\t-1\t' + '1\t0\t-1\t-1\t'
 
     assert game_state == expected_game_state
+
+def test_4_1_simulate_next_state():
+    pass

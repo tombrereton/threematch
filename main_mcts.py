@@ -1,6 +1,6 @@
 import sys
 
-from ai.mcts import State
+from ai.mcts import PseudoBoard
 from ai.mcts_threematch import MonteCarlo
 from ai.state_parser import StateParser
 from controller.controllers import MouseController, CPUSpinnerController, MonteCarloController
@@ -28,7 +28,7 @@ def main():
     game_board = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT, event_manager=evManager)
 
     # ai setup
-    b = State()
+    b = PseudoBoard()
     mcts_cont = MonteCarloController(evManager, MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c),
                                      StateParser(), game_board)
 

@@ -7,11 +7,11 @@ import sys
 import time
 from math import log, sqrt
 
-from ai.mcts import State
+from ai.mcts import PseudoBoard
 
 
 class MonteCarlo(object):
-    def __init__(self, board: State, **kwargs):
+    def __init__(self, board: PseudoBoard, **kwargs):
         # Takes an instance of a State and optionally some keyword
         # arguments.  Initializes the list of game states and the
         # statistics tables.
@@ -134,11 +134,11 @@ if __name__ == '__main__':
         timer, max_moves, C = 5, 20, 1.4
     print('timer, max_moves, C:', timer, max_moves, C)
 
-    s = State()
+    s = PseudoBoard()
     # cs = s.get_state_from_data(0, 0)
     # s.current_state = cs
     # print(s)
 
-    mc = MonteCarlo(State(), timer=timer, max_moves=max_moves, C=C)
+    mc = MonteCarlo(PseudoBoard(), timer=timer, max_moves=max_moves, C=C)
     move = mc.get_play()
     print(f'Move from MCTS: {move}')

@@ -2,7 +2,7 @@ import math
 import random
 import sys
 
-from ai.mcts import State
+from ai.mcts import PseudoBoard
 
 
 def pick_move_helper(element):
@@ -42,7 +42,7 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: State, game_limit, move_limit, c):
+    def __init__(self, board: PseudoBoard, game_limit, move_limit, c):
         """
         Constructor for the class
         :param board: Board object containing the game
@@ -192,7 +192,7 @@ class MonteCarlo:
 
 
 if __name__ == '__main__':
-    b = State()
+    b = PseudoBoard()
     states = [b.get_state_from_data(2, 0)]
     if len(sys.argv) > 1:
         game_limit, move_limit, c = sys.argv[0], sys.argv[1], sys.argv[2]
