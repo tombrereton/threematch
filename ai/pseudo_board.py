@@ -1,3 +1,4 @@
+import logging
 import random
 from copy import deepcopy
 from itertools import product
@@ -261,6 +262,7 @@ class PseudoBoard:
             repeat = True
 
         medal_grid_copy = deepcopy(medal_grid)
+        logging.debug(f'Medals remaining: {medals_remaining}')
         while repeat:
             medal_grid_copy = deepcopy(medal_grid)
             possible_medal_coords = [(i, j) for i in range(9) for j in range(9)]
@@ -309,6 +311,22 @@ class PseudoBoard:
 
         medals_remaining = moves_medals[1] - medals_in_grid
         return medal_grid, medals_remaining
+
+    def evaluation_func_simple(self, state):
+        gem_grid, ice_grid, medal_grid, moves_medals = self.state_to_grid(state)
+
+        medals_remaining = moves_medals[1]
+        # total_portions = 4 * medals_remaining
+        # TODO make this work for any number of portions
+        total_portions = 12
+
+        portion_count = 0
+        for i, j in product(range(9), range(9)):
+            if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
+                portion_count += 1
+
+        # print('Portion count: ', portion_count, ', Total portions: ', total_portions)
+        return portion_count / total_portions
 
 
 def check_medal_boundaries(y_coord: int, x_coord: int, medal_grid):

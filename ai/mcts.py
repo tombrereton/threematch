@@ -160,7 +160,7 @@ class MonteCarlo:
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        winner = self.board.is_winner(states[-1])
+        winner = self.board.evaluation_func_simple(states[-1])
         p(f'Winner: {winner}')
 
         # Update statistics
@@ -170,12 +170,12 @@ class MonteCarlo:
             if stat:
                 # Statistics exist, increment plays
                 stat[0] += 1
-                if winner == 1:
+                if winner != 0:
                     # If this was a win increment wins
-                    stat[1] += 1
+                    stat[1] += winner
             else:
                 # If statistics did not exist add them now
-                self.statistics[(old_state, move)] = [1, 1 if winner == 1 else 0]
+                self.statistics[(old_state, move)] = [1, winner if winner != 0 else 0]
 
     def pick_move(self):
         """
@@ -200,7 +200,8 @@ class MonteCarlo:
             if play_wins:
                 plays, wins = play_wins
                 win_rate = wins / plays
-                print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
+                print('Count: {}, Move: {}, Win rate: {:.3f}'.format(count,move, win_rate))
+                # print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
                 count += 1
 
         if not moves:
