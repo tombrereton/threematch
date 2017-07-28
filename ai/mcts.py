@@ -96,9 +96,13 @@ class PseudoBoard:
         :param state:
         :return:
         """
-        gem_grid, _, _, _ = self.state_to_grid(state)
-        legal_moves = moves_three(gem_grid)
-        return legal_moves
+        print(state)
+        if all(state[9]):
+            gem_grid, _, _, _ = self.state_to_grid(state)
+            legal_moves = moves_three(gem_grid)
+            return legal_moves
+        else:
+            return []
 
     def is_winner(self, state):
         """

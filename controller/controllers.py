@@ -57,8 +57,10 @@ class MonteCarloController:
                 # if raw_state:
                 #     print(raw_state)
                 # parse state
-                raw_state = self.board.get_game_state()
-                current_state = self.state_parser.parse_state(raw_state)
+
+                # raw_state = self.board.get_game_state()
+                # current_state = self.state_parser.parse_state(raw_state)
+                current_state = self.board.get_game_state_tuple()
 
                 # instantiate monte carlo object and update to current state
                 mc = self.move_finder
