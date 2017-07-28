@@ -76,7 +76,7 @@ class MonteCarlo:
         :return: Move to make during simulation
         """
         # Get the list of all possible moves at this point
-        moves = list(self.board.legal_moves(state))
+        moves = self.board.legal_moves(state)
 
         if not moves:
             # If there are no moves return None
@@ -145,15 +145,12 @@ class MonteCarlo:
             if stat:
                 # Statistics exist, increment plays
                 stat[0] += 1
-                if winner == 2:
+                if winner == 1:
                     # If this was a win increment wins
                     stat[1] += 1
-                elif winner == 0:
-                    # If this was a loss decrement wins
-                    stat[1] -= 1
             else:
                 # If statistics did not exist add them now
-                self.statistics[(state, move)] = [1, 1 if winner else 0]
+                self.statistics[(state, move)] = [1, 1 if winner == 1 else 0]
 
     def pick_move(self):
         """
@@ -166,7 +163,7 @@ class MonteCarlo:
             self.play()
 
         # Get the list of all possible moves at this point
-        moves = list(self.board.legal_moves(self.states[-1]))
+        moves = self.board.legal_moves(self.states[-1])
 
         if not moves:
             # If there are no moves return None

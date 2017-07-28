@@ -96,24 +96,26 @@ class PseudoBoard:
         :param state:
         :return:
         """
-        gem_grid, _, _, _ = self.state_to_grid(state)
-        legal_moves = moves_three(gem_grid)
-        return legal_moves
+        print(state)
+        if all(state[9]):
+            gem_grid, _, _, _ = self.state_to_grid(state)
+            legal_moves = moves_three(gem_grid)
+            return legal_moves
+        else:
+            return []
 
-    def is_winner(self, state, moves_made, total_moves, total_medals):
+    def is_winner(self, state):
         """
         takes in the state and checks if the medals uncovered
         is equal to the total medals for the level.
-        :param total_medals:
-        :param total_moves:
-        :param moves_made:
         :param state:
         :return: 2 for win, 1 for loss, 0 for ongoing
         """
-        medals_uncovered = state[9][1]
-        if medals_uncovered == total_medals:
+        moves_left = state[9][0]
+        medals_left = state[9][1]
+        if medals_left == 0:
             return 1
-        elif moves_made == total_moves:
+        elif moves_left == 0:
             return -1
         else:
             return 0
