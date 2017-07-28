@@ -38,13 +38,10 @@ class MonteCarloController:
     To do
     """
 
-    def __init__(self, event_manager, monte_carlo_move_finder, state_parser):
+    def __init__(self, event_manager, monte_carlo_move_finder):
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
-        # self.board = board_simulator
         self.move_finder = monte_carlo_move_finder
-        self.state_parser = state_parser
-        # self.board = board
 
         # ----------------------------------------------------------------------
 
@@ -53,16 +50,16 @@ class MonteCarloController:
             ev = None
             current_state = event.state
 
-            # instantiate monte carlo object and update to current state
+            # update monte carlo object with current state
             mc = self.move_finder
             mc.update(current_state)
-                # return
 
             # pick move from mcts
             move = mc.pick_move()
 
-            # create swap gems reqest
-            ev = SwapGemsRequest(move)
+            if move:
+                # create swap gems reqest
+                ev = SwapGemsRequest(move)
 
             if ev is not None:
                 self.event_manager.post(ev)
@@ -75,9 +72,10 @@ class MouseController:
     or to control the Pygame display directly, as with the QuitEvent
     """
 
-    def __init__(self, event_manager):
+    def __init__(self, event_manager, gui_vars):
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
+        self.gui_vars = gui_vars
         self.is_second_click = False
         self.first_row = -1
         self.first_column = -1
@@ -96,7 +94,7 @@ class MouseController:
                     # First click, save coordinates
                     x = event.pos[0]
                     y = event.pos[1]
-                    row, column = self.event_manager.gui_vars.pixel_to_grid(y, x)
+                    row, column = self.gui_vars.pixel_to_grid(y, x)
 
                     if row == -1 or column == -1:
                         # clicked not on grid
@@ -111,7 +109,7 @@ class MouseController:
                     # Second click, create event object to send
                     x = event.pos[0]
                     y = event.pos[1]
-                    row, column = self.event_manager.gui_vars.pixel_to_grid(y, x)
+                    row, column = self.gui_vars.pixel_to_grid(y, x)
                     if row == -1 or column == -1:
                         # clicked not on grid
                         self.is_second_click = False

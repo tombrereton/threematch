@@ -2,8 +2,7 @@ class EventManager:
     """this object is responsible for coordinating most communication
     between the Model, View, and Controller."""
 
-    def __init__(self, gui_vars):
-        self.gui_vars = gui_vars
+    def __init__(self):
         from weakref import WeakKeyDictionary
         self.listeners = WeakKeyDictionary()
         self.eventQueue = []

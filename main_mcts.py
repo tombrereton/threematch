@@ -2,7 +2,6 @@ import sys
 
 from ai.mcts import MonteCarlo
 from ai.pseudo_board import PseudoBoard
-from ai.state_parser import StateParser
 from controller.controllers import MouseController, CPUSpinnerController, MonteCarloController
 from events.event_manager import EventManager
 from global_variables import *
@@ -21,25 +20,29 @@ def main():
     if len(sys.argv) > 1:
         game_limit, move_limit, c = sys.argv[0], sys.argv[1], sys.argv[2]
     else:
-        game_limit, move_limit, c = 20, 21, 1.4
+        game_limit, move_limit, c = 100, 21, 1.4
 
+    #
     gui_vars = GUIVariables.from_global()
-    event_manager = EventManager(gui_vars)
+    event_manager = EventManager()
 
     # ai controller setup
-    b = PseudoBoard()
-    mcts_cont = MonteCarloController(event_manager, MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c),
-                                     StateParser())
+    pseudo_board = PseudoBoard()
+    mcts_cont = MonteCarloController(event_manager,
+                                     MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit, c=c))
+
     # mouse controller setup
-    mouse_cont = MouseController(event_manager)
+    mouse_cont = MouseController(event_manager, gui_vars)
 
     # board setup
     game_board = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT,
                        event_manager=event_manager)
 
-    spinner = CPUSpinnerController(event_manager)
+    # view setup
     view = GUI(gui_vars, *game_board.state(), event_manager=event_manager)
 
+    # spinner setup
+    spinner = CPUSpinnerController(event_manager)
     spinner.run()
 
 
