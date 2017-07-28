@@ -60,6 +60,7 @@ class PseudoBoard:
         board.ice_grid.grid = ice_grid
         board.medal_grid.grid = medal_grid
         orig_medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
+        print(f'orig_medals_uncovered: {orig_medals_uncovered}')
 
         board.set_swap_locations(action)
         board.swap_gems()
@@ -83,6 +84,7 @@ class PseudoBoard:
         medal_grid = board.medal_grid.grid
 
         new_medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
+        print(f'new_medals_uncovered: {new_medals_uncovered}')
         # score_medals = [score_medals_init[0], medals_uncovered]
         moves_medals = (state[9][0] - 1, state[9][1] - (new_medals_uncovered - orig_medals_uncovered))
 

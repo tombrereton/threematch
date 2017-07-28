@@ -71,6 +71,7 @@ class MonteCarlo:
             print('state', state)
             print('state in list', self.states[-1])
         self.states.append(state)
+        print('State appended')
 
     def interim_move(self, state):
         """
@@ -81,12 +82,16 @@ class MonteCarlo:
         # Get the list of all possible moves at this point
         moves = self.board.legal_moves(state)
 
+        print('Choosing interim move')
+
         if not moves:
             # If there are no moves return None
-            return None
+            print('No moves to chose from')
+            move = None
         elif len(moves) == 1:
             # If there is only one possible move return this
-            return moves[0]
+            print('Only one move')
+            move = moves[0]
         else:
             # There are multiple moves to choose from
             # Get the statistics associated with all these moves
@@ -94,10 +99,15 @@ class MonteCarlo:
 
             if all(stats):
                 # If statistics exist for all these moves use UCB to pick the move
-                return max(zip(moves, stats), key=interim_move_helper(stats, self.c))[0]
+                print('Move picked from stats')
+                move = max(zip(moves, stats), key=interim_move_helper(stats, self.c))[0]
             else:
                 # If not then pick a move at random from the unexplored moves
-                return random.choice([move for move, stat in zip(moves, stats) if not stat])
+                print('Move picked at random from moves with no stats')
+                move = random.choice([move for move, stat in zip(moves, stats) if not stat])
+
+        print(f'Move: {move}')
+        return move
 
     def play(self):
         """
@@ -109,8 +119,11 @@ class MonteCarlo:
         # print('start length', len(states))
         # Get the last state
         state = states[-1]
+        print(f'Medals: {state[9][1]}')
         # Create and empty set for the state/move pairs
         visited = set()
+
+        print('Starting simulation')
 
         # This is used to only expand the first new state/move
         expand = True
@@ -120,7 +133,7 @@ class MonteCarlo:
             if move is None:
                 # No valid moves available, game is over
                 # print('move limit', self.move_limit)
-                # print(_, state[9][0])
+                print('No moves available, terminal game state')
                 break
             if expand:
                 # Still expanding, add this to visited set
@@ -138,7 +151,7 @@ class MonteCarlo:
         # 1 == win, 0 == loss
         # TODO: check this reaches the last state
         winner = self.board.is_winner(states[-1])
-        print(len(states), winner)
+        print(f'Winner: {winner}')
 
         # Update statistics
         # for player in self.board.players():
@@ -168,15 +181,19 @@ class MonteCarlo:
             # Simulate one game
             self.play()
 
+        print('Picking a move')
+
         # Get the list of all possible moves at this point
         moves = self.board.legal_moves(self.states[-1])
 
         if not moves:
             # If there are no moves return None
-            return None
+            print('No moves to choose from')
+            move = None
         elif len(moves) == 1:
             # If there is only one possible move return this
-            return moves[0]
+            print('Only one move')
+            move =  moves[0]
         else:
             # Get the last state
             state = self.states[-1]
@@ -185,13 +202,21 @@ class MonteCarlo:
             # How many of these moves had statistics
             stats_number = sum(1 for stat in stats if stat)
 
+            print(f'Possible moves: {len(stats)} (with statistics: {stats_number})')
+
             # Either pick the move with the best win rate or one at random depending on if there were enough statistics
             if random.random() < stats_number / len(stats):
                 # Return move with the best win rate
-                return max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)[0]
+                move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
+                print('Move picked from stats')
+                print(f'Win rate: {stat[1] / stat[0]}')
             else:
                 # Return a random move from the moves without statistics
-                return random.choice([move for move, stat in zip(moves, stats) if not stat])
+                move = random.choice([move for move, stat in zip(moves, stats) if not stat])
+                print('Move picked at random')
+
+        print(f'Move: {move}')
+        return move
 
 
 if __name__ == '__main__':
