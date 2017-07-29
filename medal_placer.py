@@ -90,7 +90,7 @@ mg = [[-1 for _ in range(9)] for _ in range(9)]
 # Put a 5 x 2 ice section in at (0, 1)
 ig[0][1:6] = ig[1][1:6] = (0,) * 5
 
-# Put a partialy visible medal at (0, 0)
+# Put a partially visible medal at (0, 0)
 mg[0][0] = 0
 mg[1][0] = 2
 
