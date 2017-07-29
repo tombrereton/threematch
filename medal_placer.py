@@ -17,13 +17,20 @@ def medal_grid(ice_grid, medal_grid, medal_number):
             for i, j in product(range(2), range(2)):
                 foo[i][j] = 2 * i + j
 
+    to_check = list(itertools.product(range(rows - 1), range(cols - 1)))
+
+    for I, J in reversed(to_check):
+        ice_check = not all(ice_grid[I + i][J + j] == 0 for i, j in product(range(2), range(2)))
+        if ice_check:
+            to_check.remove((I, J))
+
     while True:
         added = 0
         bar = copy.deepcopy(foo)
-        to_check = list(itertools.product(range(rows - 1), range(cols - 1)))
+        to_check_copy = (*to_check,)
 
-        while to_check:
-            I, J = to_check.pop(random.randrange(len(to_check)))
+        while to_check_copy:
+            I, J = to_check_copy.pop(random.randrange(len(to_check_copy)))
 
             ice_check = (ice_grid[I + i][J + j] == 0 for i, j in product(range(2), range(2)))
             medal_check = (bar[I + i][J + j] == -1 for i, j in product(range(2), range(2)))
