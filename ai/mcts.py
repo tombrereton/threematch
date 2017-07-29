@@ -200,7 +200,7 @@ class MonteCarlo:
             if play_wins:
                 plays, wins = play_wins
                 win_rate = wins / plays
-                print('Count: {}, Move: {}, Win rate: {:.3f}'.format(count,move, win_rate))
+                print('Count: {}, Move: {}, Win rate: {:.3f}'.format(count, move, win_rate))
                 # print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
                 count += 1
 
@@ -226,14 +226,13 @@ class MonteCarlo:
             if random.random() < stats_number / len(stats):
                 # Return move with the best win rate
                 move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
-                p('Move picked from stats')
-                p(f'Win rate: {stat[1] / stat[0]}')
+                print('\nStats based move: {}, Win rate: {:.3}'.format(move, stat[1] / stat[0]))
             else:
                 # Return a random move from the moves without statistics
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
-                p('Move picked at random')
+                print('\nRandom move: {}'.format(move))
 
-        print('Move: ', move)
+        # print('Move: ', move)
         return move
 
 
