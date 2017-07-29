@@ -204,6 +204,7 @@ class MonteCarlo:
                 # print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
                 count += 1
 
+        print(f'Medals remaining: {current_state[9][1]}')
         if not moves:
             # If there are no moves return None
             p('No moves to choose from')
