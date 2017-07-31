@@ -105,7 +105,7 @@ class MonteCarlo:
         else:
             # There are multiple moves to choose from
             # Get the statistics associated with all these moves
-            stats = [self.statistics.get((state, m)) for m in moves]
+            stats = [self.statistics.get(m) for m in moves]
 
             if all(stats):
                 # If statistics exist for all these moves use UCB to pick the move
@@ -136,8 +136,7 @@ class MonteCarlo:
 
         p('Starting simulation')
 
-        # This is used to only expand the first new state/move
-        expand = True
+        first_move = None
         for move_count in range(self.move_limit):
             # Get the list of all possible moves at this point
             move = self.interim_move(state)
@@ -148,7 +147,7 @@ class MonteCarlo:
                 break
             if move_count == 0:
                 # Still expanding, add this to visited set
-                visited.add((old_state, move))
+                first_move = move
             # if expand and not self.statistics.get((state, move)):
             #     # New state/move pair encountered, stop expanding
             #     expand = False
@@ -164,24 +163,23 @@ class MonteCarlo:
         p(f'Winner: {winner}')
 
         # Update statistics
-        for old_state, move in visited:
-            # Get statistics for this player/state/move
-            stat = self.statistics.get((old_state, move))
-            if stat:
-                # Statistics exist, increment plays
-                stat[0] += 1
-                if winner == 1:
-                    # If this was a win increment wins
-                    stat[1] += 1
-            else:
-                # If statistics did not exist add them now
-                self.statistics[(old_state, move)] = [1, 1 if winner == 1 else 0]
+        stat = self.statistics.get(first_move)
+        if stat:
+            # Statistics exist, increment plays
+            stat[0] += 1
+            if winner == 1:
+                # If this was a win increment wins
+                stat[1] += 1
+        else:
+            # If statistics did not exist add them now
+            self.statistics[first_move] = [1, 1 if winner == 1 else 0]
 
     def pick_move(self):
         """
         Simulates some games and picks a move
         :return: Picked move
         """
+        self.statistics = {}
         # Simulate games, builds tree
         for _ in range(self.game_limit):
             # Simulate one game
@@ -196,7 +194,7 @@ class MonteCarlo:
         count = 0
         print('\nNext move:')
         for move in moves:
-            play_wins = self.statistics.get((current_state, move))
+            play_wins = self.statistics.get(move)
             if play_wins:
                 plays, wins = play_wins
                 win_rate = wins / plays
@@ -212,10 +210,8 @@ class MonteCarlo:
             p('Only one move')
             move = moves[0]
         else:
-            # Get the last state
-            state = self.states[-1]
             # Get the statistics associated with all moves
-            stats = [self.statistics.get((state, move)) for move in moves]
+            stats = [self.statistics.get(move) for move in moves]
             # How many of these moves had statistics
             stats_number = sum(1 for stat in stats if stat)
 
