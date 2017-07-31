@@ -1,8 +1,9 @@
 import sys
 
+from ai.evaluation_functions import EvaluationFunction
 from ai.mcts import MonteCarlo
-from ai.pseudo_board import PseudoBoard
 from ai.policies import AllPolicy
+from ai.pseudo_board import PseudoBoard
 from controller.controllers import MouseController, CPUSpinnerController, MonteCarloController
 from events.event_manager import EventManager
 from global_variables import *
@@ -29,8 +30,10 @@ def main():
 
     # ai controller setup
     pseudo_board = PseudoBoard()
+    eval_function = EvaluationFunction(pseudo_board)
     mcts_cont = MonteCarloController(event_manager,
-                                     MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit, c=c, policy=AllPolicy()))
+                                     MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit, c=c,
+                                                policy=AllPolicy(), eval_function=eval_function))
 
     # mouse controller setup
     mouse_cont = MouseController(event_manager, gui_vars)
