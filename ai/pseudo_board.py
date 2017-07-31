@@ -1,10 +1,9 @@
-import random
 from copy import deepcopy
 from itertools import product
 
+from ai.medal_placer import medal_grid_filler
 from ai.move_finder import moves_three
 from ai.state_parser import StateParser
-from ai.medal_placer import medal_grid_filler
 from model.game import Grid
 from model.game import SimpleBoard
 
@@ -243,57 +242,6 @@ class PseudoBoard:
         return True
 
     def simulate_medals(self, state):
-        """
-        read in state.
-        Return state with random medal locations
-        :param remaining_moves_medals:
-        :param medal_grid:
-        :param ice_grid:
-        :param state:
-        :return:
-        """
-        gem_grid, ice_grid, old_medal_grid, moves_medals = self.state_to_grid(state)
-
-        medal_grid, medals_remaining = self.medal_simulation_count(old_medal_grid, moves_medals)
-
-        if medals_remaining == 0:
-            repeat = False
-        else:
-            repeat = True
-
-        medal_grid_copy = deepcopy(medal_grid)
-        while repeat:
-            medal_grid_copy = deepcopy(medal_grid)
-            possible_medal_coords = [(i, j) for i in range(9) for j in range(9)]
-            new_medals_remaining = medals_remaining
-
-            while new_medals_remaining != 0:
-                choice = random.randrange(len(possible_medal_coords))
-                r, c = possible_medal_coords[choice]
-
-                if ice_grid[r][c] == -1:
-                    possible_medal_coords.remove((r, c))
-                elif medal_grid_copy[r][c] != -1:
-                    possible_medal_coords.remove((r, c))
-                elif check_medal_boundaries(r, c, medal_grid_copy):
-                    # elif, there is ice and no medal portion at r,c, add medal to r,c
-                    medal_grid_copy = add_medal(r, c, medal_grid_copy)
-                    new_medals_remaining -= 1
-                else:
-                    possible_medal_coords.remove((r, c))
-
-                if new_medals_remaining == 0:
-                    repeat = False
-
-                if not possible_medal_coords:
-                    break
-                    # repeat = True
-
-        state = self.grid_to_state(gem_grid, ice_grid, medal_grid_copy, moves_medals)
-        self.test_print(ice_grid, old_medal_grid, medal_grid_copy)
-        return state
-
-    def simulate_medals(self, state):
         gem_grid, ice_grid, partial_medal_grid, moves_medals = self.state_to_grid(state)
         full_medal_grid = medal_grid_filler(ice_grid, partial_medal_grid, moves_medals[1]).__next__()
         state = self.grid_to_state(gem_grid, ice_grid, full_medal_grid, moves_medals)
@@ -325,46 +273,6 @@ class PseudoBoard:
 
         medals_remaining = moves_medals[1] - medals_in_grid
         return medal_grid, medals_remaining
-
-
-def check_medal_boundaries(y_coord: int, x_coord: int, medal_grid):
-    """
-    Method to check is a medal can be added at a certain location
-    :param medal_grid:
-    :param y_coord: y coordinate to check (top left of medal)
-    :param x_coord: x coordinate to check (top left of medal)
-    :return: None
-    """
-    rows = 9
-    columns = 9
-    if x_coord < columns - 1 and y_coord < rows - 1:
-        for i in range(2):
-            for j in range(2):
-                if medal_grid[y_coord + i][x_coord + j] != -1:
-                    return False
-        return True
-    return False
-
-
-def add_medal(row: int, column: int, medal_grid):
-    """
-    Method to add a medal (four medal portions) to the grid. The medal
-    portions will appear like the following:
-
-    |0|1|
-    -----
-    |2|3|
-
-    :param row: y coordinate to add medal at (top left of medal)
-    :param column: x coordinate to add beat at (top left of medal)
-    :return: None
-    """
-    for i in range(2):
-        for j in range(2):
-            portion = j + 2 * i
-            medal_grid[row + i][column + j] = portion
-
-    return medal_grid
 
 
 if __name__ == '__main__':
