@@ -4,6 +4,7 @@ from itertools import product
 
 from ai.move_finder import moves_three
 from ai.state_parser import StateParser
+from ai.medal_placer import medal_grid_filler
 from model.game import Grid
 from model.game import SimpleBoard
 
@@ -289,7 +290,22 @@ class PseudoBoard:
                     # repeat = True
 
         state = self.grid_to_state(gem_grid, ice_grid, medal_grid_copy, moves_medals)
+        self.test_print(ice_grid, old_medal_grid, medal_grid_copy)
         return state
+
+    def simulate_medals(self, state):
+        gem_grid, ice_grid, partial_medal_grid, moves_medals = self.state_to_grid(state)
+        full_medal_grid = medal_grid_filler(ice_grid, partial_medal_grid, moves_medals[1]).__next__()
+        state = self.grid_to_state(gem_grid, ice_grid, full_medal_grid, moves_medals)
+
+        return state
+
+    def test_print(self, ice_grid, partial_medal_grid, full_medal_grid):
+        print('-' * 9 + '+' + '-' * 9 + '+' + '-' * 9)
+        for ice_row, pm_row, fm_row in zip(ice_grid, partial_medal_grid, full_medal_grid):
+            print(''.join('#' if ice_el != -1 else ' ' for ice_el in ice_row) + '|' +
+                  ''.join('#' if pm_el != -1 else ' ' for pm_el in pm_row) + '|' +
+                  ''.join('#' if fm_el != -1 else ' ' for fm_el in fm_row))
 
     def medal_simulation_count(self, old_medal_grid, moves_medals):
 

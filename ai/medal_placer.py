@@ -4,20 +4,19 @@ import copy
 from itertools import product
 
 
-def medal_grid_filler(ice_grid: list, medal_grid: list, medal_number: int):
+def medal_grid_filler(ice_grid: list, foo: list, medal_number: int):
     """
     Fills in a medal grid
     :param ice_grid: Grid of ice
-    :param medal_grid: Partial medal grid, only uncovered medals will show
+    :param foo: Partial medal grid, only uncovered medals will show
     :param medal_number: Number of medals that need to be in the grid
     :return: Filled medal grid
     """
-    # Make a copy of medal_grid
-    foo = copy.deepcopy(medal_grid)
-    
+
     # If there are no medals return now
     if not medal_number:
-        return foo
+        yield foo
+        return
 
     # Get the number of rows
     rows = len(ice_grid)
@@ -33,8 +32,12 @@ def medal_grid_filler(ice_grid: list, medal_grid: list, medal_number: int):
         portion = foo[r][c]
         # Check if this is a medal portion
         if portion != -1:
+            # Don't count existing medals
+            if all(foo[r + i][c + j] == 2 * i + j for i, j in product(range(2), range(2))):
+                medals_existing -= 1
+
             # Only want to fill each medal once so check if this is the bottom right as this is encountered last
-            if portion == 3:
+            elif portion == 3:
                 # This is the bottom right
                 # Increment the medals_existing count
                 medals_existing += 1
@@ -44,7 +47,8 @@ def medal_grid_filler(ice_grid: list, medal_grid: list, medal_number: int):
                 # Check if all the medals have been added yet
                 if medals_existing == medal_number:
                     # If so return the new medal grid
-                    return foo
+                    yield foo
+                    return
             else:
                 # This is not the bottom right, set the bottom right so we encounter it later
                 # Find the bottom right of the medal and set correctly
@@ -70,6 +74,7 @@ def medal_grid_filler(ice_grid: list, medal_grid: list, medal_number: int):
 
     # Loop to place remaining medals
     while True:
+        # print('looping')
         # Record how many of the missing medals have been added
         added = 0
         # Copy the medals grid
@@ -95,7 +100,8 @@ def medal_grid_filler(ice_grid: list, medal_grid: list, medal_number: int):
                 # Check if all the medals have been added yet
                 if medals_existing + added == medal_number:
                     # If so return the new medal grid
-                    return bar
+                    yield bar
+                    break
 
 if __name__ == '__main__':
     # Empty ice grid
@@ -115,4 +121,4 @@ if __name__ == '__main__':
     # Print partial medal grid
     print(mg)
     # Print filled medal grid
-    print(medal_grid_filler(ig, mg, 3))
+    print(medal_grid_filler(ig, mg, 3).__next__())
