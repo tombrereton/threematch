@@ -52,19 +52,21 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: PseudoBoard, game_limit, move_limit, c):
+    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy):
         """
         Constructor for the class
         :param board: Board object containing the game
         :param game_limit: The number of games to play per move choice
         :param move_limit: Maximum depth to play to
         :param c: Parameter to control exploration
+        :param policy: Policy object to use
         """
         # Set field variables
         self.board = board
         self.game_limit = game_limit
         self.move_limit = move_limit
         self.c = c
+        self.policy = policy
         # Initialise list of states
         self.states = []
         # Initialise dictionary of statistics
@@ -90,7 +92,8 @@ class MonteCarlo:
         :return: Move to make during simulation
         """
         # Get the list of all possible moves at this point
-        moves = self.board.legal_moves(state)
+        # moves = self.board.legal_moves(state)
+        moves = self.policy.moves(state)
 
         p('Choosing interim move')
 
@@ -189,7 +192,8 @@ class MonteCarlo:
 
         # Get the list of all possible moves at this point
         current_state = self.states[-1]
-        moves = self.board.legal_moves(current_state)
+        # moves = self.board.legal_moves(current_state)
+        moves = self.policy.moves(current_state)
 
         count = 0
         print('\nNext move:')

@@ -81,7 +81,7 @@ class Swapped(Grid):
         # Gem at other swapped location if swapped location was given...
         if [i, j] in self.swapped:
             k = self.swapped.index([i, j])
-            return self.grid[self.swapped[1 - k][0]][self.swapped[1 - k][1]]
+            return super().get_gem(self.swapped[1 - k][0], self.swapped[1 - k][1])
         # ... if not call method from superclass
         else:
             return super().get_gem(i, j)
@@ -161,7 +161,7 @@ def moves_three(grid: list):
             # Get the coordinates in this section of three
             to_check = [(i + c, j) if k == 0 else (i, j + c) for c in range(3)]
             # Get the types in this section
-            types = [grid[i][j][0] for i, j in to_check]
+            types = [grid[i][j] for i, j in to_check]
             # Count the occurrences of each type 
             c = Counter(types).most_common()
             # If there are 2 types then must be two of one type, one of another
@@ -181,7 +181,7 @@ def moves_three(grid: list):
                 # Iterate through these locations
                 for y2, x2 in surround:
                     # If a major_type gem is present this can be used to make a match
-                    if grid[y2][x2][0] == major_type and ((y2, x2), (y1, x1)) not in moves:
+                    if grid[y2][x2] == major_type and ((y2, x2), (y1, x1)) not in moves:
                         # Check move not already mound
                         if ((y2, x2), (y1, x1)) not in moves and ((y1, x1), (y2, x2)) not in moves:
                             # Add moves to move list
@@ -201,7 +201,7 @@ def p(grid: list):
     :param grid: Grid to print
     :return: None
     """
-    print('\n'.join([''.join([str(el) for el in row]) for row in grid]), end='\n\n')
+    print('\n'.join([''.join([str(el[0]) for el in row]) for row in grid]), end='\n\n')
 
 
 def time_test(grid: list, n: int):
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     n_grid = int(sys.argv[1]) if 1 < len(sys.argv) else 5
     # Generate a grid with no matches (caution with large grid sizes, may run for a long time)
     while True:
-        g = [[random.randrange(6) for _ in range(n_grid)] for _ in range(n_grid)]
+        g = [[[random.randrange(6)] for _ in range(n_grid)] for _ in range(n_grid)]
         if not Grid(g).match_check():
             p(g)
             break
