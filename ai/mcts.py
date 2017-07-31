@@ -172,7 +172,7 @@ class MonteCarlo:
                 stat[1] += 1
         else:
             # If statistics did not exist add them now
-            self.statistics[first_move] = [1, 1 if winner == 1 else 0]
+            self.statistics[first_move] = [1, winner if winner != 0 else 0]
 
     def pick_move(self):
         """
@@ -219,7 +219,7 @@ class MonteCarlo:
             p(f'Possible moves: {len(stats)} (with statistics: {stats_number})')
 
             # Either pick the move with the best win rate or one at random depending on if there were enough statistics
-            if random.random() < stats_number / len(stats):
+            if len(stats):
                 # Return move with the best win rate
                 move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
                 print('\nStats based move: {}, Win rate: {:.3}'.format(move, stat[1] / stat[0]))
