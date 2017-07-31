@@ -58,7 +58,7 @@ class MonteCarloController:
             move = mc.pick_move()
 
             if move:
-                # create swap gems reqest
+                # create swap gems request
                 ev = SwapGemsRequest(move)
 
             if ev is not None:

@@ -159,7 +159,7 @@ class MonteCarlo:
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        winner = self.board.is_winner(states[-1])
+        winner = self.board.evaluation_func_simple(states[-1])
         p(f'Winner: {winner}')
 
         # Update statistics
@@ -198,9 +198,10 @@ class MonteCarlo:
             if play_wins:
                 plays, wins = play_wins
                 win_rate = wins / plays
-                print('Count: ', count, ', Move: ', move, ', Win rate:', win_rate)
+                print('Count: {}, Move: {}, Win rate: {:.3f}'.format(count, move, win_rate))
                 count += 1
 
+        print(f'Medals remaining: {current_state[9][1]}')
         if not moves:
             # If there are no moves return None
             p('No moves to choose from')
@@ -221,14 +222,13 @@ class MonteCarlo:
             if random.random() < stats_number / len(stats):
                 # Return move with the best win rate
                 move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
-                p('Move picked from stats')
-                p(f'Win rate: {stat[1] / stat[0]}')
+                print('\nStats based move: {}, Win rate: {:.3}'.format(move, stat[1] / stat[0]))
             else:
                 # Return a random move from the moves without statistics
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
-                p('Move picked at random')
+                print('\nRandom move: {}'.format(move))
 
-        print('Move: ', move)
+        # print('Move: ', move)
         return move
 
 

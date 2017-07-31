@@ -274,6 +274,22 @@ class PseudoBoard:
         medals_remaining = moves_medals[1] - medals_in_grid
         return medal_grid, medals_remaining
 
+    def evaluation_func_simple(self, state):
+        gem_grid, ice_grid, medal_grid, moves_medals = self.state_to_grid(state)
+
+        medals_remaining = moves_medals[1]
+        # total_portions = 4 * medals_remaining
+        # TODO make this work for any number of portions
+        total_portions = 12
+
+        portion_count = 0
+        for i, j in product(range(9), range(9)):
+            if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
+                portion_count += 1
+
+        # print('Portion count: ', portion_count, ', Total portions: ', total_portions)
+        return portion_count / total_portions
+
 
 if __name__ == '__main__':
     # get initial state
