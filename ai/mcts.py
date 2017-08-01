@@ -1,7 +1,5 @@
 import math
 import random
-import sys
-
 from ai.pseudo_board import PseudoBoard
 from ai.state_converter import start_state
 
@@ -53,7 +51,7 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy):
+    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy, eval_function):
         """
         Constructor for the class
         :param board: Board object containing the game
@@ -68,6 +66,7 @@ class MonteCarlo:
         self.move_limit = move_limit
         self.c = c
         self.policy = policy
+        self.eval_function = eval_function
         # Initialise list of states
         self.state = None
         # Initialise dictionary of statistics
@@ -154,7 +153,7 @@ class MonteCarlo:
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        winner = self.board.evaluation_func_simple(state)
+        winner = self.eval_function.evaluation_func_simple(state)
         p(f'Winner: {winner}')
 
         # Update statistics
@@ -226,27 +225,3 @@ class MonteCarlo:
 
         # print('Move: ', move)
         return move
-
-
-if __name__ == '__main__':
-    b = PseudoBoard()
-    states = [b.get_state_from_data(2, 0)]
-    if len(sys.argv) > 1:
-        game_limit, move_limit, c = sys.argv[0], sys.argv[1], sys.argv[2]
-    else:
-        game_limit, move_limit, c = 20, 19, 1.4
-
-    mc = MonteCarlo(b, game_limit=game_limit, move_limit=move_limit, c=c)
-    mc.update(states[-1])
-
-    total_moves = 20
-    i = 0
-    while i < total_moves:
-        move = mc.pick_move()
-        print(f'move picked: {move}')
-
-        new_state = b.next_state(states[-1], move)
-        states.append(new_state)
-        mc.update(new_state)
-        i += 1
-        # print board

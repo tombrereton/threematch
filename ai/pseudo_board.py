@@ -6,9 +6,6 @@ from ai.state_parser import StateParser
 from model.game import SimpleBoard
 
 
-# TODO: update score when going to next state
-# TODO: keep track of the next state which is sampled from the game logic
-
 class PseudoBoard:
     def __init__(self):
         self.current_state = ()
@@ -214,42 +211,6 @@ class PseudoBoard:
 
         medals_remaining = moves_medals[1] - medals_in_grid
         return medal_grid, medals_remaining
-
-    def evaluation_func_simple(self, state):
-        """
-        Takes in the state and evaluates it by giving a number between 0 and 1,
-        where 1 is most optimal.
-
-        This simple one counts the number of medal portions and also counts
-        the moves remaining. Higher number of medal portions is better and
-        also more moves remaining is better.
-
-        The features are given a weighting so that the output is still
-        between 0 and 1.
-        :param state:
-        :return:
-        """
-        gem_grid, ice_grid, medal_grid, moves_medals = state
-
-        medal_portion_weight = 5
-        moves_rem_weight = 0
-        total_weight = medal_portion_weight + moves_rem_weight
-
-        move_remaining = moves_medals[0]
-        medals_remaining = moves_medals[1]
-        total_portions = 12
-
-        portion_count = 0
-        for i, j in product(range(9), range(9)):
-            if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
-                portion_count += 1
-
-        if not total_portions:
-            return 1 * medal_portion_weight / total_weight + move_remaining / 20 * moves_rem_weight / total_weight
-        else:
-            return (portion_count / total_portions) * medal_portion_weight / total_weight + \
-                   move_remaining / 20 * moves_rem_weight / total_weight
-
 
 if __name__ == '__main__':
     # get initial state
