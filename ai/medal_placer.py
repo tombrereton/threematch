@@ -4,14 +4,16 @@ import copy
 from itertools import product
 
 
-def medal_grid_filler(ice_grid: list, foo: list, medal_number: int):
+def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medal_number: int):
     """
     Fills in a medal grid
     :param ice_grid: Grid of ice
-    :param foo: Partial medal grid, only uncovered medals will show
+    :param partial_medal_grid: Partial medal grid, only uncovered medals will show
     :param medal_number: Number of medals that need to be in the grid
     :return: Filled medal grid
     """
+    # Copy medal grid
+    foo = copy.deepcopy(partial_medal_grid)
 
     # If there are no medals return now
     if not medal_number:
@@ -34,7 +36,7 @@ def medal_grid_filler(ice_grid: list, foo: list, medal_number: int):
         if portion != -1:
             # Don't count existing medals
             if all(foo[r + i][c + j] == 2 * i + j for i, j in product(range(2), range(2))):
-                medals_existing -= 1
+                pass
 
             # Only want to fill each medal once so check if this is the bottom right as this is encountered last
             elif portion == 3:
@@ -74,7 +76,6 @@ def medal_grid_filler(ice_grid: list, foo: list, medal_number: int):
 
     # Loop to place remaining medals
     while True:
-        # print('looping')
         # Record how many of the missing medals have been added
         added = 0
         # Copy the medals grid
@@ -103,7 +104,27 @@ def medal_grid_filler(ice_grid: list, foo: list, medal_number: int):
                     yield bar
                     break
 
-if __name__ == '__main__':
+
+def medal_probabilities(ice_grid: list, partial_medal_grid: list, medal_number: int, max_samples: int):
+    rows = range(len(ice_grid))
+    cols = range(len(ice_grid[0]))
+
+    grid = [[0 for _ in cols] for _ in rows]
+
+    samples = 0
+
+    for medal_grid, _ in zip(medal_grid_filler(ice_grid, partial_medal_grid, medal_number), range(max_samples)):
+        samples += 1
+        for row, col in product(rows, cols):
+            if medal_grid[row][col] != -1:
+                grid[row][col] += 1
+
+    for row, col in product(rows, cols):
+        grid[row][col] /= samples
+
+    return grid
+
+def orig_test():
     # Empty ice grid
     ig = [[-1 for _ in range(9)] for _ in range(9)]
     # Empty medal grid
@@ -122,3 +143,19 @@ if __name__ == '__main__':
     print(mg)
     # Print filled medal grid
     print(medal_grid_filler(ig, mg, 3).__next__())
+
+
+def prob_test():
+    # 5 rows of ice
+    ig = [[-1 if i < 4 else 0 for j in range(9)] for i in range(9)]
+    # Empty medal grid
+    mg = [[-1 for _ in range(9)] for _ in range(9)]
+    # Print ice grid
+    print(ig)
+    # Print partial medal grid
+    print(mg)
+    # Print medal probabilities
+    print(medal_probabilities(ig, mg, 3, 100))
+
+if __name__ == '__main__':
+    prob_test()

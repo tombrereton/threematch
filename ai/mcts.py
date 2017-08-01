@@ -1,7 +1,7 @@
 import math
 import random
-
 from ai.pseudo_board import PseudoBoard
+from ai.state_converter import start_state
 
 
 def pick_move_helper(element):
@@ -39,10 +39,10 @@ def interim_move_helper(stats, c):
 lots_of_print = False
 
 if lots_of_print:
-    def p(arg):
+    def p(*arg):
         print(arg)
 else:
-    def p(arg):
+    def p(*arg):
         pass
 
 
@@ -68,7 +68,7 @@ class MonteCarlo:
         self.policy = policy
         self.eval_function = eval_function
         # Initialise list of states
-        self.states = []
+        self.state = None
         # Initialise dictionary of statistics
         self.statistics = {}
 
@@ -78,12 +78,8 @@ class MonteCarlo:
         :param state: New state to be added
         :return: None
         """
-        # Add new state to list of states
-        if self.states and state[9][0] == self.states[-1][9][0]:
-            p('state', state)
-            p('state in list', self.states[-1])
-        self.states.append(state)
-        p('State appended')
+        # Store new state
+        self.state = state
 
     def interim_move(self, state):
         """
@@ -150,13 +146,10 @@ class MonteCarlo:
         Simulates a game to build up the tree
         :return: None
         """
-        # Copy the states list
-        states = [*self.states]
-        # print('start length', len(states))
-        # Get the last state
-        old_state = states[-1]
-        state = self.board.simulate_medals(old_state)
-        p(f'Medals: {state[9][1]}')
+        # Make the start state, adds medals
+        state = start_state(self.state)
+
+        p(f'Medals: {state[-1][1]}')
         # Create and empty set for the state/move pairs
         visited = set()
 
@@ -175,13 +168,11 @@ class MonteCarlo:
                 # Still expanding, add this to visited set
                 first_move = move
             state = self.board.next_state(state, move)
-            # Add new state to list of states
-            states.append(state)
 
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        winner = self.eval_function.evaluation_func_simple(states[-1])
+        winner = self.eval_function.evaluation_func_simple(state)
         p(f'Winner: {winner}')
 
         # Update statistics
@@ -210,7 +201,7 @@ class MonteCarlo:
         p('Picking a move')
 
         # Get the list of all possible moves at this point
-        current_state = self.states[-1]
+        current_state = self.state
         # moves = self.board.legal_moves(current_state)
         moves = self.policy.moves(current_state)
 
@@ -224,7 +215,7 @@ class MonteCarlo:
                 print('Count: {}, Move: {}, Win rate: {:.3f}'.format(count, move, win_rate))
                 count += 1
 
-        print(f'Medals remaining: {current_state[9][1]}')
+        print(f'Medals remaining: {current_state[-1][1]}')
         if not moves:
             # If there are no moves return None
             p('No moves to choose from')

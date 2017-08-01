@@ -31,9 +31,9 @@ def main():
     # ai controller setup
     pseudo_board = PseudoBoard()
     eval_function = EvaluationFunction(pseudo_board)
-    mcts_cont = MonteCarloController(event_manager,
-                                     MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit, c=c,
-                                                policy=AllPolicy(), eval_function=eval_function))
+    mc = MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit,
+                    c=c, policy=AllPolicy(),eval_function=eval_function)
+    mcts_cont = MonteCarloController(event_manager, mc)
 
     # mouse controller setup
     mouse_cont = MouseController(event_manager, gui_vars)

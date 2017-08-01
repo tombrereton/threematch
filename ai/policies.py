@@ -9,12 +9,6 @@ class AbstractPolicy:
         raise NotImplementedError()
 
 
-def gems_from_state(state):
-    rows = range(len(state) - 1)
-    cols = range(len(state[0]))
-    return tuple(tuple(state[i][j][0] for j in rows) for i in cols)
-
-
 class AllPolicy(AbstractPolicy):
     def __init__(self):
         pass
@@ -25,13 +19,25 @@ class AllPolicy(AbstractPolicy):
         where each item is 2 coordinates.
         item = ((r1,c1),(r2,c2))
         :param state:
-        :return:
+        :return: List of possible moves
         """
-        # print('state 9', state[9])
-        # print(all(state[9]))
-        if all(state[9]):
-            gem_grid = gems_from_state(state)
-            legal_moves = moves_three(gem_grid)
+        if all(state[-1]):
+            legal_moves = moves_three(state[0])
             return legal_moves
         else:
             return []
+
+
+class SimplePolicy(AllPolicy):
+    def __init__(self, limit: int):
+        self.limit = limit
+
+    def moves(self, state, limit=None):
+        if limit is None:
+            limit = self.limit
+
+        moves = super().moves(state)
+
+        # moves.sort()
+
+        return moves[:limit]
