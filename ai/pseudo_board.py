@@ -1,10 +1,8 @@
 from copy import deepcopy
 from itertools import product
 
-from ai.medal_placer import medal_grid_filler
 from ai.move_finder import moves_three
 from ai.state_parser import StateParser
-from model.game import Grid
 from model.game import SimpleBoard
 
 
@@ -55,7 +53,7 @@ class PseudoBoard:
         :param action:
         :return:
         """
-        gem_grid, ice_grid, medal_grid, moves_medals = self.state_to_grid(state)
+        gem_grid, ice_grid, medal_grid, moves_medals = state
 
         board = SimpleBoard(self.rows, self.cols, self.gem_types, self.total_medals)
         board.gem_grid.grid = gem_grid
@@ -85,12 +83,9 @@ class PseudoBoard:
         medal_grid = board.medal_grid.grid
 
         new_medals_uncovered = self.count_medals_uncovered(ice_grid, medal_grid)
-        # score_medals = [score_medals_init[0], medals_uncovered]
-        moves_medals = (state[9][0] - 1, state[9][1] - (new_medals_uncovered - orig_medals_uncovered))
+        moves_medals = (moves_medals[0] - 1, moves_medals[1] - (new_medals_uncovered - orig_medals_uncovered))
 
-        next_state = self.grid_to_state(gem_grid, ice_grid, medal_grid, moves_medals)
-
-        return next_state
+        return gem_grid, ice_grid, medal_grid, moves_medals
 
     def legal_moves(self, state):
         """
@@ -124,53 +119,6 @@ class PseudoBoard:
             return -1
         else:
             return 0
-
-    def state_to_grid(self, state):
-        """
-        converts the state (t,bt,i,mp) to 3 grids
-        :param state:
-        :return:
-        """
-        gem_grid = Grid(self.rows, self.cols)
-        ice_grid = Grid(self.rows, self.cols)
-        medal_grid = Grid(self.rows, self.cols)
-
-        for i, j in product(range(self.rows), range(self.cols)):
-            # get = (type, bonus_type)
-            act = 0
-            gem = (state[i][j][0], state[i][j][1], act)
-            ice = state[i][j][2]
-            medal_portion = state[i][j][3]
-
-            gem_grid.grid[i][j] = gem
-            ice_grid.grid[i][j] = ice
-            medal_grid.grid[i][j] = medal_portion
-
-        score_medals = state[9]
-
-        return gem_grid.grid, ice_grid.grid, medal_grid.grid, score_medals
-
-    def grid_to_state(self, gem_grid, ice_grid, medal_grid, score_medals):
-        """
-        converts the 3 grids into a state
-        :param score_medals:
-        :param gem_grid:
-        :param ice_grid:
-        :param medal_grid:
-        :return:
-        """
-        grid = Grid(self.rows, self.cols)
-
-        for i, j in product(range(self.rows), range(self.cols)):
-            item = (gem_grid[i][j][0],
-                    gem_grid[i][j][1],
-                    ice_grid[i][j],
-                    medal_grid[i][j])
-            grid.grid[i][j] = item
-
-        grid.grid.append(score_medals)
-        state = tuple(map(tuple, grid.grid))
-        return state
 
     def medal_portion_search(self, medal_grid):
         """
@@ -241,13 +189,6 @@ class PseudoBoard:
                 return False
         return True
 
-    def simulate_medals(self, state):
-        gem_grid, ice_grid, partial_medal_grid, moves_medals = self.state_to_grid(state)
-        full_medal_grid = medal_grid_filler(ice_grid, partial_medal_grid, moves_medals[1]).__next__()
-        state = self.grid_to_state(gem_grid, ice_grid, full_medal_grid, moves_medals)
-
-        return state
-
     def test_print(self, ice_grid, partial_medal_grid, full_medal_grid):
         print('-' * 9 + '+' + '-' * 9 + '+' + '-' * 9)
         for ice_row, pm_row, fm_row in zip(ice_grid, partial_medal_grid, full_medal_grid):
@@ -288,7 +229,7 @@ class PseudoBoard:
         :param state:
         :return:
         """
-        gem_grid, ice_grid, medal_grid, moves_medals = self.state_to_grid(state)
+        gem_grid, ice_grid, medal_grid, moves_medals = state
 
         medal_portion_weight = 5
         moves_rem_weight = 0

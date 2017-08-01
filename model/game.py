@@ -766,7 +766,7 @@ class Board(SimpleBoard):
         self.init_gem_grid()
         self.init_ice_grid()
         self.init_medal_grid()
-        state_event = StateEvent(self.get_game_state_tuple())
+        state_event = StateEvent(self.get_obscured_game_state())
         self.event_manager.post(state_event)
 
     # ----------------------------------------------------------------------
@@ -1099,7 +1099,7 @@ class Board(SimpleBoard):
             self.game_state = "waiting_for_input"
 
             # send state to MCTS controller
-            state_event = StateEvent(self.get_game_state_tuple())
+            state_event = StateEvent(self.get_obscured_game_state())
             self.event_manager.post(state_event)
 
             return update_bag
@@ -1229,3 +1229,12 @@ class Board(SimpleBoard):
         state.append((self.moves, self.medals))
 
         return tuple(state)
+
+    def get_obscured_game_state(self):
+        gem_grid = deepcopy(self.gem_grid.grid)
+        ice_grid = deepcopy(self.ice_grid.grid)
+        medal_grid = self.medal_grid.grid
+        medal_grid = [[medal if ice else -1 for ice, medal in zip(*rows)] for rows in zip(ice_grid, medal_grid)]
+        moves_medals = (self.moves, self.medals)
+
+        return gem_grid, ice_grid, medal_grid, moves_medals
