@@ -122,6 +122,29 @@ class MonteCarlo:
         p(f'Move: {move}')
         return move
 
+    def roll_out(self, state):
+        """
+        Method to pick a move after transitions to the next state.
+        It randomly selects a move without relying on generated statistics
+        :param state:
+        :return:
+        """
+        moves = self.policy.moves(state)
+
+        if not moves:
+            # If there are no moves return None
+            p('No moves to chose from')
+            move = None
+        elif len(moves) == 1:
+            # If there is only one possible move return this
+            p('Only one move')
+            move = moves[0]
+        else:
+            p('Move picked at random from moves with no stats')
+            move = random.choice([move for move in moves])
+
+        return move
+
     def play(self):
         """
         Simulates a game to build up the tree
@@ -142,7 +165,7 @@ class MonteCarlo:
         first_move = None
         for move_count in range(self.move_limit):
             # Get the list of all possible moves at this point
-            move = self.interim_move(state)
+            move = self.interim_move(state) if move_count == 0 else self.roll_out(state)
             if move is None:
                 # No valid moves available, game is over
                 # print('move limit', self.move_limit)
@@ -151,10 +174,6 @@ class MonteCarlo:
             if move_count == 0:
                 # Still expanding, add this to visited set
                 first_move = move
-            # if expand and not self.statistics.get((state, move)):
-            #     # New state/move pair encountered, stop expanding
-            #     expand = False
-            # Update state
             state = self.board.next_state(state, move)
             # Add new state to list of states
             states.append(state)
