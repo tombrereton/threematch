@@ -19,7 +19,7 @@ class EvaluationFunction:
         :param state:
         :return:
         """
-        gem_grid, ice_grid, medal_grid, moves_medals = self.pseudo_board.state_to_grid(state)
+        gem_grid, ice_grid, medal_grid, moves_medals = state
 
         # feature weightings
         medal_portion_weight = 5
