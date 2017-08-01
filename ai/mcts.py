@@ -1,5 +1,6 @@
 import math
 import random
+
 from ai.pseudo_board import PseudoBoard
 from ai.state_converter import start_state
 
@@ -180,12 +181,10 @@ class MonteCarlo:
         if stat:
             # Statistics exist, increment plays
             stat[0] += 1
-            if winner == 1:
-                # If this was a win increment wins
-                stat[1] += 1
+            stat[1] += winner
         else:
             # If statistics did not exist add them now
-            self.statistics[first_move] = [1, winner if winner != 0 else 0]
+            self.statistics[first_move] = [1, winner]
 
     def pick_move(self):
         """
