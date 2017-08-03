@@ -22,9 +22,9 @@ class EvaluationFunction:
         gem_grid, ice_grid, medal_grid, moves_medals = state
 
         # feature weightings
-        medal_portion_weight = 5
+        medal_portion_weight = 2
         ice_removed_weight = 0
-        moves_rem_weight = 0
+        moves_rem_weight = 1
         total_weight = medal_portion_weight + moves_rem_weight + ice_removed_weight
 
         # medal portion feature calculation
