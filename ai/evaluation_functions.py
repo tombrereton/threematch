@@ -16,6 +16,7 @@ class EvaluationFunction:
 
         The features are given a weighting so that the output is still
         between 0 and 1.
+        :return:
         :param state:
         :return:
         """

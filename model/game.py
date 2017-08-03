@@ -129,7 +129,7 @@ class SimpleBoard:
         bonus_list = self.bonus_list
         medals_freed = len(self.medals_removed)
         bonus_removed = len([0 for y, x, t, bt, activation in match_list if bt is not 0])
-        self.score += 100 * self.cascade * (len(match_list) + len(bonus_list) + 2 * bonus_removed + 5 * medals_freed)
+        self.score += 100 * self.cascade * (len(match_list) + len(bonus_list) + 5 * bonus_removed + 40 * medals_freed)
 
     def find_matches(self):
         """
@@ -928,7 +928,6 @@ class Board(SimpleBoard):
         Simple getter to get game information
         :return:
         """
-        self.update_score()
         return self.moves, self.medals, self.score, self.terminal_state, self.win_state
 
     def extrapolate_score(self):
@@ -979,6 +978,9 @@ class Board(SimpleBoard):
         # ---------------------------------------
         # Swap is adjacent, send some update bags:
 
+        # reset cascade to zero
+        self.cascade = 0
+
         # save state and chosen action before doing anything
         self.write_state_action()
 
@@ -1021,7 +1023,6 @@ class Board(SimpleBoard):
             self.move_made()
 
             # do until no more pull downs
-            self.cascade = 0
 
             while match_count + bonus_count > 0:
                 first_loop = True
@@ -1036,6 +1037,7 @@ class Board(SimpleBoard):
 
                 # remove gems in grid that are in matches_list
                 self.remove_gems_add_bonuses()
+                self.update_score()
 
                 repeat = True
                 while repeat:
