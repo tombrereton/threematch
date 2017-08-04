@@ -2,7 +2,7 @@
 import numpy as np
 from keras import backend as K
 from keras.layers import Activation, Flatten, Dense
-from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Conv2D
 from keras.models import Sequential
 
 from ai.state_parser import StateParser
@@ -75,23 +75,17 @@ input_shape = (4, 9, 9)  # else:
 model = Sequential()
 model.add(Conv2D(32, (5, 5), input_shape=input_shape))
 model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
 
-# model.add(Conv2D(32, (5, 5)))
-# model.add(Activation('relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-#
-# model.add(Conv2D(64, (3, 3)))
-# model.add(Activation('relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
+
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
 
 # the model so far outputs 3D feature maps (height, width, features)
-
 model.add(Flatten())  # this converts out 3D feature mas to 1D feature vectors
-model.add(Dense(32))
+model.add(Dense(81))
 model.add(Activation('softmax'))
-# model.add(Activation('relu'))
-# model.add(Dropout(0.5))
 model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
