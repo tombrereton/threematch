@@ -19,20 +19,23 @@ class StateParser:
         logging.debug(f'files in directory: \n{os.listdir()}\n')
         return os.listdir()
 
-    def get_state(self, file_index, state_index):
+    def get_full_filename(self, file_name):
+        main_dir = os.getcwd() + '/../training_data/'
+        file_path = main_dir + file_name
+        return file_path
+
+    def get_state(self, file_name, state_index):
         # skip every second line
         state_index *= 2
-
-        file_name = self.get_file_list()[file_index]
 
         logging.debug(f'File name of initial state: {file_name}')
 
         with open(file_name) as f:
             initial_state = f.readlines()[26:]
 
-        first_state = initial_state[state_index]
+        state = initial_state[state_index]
 
-        return self.parse_state(first_state)
+        return state
 
     def parse_state(self, string_state):
         """
