@@ -143,3 +143,6 @@ class CPUSpinnerController:
         if isinstance(event, QuitEvent):
             # this will stop the while loop from running
             self.keepGoing = False
+
+    def stop(self):
+        self.keepGoing = 0

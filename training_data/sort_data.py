@@ -6,9 +6,16 @@ import os
 
 from ai.state_parser import StateParser
 
-current_dir = os.getcwd()
-print(current_dir)
 
+def move_to_win_folder(file_name, is_winner):
+    folder = 'win' if is_winner else 'loss'
+    new_full_file_name = file_name.split('/')
+    new_full_file_name.insert(len(new_full_file_name) - 1, folder)
+    new_full_file_name = '/'.join(new_full_file_name)
+    os.rename(file_name, new_full_file_name)
+
+
+current_dir = os.getcwd()
 files = os.listdir(current_dir)
 
 # remove non training files
@@ -16,18 +23,29 @@ files.remove('sort_data.py')
 files.remove('win')
 files.remove('loss')
 
-print(files)
+# start loop
+while files:
 
-file_name = 'game-20170803-170103.txt'
+    file_name = files.pop(0)
+    state_parser = StateParser()
+    full_file_name = state_parser.get_full_filename(file_name)
 
-state_parser = StateParser()
-full_file_name = state_parser.get_full_filename(file_name)
+    is_file_winner = False
+    with open(full_file_name, mode='r') as file:
+        total_medals = None
+        medals_uncovered = 0
+        line_count = 0
 
-state_4 = state_parser.get_state(full_file_name, 4)
+        for line in file:
+            if line_count == 16:
+                total_medals = line.split('\t')[1]
 
-screen_cell_list = state_4.split('\t')
+            if line_count > 24 and line_count % 2 == 0:
+                medals_uncovered = line.split('\t')[1]
 
-screen_cell_list.pop(0)
-screen_cell_list.pop(0)
-screen_cell_list.remove('\n')
-print('screen list: ', screen_cell_list)
+            if medals_uncovered == total_medals:
+                is_file_winner = True
+
+            line_count += 1
+
+    move_to_win_folder(full_file_name, is_file_winner)
