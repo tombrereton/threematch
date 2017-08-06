@@ -15,6 +15,7 @@ def move_to_win_folder(file_name, is_winner, is_finished):
     new_full_file_name = '/'.join(new_full_file_name)
     os.rename(file_name, new_full_file_name)
 
+state_parser = StateParser()
 
 current_dir = os.getcwd()
 files = os.listdir(current_dir)
@@ -28,7 +29,6 @@ files.remove('loss')
 while files:
 
     file_name = files.pop(0)
-    state_parser = StateParser()
     full_file_name = state_parser.get_full_filename(file_name)
 
     is_file_winner = False
@@ -54,4 +54,3 @@ while files:
             line_count += 1
 
     move_to_win_folder(full_file_name, is_file_winner, game_finished)
-    print(game_finished)
