@@ -10,13 +10,14 @@ is_win_folder = True
 label = 1 if is_win_folder else 0
 np_data_file_name = 'np_win_data' if is_win_folder else 'np_loss_data'
 np_label_file_name = 'np_win_labels' if is_win_folder else 'np_loss_labels'
+path_part = '/data/win/' if is_win_folder else 'data/loss/'
 
 training_data_4D = []
 training_labels_4D = []
 
 # get all the file names in directory
 state_parser = StateParser()
-current_dir = os.getcwd()
+current_dir = os.getcwd() + path_part
 files = os.listdir(current_dir)
 
 # remove non training files

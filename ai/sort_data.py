@@ -38,19 +38,22 @@ while files:
         line_count = 0
         game_finished = None
 
-        for line in file:
-            if line_count == 16:
-                total_medals = line.split('\t')[1]
+        try:
+            for line in file:
+                if line_count == 16:
+                    total_medals = line.split('\t')[1]
 
-            if line_count > 24 and line_count % 2 == 0:
-                medals_uncovered = line.split('\t')[1]
+                if line_count > 26 and line_count % 2 == 0:
+                    medals_uncovered = line.split('\t')[1]
 
-            if line_count > 24 and line_count % 2 == 1:
-                game_finished = True if line == '-1--1--1--1\n' else False
+                if line_count > 26 and line_count % 2 == 1:
+                    game_finished = True if line == '-1--1--1--1\n' else False
 
-            if medals_uncovered == total_medals:
-                is_file_winner = True
+                if medals_uncovered == total_medals:
+                    is_file_winner = True
 
-            line_count += 1
+                line_count += 1
 
-    move_to_win_folder(full_file_name, is_file_winner, game_finished)
+            move_to_win_folder(full_file_name, is_file_winner, game_finished)
+        except IndexError:
+            print('file not formatted properly: ', file_name)
