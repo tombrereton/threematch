@@ -14,7 +14,10 @@ files = os.listdir(current_dir)
 files.remove('win')
 files.remove('loss')
 
+file_count = 0
 while files:
+    print('file count: ', file_count)
+    file_count += 1
     file_name = files.pop(0)
     full_file_name = current_dir + file_name
 
@@ -36,7 +39,6 @@ while files:
 
         # join list and write into file again
         new_line_list = preamble_list + states_list
-        print(new_line_list)
-        with open('test.txt', mode='w') as file:
+        with open(full_file_name, mode='w') as file:
             for line in new_line_list:
                 file.write(line)
