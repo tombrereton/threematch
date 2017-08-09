@@ -25,7 +25,7 @@ def permute(orig_data):
     return permuted_data
 
 
-def test(p):
+def thing(p):
     permutations = (permutation for permutation in product(*(range(6),) * 6) if all(i in permutation for i in range(6)))
 
     for perm, state in zip(permutations, p):
@@ -34,5 +34,4 @@ def test(p):
         print('\n'.join(''.join(str(el[0]) for el in row) for row in state))
         print('*' * 9)
 
-p = permute(generate(1))
-test(p)
+thing(permute(generate(1)))
