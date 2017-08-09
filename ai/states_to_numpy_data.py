@@ -1,28 +1,48 @@
 import os
+from random import randrange
 
 import numpy as np
 
 from ai.state_parser import StateParser
 
+
+def get_number_of_line(file_path):
+    with open(file_path, 'r') as file:
+        line_count = 0
+        for _ in file:
+            line_count += 1
+    return max((line_count - 26) / 2, 0)
+
+
 # change this depending on the win/loss folder
 is_win_folder = True
+is_training_data = False
 
 label = 1 if is_win_folder else 0
-np_data_file_name = 'np_win_data' if is_win_folder else 'np_loss_data'
-np_label_file_name = 'np_win_labels' if is_win_folder else 'np_loss_labels'
+
+if is_training_data:
+    np_data_file_name = 'np_win_data' if is_win_folder else 'np_loss_data'
+    np_label_file_name = 'np_win_labels' if is_win_folder else 'np_loss_labels'
+    path_part = '/data/win/' if is_win_folder else '/data/loss/'
+else:
+    np_data_file_name = 'np_win_test' if is_win_folder else 'np_loss_test'
+    np_label_file_name = 'np_win_labels_test' if is_win_folder else 'np_loss_labels_test'
+    path_part = '/data/test_win/' if is_win_folder else '/data/test_loss/'
 
 training_data_4D = []
 training_labels_4D = []
 
 # get all the file names in directory
 state_parser = StateParser()
-current_dir = os.getcwd()
+current_dir = os.getcwd() + path_part
 files = os.listdir(current_dir)
 
 # remove non training files
-files.remove('states_to_numpy_data.py')
-
+# files.remove('states_to_numpy_data.py')
+file_count = 0
 while files:
+    print('file count: ', file_count)
+    file_count += 1
 
     state_3D_array = []
 
@@ -30,7 +50,7 @@ while files:
     full_file_name = current_dir + '/' + file_name
 
     # randomise state index?
-    state_index = 4
+    state_index = randrange(get_number_of_line(full_file_name))
     state = state_parser.get_state(full_file_name, state_index)
 
     # convert to list and remove redundant elements
