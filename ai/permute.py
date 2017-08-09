@@ -14,10 +14,10 @@ def permute(orig_data):
 
     permuted_data = np.tile(orig_data, (720, 1, 1, 1))
 
-    bool_arrays = [orig_data[:, :, :, 0] == i for i in range(6)]
+    bool_arrays = [orig_data[:, 0, :, :] == i for i in range(6)]
 
     for i, permutation in enumerate(permutations(range(6))):
-        section = permuted_data[i * l: (i + 1) * l, :, :, 0]
+        section = permuted_data[i * l: (i + 1) * l, 0, :, :]
         for new_colour, bool_array in zip(permutation, bool_arrays):
             section[bool_array] = new_colour
 
