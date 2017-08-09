@@ -24,6 +24,8 @@ files = os.listdir(current_dir)
 # remove non training files
 files.remove('win')
 files.remove('loss')
+files.remove('test_loss')
+files.remove('test_win')
 
 # start loop
 while files:
