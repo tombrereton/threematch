@@ -1,12 +1,22 @@
 import os
+from random import randrange
 
 import numpy as np
 
 from ai.state_parser import StateParser
 
+
+def get_number_of_line(file_path):
+    with open(file_path, 'r') as file:
+        line_count = 0
+        for _ in file:
+            line_count += 1
+    return max((line_count - 26) / 2, 0)
+
+
 # change this depending on the win/loss folder
-is_win_folder = False
-is_training_data = True
+is_win_folder = True
+is_training_data = False
 
 label = 1 if is_win_folder else 0
 
@@ -40,7 +50,7 @@ while files:
     full_file_name = current_dir + '/' + file_name
 
     # randomise state index?
-    state_index = 0
+    state_index = randrange(get_number_of_line(full_file_name))
     state = state_parser.get_state(full_file_name, state_index)
 
     # convert to list and remove redundant elements

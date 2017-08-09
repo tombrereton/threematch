@@ -34,5 +34,14 @@ print('np win loss label shape: ', np_win_loss_labels.shape)
 x = np_win_loss
 y = np_win_loss_labels
 
-score = model.evaluate(x, y, batch_size=16, verbose=1)
+t_test = 120
+
+score = model.evaluate(x, y, batch_size=1, verbose=1)
 print('\n score: ', score)
+
+# predictions = model.predict(x=x, batch_size=1, verbose=1)
+# print('labels: ', np_win_loss_labels)
+# print('\n predictions: ', predictions)
+model.add(ZeroPadding2D(padding=(2, 2)))
+model.add(Conv2D(12, (3, 3)))
+model.add(Activation('relu'))
