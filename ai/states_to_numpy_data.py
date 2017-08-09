@@ -1,5 +1,6 @@
 import os
 from random import randrange
+from ai.permute import permute
 
 import numpy as np
 
@@ -16,7 +17,7 @@ def get_number_of_line(file_path):
 
 # change this depending on the win/loss folder
 is_win_folder = True
-is_training_data = False
+is_training_data = True
 
 label = 1 if is_win_folder else 0
 
@@ -41,7 +42,7 @@ files = os.listdir(current_dir)
 # files.remove('states_to_numpy_data.py')
 file_count = 0
 while files:
-    print('file count: ', file_count)
+    # print('file count: ', file_count)
     file_count += 1
 
     state_3D_array = []
@@ -72,10 +73,10 @@ while files:
     i = 0
     while i < len(state_as_list):
         # convert to int and normalise between 0 and 1
-        type_temp.append(int(state_as_list[i]) / 5)
-        bonus_type_temp.append(int(state_as_list[i + 1]) / 3)
-        ice_temp.append(int(state_as_list[i + 2]) + 1)
-        medal_portion_temp.append((int(state_as_list[i + 3]) + 1) / 4)
+        type_temp.append(int(state_as_list[i]))
+        bonus_type_temp.append(int(state_as_list[i + 1]))
+        ice_temp.append(int(state_as_list[i + 2]))
+        medal_portion_temp.append(int(state_as_list[i + 3]))
 
         if i != 0 and (i + 4) % 36 == 0:
             # append to list after 9 elements
@@ -95,7 +96,15 @@ while files:
     training_labels_4D.append(label)
 
 # save as numpy arrays
-np_training_data_4D = np.asarray(training_data_4D)
-np_training_labels_4D = np.asarray(training_labels_4D)
+np_training_data_4D = np.asarray(training_data_4D, dtype='f')
+np_training_data_4D = permute(np_training_data_4D)
+np_training_data_4D[:, :, :, 0] /= 5
+np_training_data_4D[:, :, :, 1] /= 3
+np_training_data_4D[:, :, :, 2] += 1
+np_training_data_4D[:, :, :, 3] += 1
+np_training_data_4D[:, :, :, 3] /= 4
+print(np_training_data_4D.shape)
+np_training_labels_4D = np.tile(np.asarray(training_labels_4D), 720)
+print(np_training_labels_4D.shape)
 np.save(np_data_file_name, np_training_data_4D)
 np.save(np_label_file_name, np_training_labels_4D)

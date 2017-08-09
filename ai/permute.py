@@ -17,8 +17,9 @@ def permute(orig_data):
     bool_arrays = [orig_data[:, :, :, 0] == i for i in range(6)]
 
     for i, permutation in enumerate(permutations(range(6))):
+        section = permuted_data[i * l: (i + 1) * l, :, :, 0]
         for new_colour, bool_array in zip(permutation, bool_arrays):
-            permuted_data[i * l: (i + 1) * l, :, :, 0][bool_array] = new_colour
+            section[bool_array] = new_colour
 
     return permuted_data
 
@@ -30,4 +31,4 @@ def thing(p):
         print('\n'.join(''.join(str(el[0]) for el in row) for row in state))
         print('*' * 9)
 
-thing(permute(generate(1)))
+# thing(permute(generate(1)))
