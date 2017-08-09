@@ -1,6 +1,6 @@
 import numpy as np
 
-from itertools import product
+from itertools import permutations
 from random import randrange as r
 
 
@@ -14,11 +14,9 @@ def permute(orig_data):
 
     permuted_data = np.tile(orig_data, (720, 1, 1, 1))
 
-    permutations = (permutation for permutation in product(*(range(6),) * 6) if all(i in permutation for i in range(6)))
-
     bool_arrays = [orig_data[:, :, :, 0] == i for i in range(6)]
 
-    for i, permutation in enumerate(permutations):
+    for i, permutation in enumerate(permutations(range(6))):
         for new_colour, bool_array in zip(permutation, bool_arrays):
             permuted_data[i * l: (i + 1) * l, :, :, 0][bool_array] = new_colour
 
@@ -26,9 +24,7 @@ def permute(orig_data):
 
 
 def thing(p):
-    permutations = (permutation for permutation in product(*(range(6),) * 6) if all(i in permutation for i in range(6)))
-
-    for perm, state in zip(permutations, p):
+    for perm, state in zip(permutations(range(6)), p):
         print('*' * 9)
         print(perm)
         print('\n'.join(''.join(str(el[0]) for el in row) for row in state))
