@@ -1,9 +1,9 @@
 import os
 from random import randrange
-from ai.permute import permute
 
 import numpy as np
 
+from ai.permute import permute
 from ai.state_parser import StateParser
 
 
@@ -94,10 +94,8 @@ while files:
     state_3D_array = [type, bonus_type, ice, medal_portion]
     training_data_4D.append(state_3D_array)
     training_labels_4D.append(label)
-    break
 
 # save as numpy arrays
-print(training_data_4D[0])
 np_training_data_4D = np.asarray(training_data_4D, dtype='f')
 np_training_data_4D = permute(np_training_data_4D)
 np_training_data_4D[:, 0, :, :] /= 5
