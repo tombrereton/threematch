@@ -1,12 +1,6 @@
 import numpy as np
 
 from itertools import permutations
-from random import randrange as r
-
-
-def generate(n):
-    a = [[[[r(6), r(4), *((-1, r(4)) if r(2) else (0, -1))] for _ in range(9)] for _ in range(9)] for _ in range(n)]
-    return np.array(a)
 
 
 def permute(orig_data):
@@ -14,21 +8,26 @@ def permute(orig_data):
 
     permuted_data = np.tile(orig_data, (720, 1, 1, 1))
 
-    bool_arrays = [orig_data[:, 0, :, :] == i for i in range(6)]
+    bool_arrays = [orig_data[:, 0] == i for i in range(6)]
 
-    for i, permutation in enumerate(permutations(range(6))):
-        section = permuted_data[i * l: (i + 1) * l, 0, :, :]
+    start, end = 0, l
+
+    for permutation in permutations(range(6)):
+        section = permuted_data[start: end, 0]
         for new_colour, bool_array in zip(permutation, bool_arrays):
             section[bool_array] = new_colour
+        start, end = end, end + l
 
     return permuted_data
 
 
-def thing(p):
-    for perm, state in zip(permutations(range(6)), p):
-        print('*' * 9)
-        print(perm)
-        print('\n'.join(''.join(str(el[0]) for el in row) for row in state))
-        print('*' * 9)
+def permute_generator(orig_data):
+    permuted_data = np.copy(orig_data)
 
-# thing(permute(generate(1)))
+    bool_arrays = [orig_data[:, 0] == i for i in range(6)]
+
+    for permutation in permutations(range(6)):
+        for new_colour, bool_array in zip(permutation, bool_arrays):
+            permuted_data[:, 0][bool_array] = new_colour
+        for state in permuted_data:
+            yield state
