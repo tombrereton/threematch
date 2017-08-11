@@ -98,11 +98,11 @@ while files:
 # save as numpy arrays
 np_training_data_4D = np.asarray(training_data_4D, dtype='f')
 np_training_data_4D = permute(np_training_data_4D)
-np_training_data_4D[:, 0, :, :] /= 5
-np_training_data_4D[:, 1, :, :] /= 3
-np_training_data_4D[:, 2, :, :] += 1
-np_training_data_4D[:, 3, :, :] += 1
-np_training_data_4D[:, 3, :, :] /= 4
+np_training_data_4D[:, 0] /= 5
+np_training_data_4D[:, 1] /= 3
+np_training_data_4D[:, 2] += 1
+np_training_data_4D[:, 3] += 1
+np_training_data_4D[:, 3] /= 4
 print(np_training_data_4D.shape)
 np_training_labels_4D = np.tile(np.asarray(training_labels_4D), 720)
 print(np_training_labels_4D.shape)
