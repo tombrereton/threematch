@@ -3,6 +3,8 @@ import os
 import re
 import random
 
+import numpy as np
+
 
 def shuffle(l):
     """
@@ -10,11 +12,16 @@ def shuffle(l):
         :param l: List to shuffle
         :return: None
     """
-    i = len(l)
+    i = len(l) - 1
     while 0 < i:
         j = random.randrange(i)
         l[i], l[j] = l[j], l[i]
         i -= 1
+
+
+def renumber(game_ids):
+    translate = {orig: new for new, orig in enumerate(set(game_ids))}
+    return np.array([translate[orig] for orig in game_ids], dtype='i2')
 
 
 class FileParser:
@@ -54,11 +61,11 @@ class FileParser:
             return 0, [int(element) for element in re.findall(self.info_line_parse, line)]
         elif re.fullmatch(self.state_line_check, line):
             # State line
-            return 1, [int(element) for element in re.findall(self.state_line_parse, line)]
+            return 1, np.array([int(element) for element in re.findall(self.state_line_parse, line)], dtype='b')
         elif re.fullmatch(self.action_line_check, line):
             # Action line
             m = re.search(self.action_line_parse, line)
-            return 2, [int(m.group(i)) for i in range(1, 6)]
+            return 2, np.array([int(m.group(i)) for i in range(1, 6)], dtype='b')
         else:
             # Nothing
             return -1,
@@ -106,8 +113,23 @@ class FileParser:
             :return: The fixed data from a file, may return an empty list if
                       file was too badly corrupted
         """
-        # TODO
-        return [], 
+        if 3 < len(states_actions) and medals is not None and moves is not None and \
+           states_actions[-1][1] == -1 and states_actions[-2][0] + 1 == states_actions[-1][0]:
+
+            states = []
+            actions = []
+
+            for i in range(len(states_actions) - 2):
+                # Check this line is a state
+                if states_actions[i][0] % 2 == 0:
+                    # Check no missing lines
+                    if states_actions[i][0] + 1 == states_actions[i + 1][0]:
+                        states.append(states_actions[i])
+                        actions.append(states_actions[i + 1])
+
+            return states, actions, medals, moves, medals == states_actions[-2][2]
+        else:
+            return [],
     
     def add_to_lists(self, game_id, medals, moves, states_actions):
         """
@@ -157,6 +179,18 @@ class FileParser:
             
             # Pass this data for more processing and adding to instance lists
             self.add_to_lists(game_id, medals, moves, states_actions)
+
+        states = np.array(self.states)
+        actions = np.array(self.actions)
+        labels = np.array(self.labels)
+        game_ids = renumber(self.game_ids)
+        moves_left = np.array(self.moves_left, dtype='b')
+
+        np.save('states', states)
+        np.save('actions', actions)
+        np.save('labels', labels)
+        np.save('game_ids', game_ids)
+        np.save('moves_left', moves_left)
 
 if __name__ == '__main__':
     t0 = time.time()
