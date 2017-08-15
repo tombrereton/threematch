@@ -52,8 +52,6 @@ def one_hot(state, permutation=range(6)):
 
 
 def reformat_action(action):
-    print(action)
-
     if action[1] == action[3]:
         # Swap along y axis
         return 0, min(action[0], action[2]), action[3]
@@ -90,6 +88,36 @@ def data_generator(states, actions, labels, game_ids, moves_remaining):
             state = one_hot(state, p)
 
             yield np.array([state]), output
+
+
+def move_evaluator(states, actions, labels, game_ids, moves_remaining):
+    perms = list(permutations(range(6)))
+
+    while True:
+        index = random.randrange(len(states))
+
+        state = states[index]
+        action = actions[index]
+        label = labels[index]
+        game_id = game_ids[index]
+        moves = moves_remaining[index]
+
+        r = range(max(0, index - 30), min(len(game_ids), index + 30))
+        this_game_indices = [i for i in r if game_ids[i] == game_id]
+        states_in_game = len(this_game_indices)
+        sub_index = this_game_indices.index(index)
+        this_state_perms = [random.choice(perms[sub_index::states_in_game])]
+
+        move_channel = np.full((9, 9), False)
+        move_channel[action[0]][action[1]] = True
+        move_channel[action[2]][action[3]] = True
+
+        for p in this_state_perms:
+            state = one_hot(state, p)
+
+            state = np.concatenate((state, [move_channel]))
+
+            yield np.array([state]), np.array([label])
 
 
 class FileParser:
