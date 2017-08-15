@@ -5,6 +5,8 @@ import random
 
 import numpy as np
 
+from itertools import permutations
+
 
 def shuffle(l):
     """
@@ -36,6 +38,58 @@ def shuffle_multiple(*lists):
 def renumber(game_ids):
     translate = {orig: new for new, orig in enumerate(set(game_ids))}
     return np.array([translate[orig] for orig in game_ids], dtype='i2')
+
+
+def one_hot(state, permutation=range(6)):
+    colour_channels = [state[0] == colour for colour in permutation]
+    type_channels = [state[1] == t for t in range(2, 5)]
+    ice_channels = [state[2] == 1]
+    medal_channels = [state[3] == portion for portion in range(4)]
+
+    state = np.concatenate((colour_channels, type_channels, ice_channels, medal_channels))
+
+    return state
+
+
+def reformat_action(action):
+    print(action)
+
+    if action[1] == action[3]:
+        # Swap along y axis
+        return 0, min(action[0], action[2]), action[3]
+    else:
+        # Swap along x axis
+        return 1, action[0], min(action[1], action[3])
+
+
+def data_generator(states, actions, labels, game_ids, moves_remaining):
+    perms = list(permutations(range(6)))
+
+    while True:
+        index = random.randrange(len(states))
+
+        state = states[index]
+        action = actions[index]
+        label = labels[index]
+        game_id = game_ids[index]
+        moves = moves_remaining[index]
+
+        r = range(max(0, index - 30), min(len(game_ids), index + 30))
+        this_game_indices = [i for i in r if game_ids[i] == game_id]
+        states_in_game = len(this_game_indices)
+        sub_index = this_game_indices.index(index)
+        this_state_perms = perms[sub_index::states_in_game]
+
+        output = np.full((1, 4, 9, 9), False)
+        action = reformat_action(action)
+        output[0, action[0], action[1], action[2]] = True
+        if label:
+            output[0, 2 + action[0], action[1], action[2]] = True
+
+        for p in this_state_perms:
+            state = one_hot(state, p)
+
+            yield np.array([state]), output
 
 
 class FileParser:
@@ -75,6 +129,7 @@ class FileParser:
             return 0, [int(element) for element in re.findall(self.info_line_parse, line)]
         elif re.fullmatch(self.state_line_check, line):
             # State line
+            s = np.array([int(element) for element in re.findall(self.state_line_parse, line)], dtype='b')[3:]
             return 1, np.array([int(element) for element in re.findall(self.state_line_parse, line)], dtype='b')
         elif re.fullmatch(self.action_line_check, line):
             # Action line
@@ -207,7 +262,17 @@ class FileParser:
         np.save('moves_left', moves_left)
 
 if __name__ == '__main__':
-    t0 = time.time()
-    FileParser().open_files('data')
-    t1 = time.time()
-    print(t1 - t0)
+    # t0 = time.time()
+    # FileParser().open_files('data')
+    # t1 = time.time()
+    # print(t1 - t0)
+
+    states = np.transpose(np.reshape(np.load('states.npy'), (-1, 9, 9, 4)), (0, 3, 1, 2))
+    actions = np.load('actions.npy')
+    labels = np.load('labels.npy')
+    game_ids = np.load('game_ids.npy')
+    moves_left = np.load('moves_left.npy')
+
+    for output in data_generator(states, actions, labels, game_ids, moves_left):
+        print(output)
+        break
