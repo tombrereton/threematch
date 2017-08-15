@@ -19,6 +19,20 @@ def shuffle(l):
         i -= 1
 
 
+def shuffle_multiple(*lists):
+    """
+        Function to shuffle a list
+        :param lists: A list of lists to shuffle
+        :return: None
+    """
+    i = len(lists[0]) - 1
+    while 0 < i:
+        j = random.randrange(i)
+        for l in lists:
+            l[i], l[j] = l[j], l[i]
+        i -= 1
+
+
 def renumber(game_ids):
     translate = {orig: new for new, orig in enumerate(set(game_ids))}
     return np.array([translate[orig] for orig in game_ids], dtype='i2')
