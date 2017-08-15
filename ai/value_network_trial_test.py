@@ -2,7 +2,6 @@ import os
 
 import numpy as np
 from keras.models import load_model
-from keras.utils import np_utils
 
 model = load_model('value_network_trial.h5')
 
@@ -27,7 +26,7 @@ print('loss labels shape: ', np_loss_labels.shape)
 
 np_win_loss = np.concatenate((np_win_data, np_loss_data))
 np_win_loss_labels = np.concatenate((np_win_labels, np_loss_labels))
-np_win_loss_labels = np_utils.to_categorical(np_win_loss_labels, 2)
+# np_win_loss_labels = np_utils.to_categorical(np_win_loss_labels, 2)
 print('np win loss shape: ', np_win_loss.shape)
 print('np win loss label shape: ', np_win_loss_labels.shape)
 
@@ -36,9 +35,9 @@ y = np_win_loss_labels[:1000]
 
 t_test = 120
 
-score = model.evaluate(x, y, batch_size=128, verbose=1)
-print('\nTest loss:', score[0])
-print('nTest accuracy:', score[1])
+score = model.evaluate(x, y, batch_size=32, verbose=1)
+print('\n\nTest loss:', score[0])
+print('\nTest accuracy:', score[1])
 
 # predictions = model.predict(x=x, batch_size=128, verbose=1)
 # print('labels: ', np_win_loss_labels)

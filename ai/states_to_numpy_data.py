@@ -3,7 +3,6 @@ from random import randrange
 
 import numpy as np
 
-from ai.permute import permute
 from ai.state_parser import StateParser
 
 
@@ -97,14 +96,15 @@ while files:
 
 # save as numpy arrays
 np_training_data_4D = np.asarray(training_data_4D, dtype='f')
-np_training_data_4D = permute(np_training_data_4D)
+# np_training_data_4D = permute(np_training_data_4D)
 np_training_data_4D[:, 0] /= 5
 np_training_data_4D[:, 1] /= 3
 np_training_data_4D[:, 2] += 1
 np_training_data_4D[:, 3] += 1
 np_training_data_4D[:, 3] /= 4
 print(np_training_data_4D.shape)
-np_training_labels_4D = np.tile(np.asarray(training_labels_4D), 720)
+# np_training_labels_4D = np.tile(np.asarray(training_labels_4D), 720)
+np_training_labels_4D = np.asarray(training_labels_4D)
 print(np_training_labels_4D.shape)
 np.save(np_data_file_name, np_training_data_4D)
 np.save(np_label_file_name, np_training_labels_4D)

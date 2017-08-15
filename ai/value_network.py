@@ -3,13 +3,14 @@ from time import time
 
 import numpy as np
 from keras import backend as K
+from keras import regularizers
 from keras.callbacks import TensorBoard
-from keras.layers import Conv2D, Activation, BatchNormalization
+from keras.layers import Conv2D, Activation, BatchNormalization, Input
 from keras.layers.convolutional import MaxPooling2D, ZeroPadding2D
 from keras.layers.core import Flatten, Dense, Dropout
+from keras.models import Model
 from keras.models import Sequential
 from keras.optimizers import SGD
-from keras.utils import np_utils
 
 
 # -----------------------------------------------
@@ -43,7 +44,7 @@ np_loss_data = np.load(loss_filename)
 np_loss_labels = np.load(loss_label_filename)
 
 np_win_data, np_win_labels, np_loss_data, np_loss_labels = resize_arrays(np_win_data, np_win_labels, np_loss_data,
-                                                                         np_loss_labels, percent=20)
+                                                                         np_loss_labels, percent=100)
 
 # print shapes
 print('win data shape: ', np_win_data.shape)
@@ -53,7 +54,7 @@ print('loss labels shape: ', np_loss_labels.shape)
 
 np_win_loss = np.concatenate((np_win_data, np_loss_data))
 np_win_loss_labels = np.concatenate((np_win_labels, np_loss_labels))
-np_win_loss_labels = np_utils.to_categorical(np_win_loss_labels, 2)
+# np_win_loss_labels = np_utils.to_categorical(np_win_loss_labels, 2)
 print('np win loss shape: ', np_win_loss.shape)
 print('np win loss label shape: ', np_win_loss_labels.shape)
 
@@ -150,17 +151,53 @@ def alex_net(weight_path=None):
     return model
 
 
-if __name__ == "__main__":
-    # Test pretrained model
-    # model = VGG_16('vgg16_weights.h5')
-    model = alex_net()
+def simple_net(weight_path=None):
+    inputs = Input(shape=input_shape)
+    x = Flatten()(inputs)
+    x = Dense(324, activation='sigmoid')(x)
+    x = Dropout(0.2)(x)
+    x = Dense(324, activation='sigmoid')(x)
+    x = Dropout(0.5)(x)
+    x = Dense(162, activation='relu')(x)
+    x = Dropout(0.5)(x)
+    output = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=inputs, outputs=output)
 
-    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+
+def simple_conv_net(weight_path=None):
+    inputs = Input(shape=input_shape)
+    # trial 1, l2 = 1
+    # l2 = .1, good with lr = 0.001
+    # l3 = 0.01
+    # l4 = 10
+    # no padding, dropout 0.5
+    x = Conv2D(6, (5, 5), kernel_regularizer=regularizers.l2(.1))(inputs)
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
+    # x = Conv2D(6, (5, 5), kernel_regularizer=regularizers.l2(.1), padding='same')(x)
+    # x = Activation('relu')(x)
+    # x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Flatten()(x)
+    output = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=inputs, outputs=output)
+    return model
+
+
+if __name__ == "__main__":
+    model = simple_conv_net()
+
+    # lr = 0.001
+    sgd = SGD(lr=.001)
+    model.compile(optimizer=sgd,
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
 
     tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
-    batch_size = 32
-    model.fit(np_win_loss, np_win_loss_labels, validation_split=0.1, epochs=1, batch_size=batch_size,
+    # bs = 16 is good, lr =0.001, l2 = 0.1
+    batch_size = 16
+    model.fit(np_win_loss, np_win_loss_labels, validation_split=0.1, epochs=50, batch_size=batch_size,
               callbacks=[tensorboard], shuffle=True)
 
     model.save('value_network_trial.h5')  # always save your weights after training or during training
