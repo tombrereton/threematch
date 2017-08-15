@@ -1,11 +1,9 @@
-import time
 import os
-import re
 import random
+import re
+from itertools import permutations
 
 import numpy as np
-
-from itertools import permutations
 
 
 def shuffle(l):
@@ -40,10 +38,10 @@ def renumber(game_ids):
     return np.array([translate[orig] for orig in game_ids], dtype='i2')
 
 
-def one_hot(state, permutation=range(6)):
+def one_hot(state, permutation=range(6), training_state=True):
     colour_channels = [state[0] == colour for colour in permutation]
     type_channels = [state[1] == t for t in range(2, 5)]
-    ice_channels = [state[2] == 1]
+    ice_channels = [state[2] == 1 if training_state else 0]
     medal_channels = [state[3] == portion for portion in range(4)]
 
     state = np.concatenate((colour_channels, type_channels, ice_channels, medal_channels))
@@ -124,6 +122,7 @@ class FileParser:
     """
         Class to process files in a directory
     """
+
     def __init__(self):
         """
             Constructor for class
@@ -134,12 +133,12 @@ class FileParser:
         self.labels = []
         self.game_ids = []
         self.moves_left = []
-        
+
         # Compile regex patterns for finding lines
         self.info_line_check = re.compile(r'(\d+(\t|(\r?\n))){4}')
         self.state_line_check = re.compile(r'(-?\d+\t)+\r?\n')
         self.action_line_check = re.compile(r'\d+\t[-\d]+\r?\n')
-        
+
         # Compile regex patterns for breaking lines apart
         self.info_line_parse = re.compile('\d+')
         self.state_line_parse = re.compile('-?\d+')
@@ -175,17 +174,17 @@ class FileParser:
         """
         with open(file) as file:
             lines = file.readlines()
-        
+
         # Initialise variables
         medals = None
         moves = None
         states_actions = []
-        
+
         # Go through lines in the file
         for line in lines:
             # Process each line
             result = self.process_line(line)
-        
+
             if result[0] == 0:
                 # This was the info line, get the moves and medals
                 moves = result[1][0]
@@ -193,10 +192,10 @@ class FileParser:
             elif result[0] != -1:
                 # This was a state or action line
                 states_actions.append(result[1])
-        
+
         # Sort the lines by line number
         states_actions.sort(key=lambda element: element[0])
-        
+
         # Return medals, moves and the list of states and actions
         return medals, moves, states_actions
 
@@ -211,7 +210,7 @@ class FileParser:
                       file was too badly corrupted
         """
         if 3 < len(states_actions) and medals is not None and moves is not None and \
-           states_actions[-1][1] == -1 and states_actions[-2][0] + 1 == states_actions[-1][0]:
+                        states_actions[-1][1] == -1 and states_actions[-2][0] + 1 == states_actions[-1][0]:
 
             states = []
             actions = []
@@ -227,7 +226,7 @@ class FileParser:
             return states, actions, medals, moves, medals == states_actions[-2][2]
         else:
             return [],
-    
+
     def add_to_lists(self, game_id, medals, moves, states_actions):
         """
             Method to add all the data into the lists.
@@ -240,11 +239,11 @@ class FileParser:
         """
         # Fix/check the data
         states, *others = self.fix(medals, moves, states_actions)
-        
+
         # Unpack others if states is non-empty
         if states:
             actions, medals, moves, win = others
-        
+
         # Add all state/action paris to instance lists along with labels, game_ids and moves_left
         for i in range(len(states)):
             self.states.append(states[i][3:])
@@ -252,7 +251,7 @@ class FileParser:
             self.labels.append(win)
             self.game_ids.append(game_id)
             self.moves_left.append(moves - states[i][0] // 2)
-    
+
     def open_files(self, directory=None):
         """
             Method to read in all files
@@ -262,18 +261,18 @@ class FileParser:
         # Change directory if required
         if directory:
             os.chdir(directory)
-        
+
         # Get a list of all .txt files
         files = [file for file in os.listdir() if file.find('.txt') != -1]
-        
+
         # TODO For testing, remove this eventually
         shuffle(files)
-        
+
         # Go through all files, getting the data from them
         for game_id, file in enumerate(files):
             # Get raw data from file
             medals, moves, states_actions = self.process_file(file)
-            
+
             # Pass this data for more processing and adding to instance lists
             self.add_to_lists(game_id, medals, moves, states_actions)
 
@@ -289,17 +288,18 @@ class FileParser:
         np.save('game_ids', game_ids)
         np.save('moves_left', moves_left)
 
+
 if __name__ == '__main__':
     # t0 = time.time()
     # FileParser().open_files('data')
     # t1 = time.time()
     # print(t1 - t0)
 
-    states = np.transpose(np.reshape(np.load('states.npy'), (-1, 9, 9, 4)), (0, 3, 1, 2))
-    actions = np.load('actions.npy')
-    labels = np.load('labels.npy')
-    game_ids = np.load('game_ids.npy')
-    moves_left = np.load('moves_left.npy')
+    states = np.transpose(np.reshape(np.load('../ai/data/states.npy'), (-1, 9, 9, 4)), (0, 3, 1, 2))
+    actions = np.load('../ai/data/actions.npy')
+    labels = np.load('../ai/data/labels.npy')
+    game_ids = np.load('../ai/data/game_ids.npy')
+    moves_left = np.load('../ai/data/moves_left.npy')
 
     for output in data_generator(states, actions, labels, game_ids, moves_left):
         print(output)

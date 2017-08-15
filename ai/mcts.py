@@ -173,18 +173,18 @@ class MonteCarlo:
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        winner = self.eval_function.evaluation_func_simple(state)
-        p(f'Winner: {winner}')
+        state_score = self.eval_function(state)
+        p(f'State_score: {state_score}')
 
         # Update statistics
         stat = self.statistics.get(first_move)
         if stat:
             # Statistics exist, increment plays
             stat[0] += 1
-            stat[1] += winner
+            stat[1] += state_score
         else:
             # If statistics did not exist add them now
-            self.statistics[first_move] = [1, winner]
+            self.statistics[first_move] = [1, state_score]
 
     def pick_move(self):
         """

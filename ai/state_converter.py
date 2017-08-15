@@ -1,7 +1,7 @@
-from model.game import Grid
-from itertools import product
-from ai.medal_placer import medal_grid_filler
 from copy import deepcopy
+
+from ai.medal_placer import medal_grid_filler
+from model.game import Grid
 
 
 def gems_from_state(state, rows=None, cols=None):
@@ -56,6 +56,8 @@ def state_to_grids(state):
     medal_grid_wrapper.grid = medal_grid
 
     return gem_grid_wrapper.grid, ice_grid_wrapper.grid, medal_grid_wrapper.grid, moves_medals
+
+
 
 
 def start_state(state):

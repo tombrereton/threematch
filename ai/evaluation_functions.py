@@ -1,9 +1,17 @@
 from itertools import product
 
+import numpy as np
+from keras.models import load_model
+
+from file_parser.file_parser import one_hot
+
 
 class EvaluationFunction:
-    def __init__(self, pseudo_board):
+    def __init__(self, pseudo_board, model_path=None):
         self.pseudo_board = pseudo_board
+        self.model_path = model_path
+        if model_path:
+            self.model = load_model(model_path)
 
     def evaluation_func_simple(self, state):
         """
@@ -51,3 +59,35 @@ class EvaluationFunction:
         feature_moves_remaining = moves_remaining / total_moves * moves_rem_weight / total_weight
 
         return feature_medal_portions + feature_moves_remaining + feature_ice_removed
+
+    def evaluation_simple_conv(self, state):
+        """
+        Takes in the state uses a neural network to evaluate how likely
+        the state will result in a win.
+        :param state:
+        :return: A rating where a value of 1 is certain that it will win.
+        """
+        # convert state to one hot encoding
+        gem_grid, ice_grid, medal_grid, moves_medals = state
+
+        gem_colour = []
+        bonus = []
+        for row in range(9):
+            temp_colour = []
+            temp_bonus = []
+            for col in range(9):
+                t, bt, _ = gem_grid[row][col]
+                temp_colour.append(t)
+                temp_bonus.append(bt)
+
+            gem_colour.append(temp_colour)
+            bonus.append(temp_bonus)
+
+        state_for_one_hot = np.array([gem_colour, bonus, ice_grid, medal_grid])
+        # print(state_for_one_hot.shape)
+        state = np.array([one_hot(state_for_one_hot)])
+
+        # predict likelihood of winning
+        prediction = self.model.predict(x=state, batch_size=1)
+        # print(prediction[0][0])
+        return prediction[0][0]

@@ -3,7 +3,7 @@ import os
 import numpy as np
 from keras.models import load_model
 
-model = load_model('value_network_trial.h5')
+model = load_model('ai/value_network_trial.h5')
 
 current_dir = os.getcwd() + '/'
 
