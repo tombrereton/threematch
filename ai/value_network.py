@@ -1,3 +1,5 @@
+from time import time
+
 from keras import backend as K
 from keras import regularizers
 from keras.callbacks import TensorBoard
@@ -8,7 +10,6 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 
 from ai.evaluation_numpy_gen import *
-from time import time
 from time import time
 
 from keras import backend as K
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     learning_rate = 0.001
     lmbda_reg = 0.01
     batch_size = 16
-    epochs = 300
+    epochs = 50
     steps_per_epoch = len(training_states) / batch_size
     log_id = time()
     tensorboard = TensorBoard(log_dir=f"logs/{log_id}")
