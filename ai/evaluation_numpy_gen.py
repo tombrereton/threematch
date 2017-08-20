@@ -54,20 +54,17 @@ def data_generator_eval(states, labels):
     while True:
         # outer loop for each epoch
 
-        count = 0
-
         index_list = [i for i in range(len(states))]
         while index_list:
             index = index_list.pop(random.randrange(len(index_list)))
 
             # inner loop generates randomised states for 1 epoch
-            state = states[index]
+            original_state = states[index]
+            for perm in permutations(range(6)):
+                # we convert to one hot encoding
+                state = one_hot(original_state, perm)
 
-            # we convert to one hot encoding
-            state = one_hot(state)
-
-            yield np.array([state]), np.array([labels[index]])
-            count += 1
+                yield np.array([state]), np.array([labels[index]])
 
 
 if __name__ == '__main__':

@@ -63,6 +63,9 @@ class MonteCarloController:
 
             if ev is not None:
                 self.event_manager.post(ev)
+            else:
+                quit_event = QuitEvent()
+                self.event_manager.post(quit_event)
 
 
 class MouseController:

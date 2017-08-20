@@ -6,10 +6,10 @@ from copy import deepcopy
 from itertools import product
 from operator import itemgetter
 from random import randint, choice
-from time import strftime
+from time import time
 
 from events.event_manager import EventManager
-from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent, StateEvent
+from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent, StateEvent, QuitEvent
 from events.update_bag import UpdateBag
 from global_variables import *
 
@@ -49,6 +49,8 @@ class SimpleBoard:
         self.bonus_list = []
         self.swapped_gems = [(), ()]
         self.medal_state = [[-1] * self.columns for _ in range(self.rows)]
+
+        self.quit_on_end = True
 
     def __str__(self):
         medal_grid = self.print_grid(self.medal_grid.grid)
@@ -760,7 +762,7 @@ class Board(SimpleBoard):
         self.line_number = 0
 
         # file operations
-        self.create_file()
+        # self.create_file()
 
         # initialise grids
         self.init_gem_grid()
@@ -1104,6 +1106,21 @@ class Board(SimpleBoard):
             state_event = StateEvent(self.get_obscured_game_state())
             self.event_manager.post(state_event)
 
+            # if game ended, send quit event
+            if self.quit_on_end and self.medals == 0 or self.moves == 0:
+                # append scores and hyper params to file
+                win = 0
+                if self.medals == 0:
+                    win = 1
+
+                file_name = 'mcts_standard.csv'
+                line = f'{win}, {self.medals}, {(self.total_moves - self.moves)}, {self.score}'
+                with open(file_name, 'a') as file:
+                    file.write(line)
+
+                quit_event = QuitEvent()
+                self.event_manager.post(quit_event)
+
             return update_bag
             # ----------------------------------------------------------------------
 
@@ -1169,7 +1186,7 @@ class Board(SimpleBoard):
         if self.test is None:
             main_dir = os.getcwd()
             data_dir = os.path.join(main_dir, 'training_data')
-            name = 'game-' + strftime('%Y%m%d-%H%M%S') + '.txt'
+            name = 'game-' + time() + '.txt'
             self.file_name = os.path.join(data_dir, name)
 
             with open(self.file_name, 'x') as file:
@@ -1182,14 +1199,14 @@ class Board(SimpleBoard):
         :return:
         """
 
-        if self.test is None:
-            state = self.get_game_state()
-            progress = self.get_progress_state()
-
-            string = state + '\n' + progress + '\n'
-
-            with open(self.file_name, 'a') as file:
-                file.write(string)
+        # if self.test is None:
+        #     state = self.get_game_state()
+        #     progress = self.get_progress_state()
+        #
+        #     string = state + '\n' + progress + '\n'
+        #
+        #     with open(self.file_name, 'a') as file:
+        #         file.write(string)
 
     def move_to_completed(self):
         """

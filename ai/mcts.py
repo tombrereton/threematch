@@ -72,6 +72,7 @@ class MonteCarlo:
         self.state = None
         # Initialise dictionary of statistics
         self.statistics = {}
+        self.stat_gen = True
 
     def update(self, state):
         """
@@ -205,16 +206,17 @@ class MonteCarlo:
         moves = self.policy.moves(current_state)
 
         count = 0
-        print('\nNext move:')
-        for move in moves:
-            play_wins = self.statistics.get(move)
-            if play_wins:
-                plays, wins = play_wins
-                win_rate = wins / plays
-                print('Count: {}, Move: {}, Rating: {:.3f}'.format(count, move, win_rate))
-                count += 1
+        if not self.stat_gen:
+            print('\nNext move:')
+            for move in moves:
+                play_wins = self.statistics.get(move)
+                if play_wins:
+                    plays, wins = play_wins
+                    win_rate = wins / plays
+                    print('Count: {}, Move: {}, Rating: {:.3f}'.format(count, move, win_rate))
+                    count += 1
 
-        print(f'Medals remaining: {current_state[-1][1]}')
+            print(f'Medals remaining: {current_state[-1][1]}')
         if not moves:
             # If there are no moves return None
             p('No moves to choose from')
@@ -235,11 +237,13 @@ class MonteCarlo:
             if len(stats):
                 # Return move with the best win rate
                 move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
-                print('\nStats based move: {}, Rating: {:.3}'.format(move, stat[1] / stat[0]))
+                if not self.stat_gen:
+                    print('\nStats based move: {}, Rating: {:.3}'.format(move, stat[1] / stat[0]))
             else:
                 # Return a random move from the moves without statistics
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
-                print('\nRandom move: {}'.format(move))
+                if not self.stat_gen:
+                    print('\nRandom move: {}'.format(move))
 
         # print('Move: ', move)
         return move

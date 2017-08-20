@@ -153,7 +153,7 @@ def simple_net(weight_path=None):
 def simple_conv_net(lmbda, weight_path=None):
     model_name = 'simple_conv_net'
     inputs = Input(shape=input_shape)
-    x = Conv2D(6, (5, 5), kernel_regularizer=regularizers.l2(lmbda))(inputs)
+    x = Conv2D(12, (5, 5), kernel_regularizer=regularizers.l2(lmbda))(inputs)
     x = Activation('relu')(x)
     x = Dropout(0.5)(x)
     x = Flatten()(x)
@@ -168,8 +168,10 @@ if __name__ == "__main__":
     learning_rate = 0.001
     lmbda_reg = 0.01
     batch_size = 16
-    epochs = 50
-    steps_per_epoch = len(training_states) / batch_size
+    epochs = 5
+    steps_per_epoch = len(training_states) * 720 / batch_size
+    validation_steps = len(validation_states) * 720 / 5
+    eval_steps = len(eval_states) * 720 / 5
     log_id = time()
     tensorboard = TensorBoard(log_dir=f"logs/{log_id}")
 
@@ -184,9 +186,12 @@ if __name__ == "__main__":
     eval_gen = data_generator_eval(eval_states, eval_labels)
 
     # train the model
+    start = time()
     model.fit_generator(generator=train_gen, validation_data=valid_gen,
-                        steps_per_epoch=steps_per_epoch, validation_steps=200,
-                        epochs=epochs, callbacks=[tensorboard])
+                        steps_per_epoch=steps_per_epoch, validation_steps=validation_steps,
+                        epochs=epochs, callbacks=[tensorboard], use_multiprocessing=True)
+    duration = (time() - start) / 60
+    print(f'Time to train: {duration} mins')
 
     # save model
     model.save('data/value_network.h5')
@@ -198,6 +203,7 @@ if __name__ == "__main__":
 
     # append scores and hyper params to file
     file_name = 'scores_eval.csv'
-    line = f'\n{model_name}, {log_id}, {learning_rate}, {lmbda_reg}, {batch_size}, {epochs}, {score[0]}, {score[1]}'
+    line = f'\n{model_name}, {log_id}, {learning_rate}, {lmbda_reg}, {batch_size}, {epochs}, {score[0]}, {score[1]}, ' \
+           f'{duration:4.2f}'
     with open(file_name, 'a') as file:
         file.write(line)

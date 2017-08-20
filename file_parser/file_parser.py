@@ -38,10 +38,10 @@ def renumber(game_ids):
     return np.array([translate[orig] for orig in game_ids], dtype='i2')
 
 
-def one_hot(state, permutation=range(6), training_state=True):
+def one_hot(state, permutation=range(6)):
     colour_channels = [state[0] == colour for colour in permutation]
     type_channels = [state[1] == t for t in range(2, 5)]
-    ice_channels = [state[2] == 1 if training_state else 0]
+    ice_channels = [state[2] != -1]
     medal_channels = [state[3] == portion for portion in range(4)]
 
     state = np.concatenate((colour_channels, type_channels, ice_channels, medal_channels))
