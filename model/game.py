@@ -644,9 +644,8 @@ class SimpleBoard:
 
     def get_game_state(self):
         """
-        returns the 3 grids as vectors.
+        returns a tuple of 4 of arrays.
 
-        The 3 grids are (in order) gems, ice, medals
         (gem_type, bonus_type, ice, medal_portion)
         :return:
         """

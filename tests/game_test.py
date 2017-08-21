@@ -2,7 +2,6 @@ from itertools import product
 
 from events.event_manager import EventManager
 from model.game import Board
-from view.gui_variables import GUIVariables
 
 rows0 = 2
 columns0 = 3
@@ -22,7 +21,7 @@ ice_rows2 = 0
 medals2 = 0
 moves_left2 = 30
 
-event_manager = EventManager(gui_vars=GUIVariables)
+event_manager = EventManager()
 b = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b0 = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', event_manager=event_manager)
 b2 = Board(rows2, columns2, ice_rows2, medals2, moves_left2, test='horizontal', event_manager=event_manager)
@@ -143,7 +142,7 @@ def test_1_4_use_4_match_intersect():
 
 def test_1_5_use_bonus_3_intersect():
     """
-    Vertical is a three in a row.
+    Vertical is a three in a column.
 
     Horizontal is a three in a row.
 
@@ -169,18 +168,13 @@ def test_1_5_use_bonus_3_intersect():
     # swap to allow matches to be found
     swap_locations = [(2, 2), (2, 3)]
     b2.set_swap_locations(swap_locations)
-
-    # find matches by calling get update twice
-    bag = b2.get_update()
-    bag = b2.get_update()
-    print(bag)
+    b2.swap_gems()
 
     expected_removals = [(0, 2, 2, 0, 0), (1, 1, 1, 0, 0), (1, 2, 2, 0, 0), (1, 3, 1, 0, 0), (2, 0, 2, 0, 0),
                          (2, 1, 2, 0, 0), (2, 3, 0, 0, 0)]
     expected_bonuses = [(2, 2, 2, 3, 0)]
 
-    actual_removals = bag.removals
-    actual_bonuses = bag.bonuses
+    actual_removals, actual_bonuses = b2.find_matches()
 
     assert expected_removals == actual_removals
     assert expected_bonuses == actual_bonuses
@@ -439,23 +433,7 @@ def test_2_1_ice_removed():
     assert current_ice == ice_grid
 
 
-def test_2_2_medals_removed():
-    """
-    Testing that all medals are removed
-    when gems matched on top of ice.
-
-    All gems should match, remove the ice,
-    and free the medal underneath.
-
-    Grid is 2 by 3.
-    :return:
-    """
-    medal_grid = [[-1] * columns0 for _ in range(rows0)]
-    current_medals = b.medal_grid.grid
-    assert current_medals == medal_grid
-
-
-def test_2_3_remove_ice_when_creating_bonus():
+def test_2_2_remove_ice_when_creating_bonus():
     """
     Testing that ice is removed when a bonus is
     also created.
@@ -495,6 +473,8 @@ def test_3_1_get_game_state():
     """
     The get game state function should
     return all three states as a string in vector form.
+
+    Medals are obscured so they should be all -1 values.
     :return:
     """
     print('\n\nTest 3.1 get state in vector form:\n')
@@ -502,20 +482,18 @@ def test_3_1_get_game_state():
     b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
               event_manager=event_manager)
 
+    b.medal_grid.grid = [[0, 1, -1], [2, 3, -1]]
+
+    b.gem_grid_copy = b.gem_grid.grid
     print(b)
 
-    gems, ice, medals = b.get_game_state()
-    print(gems)
-    print(ice)
-    print(medals)
+    state = b.get_game_state()
+    print(state)
 
-    expected_gems = '[(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0)]'
-    expected_ice = '[0, 0, 0, 0, 0, 0]'
-    expected_medals = '[0, 0, 0, 0, 0, 0]'
+    medal_score = '0\t0\t'
+    expected_state = medal_score + '0\t0\t0\t-1\t0\t0\t0\t-1\t0\t0\t0\t-1\t1\t0\t0\t-1\t1\t0\t0\t-1\t1\t0\t0\t-1\t'
 
-    assert expected_gems == gems
-    assert expected_ice == ice
-    assert expected_medals == medals
+    assert state == expected_state
 
 
 def test_3_2_get_game_state():
@@ -574,6 +552,3 @@ def test_3_3_get_game_state():
                           '1\t0\t0\t-1\t' + '1\t0\t-1\t-1\t'
 
     assert game_state == expected_game_state
-
-def test_4_1_simulate_next_state():
-    pass

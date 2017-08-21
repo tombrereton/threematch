@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 from ai.evaluation_functions import EvaluationFunction
 from ai.mcts import MonteCarlo
@@ -17,14 +17,21 @@ from view.gui_variables import *
 # logging.basicConfig(level=logging.INFO)
 # ------------------------------------------------------------------------------
 def main():
-    """..."""
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Three match with AI', allow_abbrev=True)
+    parser.add_argument('-game_limit', '-g', type=int, default=100,
+                        help='The number of games simulated (default: 100)')
+    parser.add_argument('-move_limit', '-m', type=int, default=5,
+                        help='The number of moves per simulated game (default: 5)')
+    parser.add_argument('-C', '-c', type=float, default=1.4,
+                        help='The exploration factor for UCT (default: 1.4)')
+    args = parser.parse_args()
+    game_limit = args.game_limit
+    move_limit = args.move_limit
+    c = args.C
+    print(args)
 
-    if len(sys.argv) > 1:
-        game_limit, move_limit, c = sys.argv[0], sys.argv[1], sys.argv[2]
-    else:
-        game_limit, move_limit, c = 100, 5, 1.4
-
-    #
+    # misc setup
     gui_vars = GUIVariables.from_global()
     event_manager = EventManager()
 

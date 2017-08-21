@@ -42,6 +42,7 @@ class MonteCarloController:
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
         self.move_finder = monte_carlo_move_finder
+        self.quit_on_no_moves = False
 
         # ----------------------------------------------------------------------
 
@@ -63,7 +64,7 @@ class MonteCarloController:
 
             if ev is not None:
                 self.event_manager.post(ev)
-            else:
+            elif self.quit_on_no_moves:
                 quit_event = QuitEvent()
                 self.event_manager.post(quit_event)
 
