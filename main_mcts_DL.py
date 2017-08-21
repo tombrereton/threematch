@@ -30,8 +30,8 @@ def main():
 
     # ai controller setup
     pseudo_board = PseudoBoard()
-    eval_function_object = EvaluationFunction(pseudo_board)
-    eval_function = eval_function_object.evaluation_func_simple
+    eval_function_object = EvaluationFunction(pseudo_board, model_path='ai/data/value_network.h5')
+    eval_function = eval_function_object.evaluation_simple_conv
     mc = MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit,
                     c=c, policy=AllPolicy(), eval_function=eval_function)
     mcts_cont = MonteCarloController(event_manager, mc)

@@ -9,7 +9,7 @@ from random import randint, choice
 from time import time
 
 from events.event_manager import EventManager
-from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent, StateEvent, QuitEvent
+from events.events import TickEvent, SwapGemsRequest, UpdateBagEvent, StateEvent
 from events.update_bag import UpdateBag
 from global_variables import *
 
@@ -1105,21 +1105,6 @@ class Board(SimpleBoard):
             # send state to MCTS controller
             state_event = StateEvent(self.get_obscured_game_state())
             self.event_manager.post(state_event)
-
-            # if game ended, send quit event
-            if self.quit_on_end and self.medals == 0 or self.moves == 0:
-                # append scores and hyper params to file
-                win = 0
-                if self.medals == 0:
-                    win = 1
-
-                file_name = 'mcts_standard.csv'
-                line = f'{win}, {self.medals}, {(self.total_moves - self.moves)}, {self.score}'
-                with open(file_name, 'a') as file:
-                    file.write(line)
-
-                quit_event = QuitEvent()
-                self.event_manager.post(quit_event)
 
             return update_bag
             # ----------------------------------------------------------------------

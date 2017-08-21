@@ -72,7 +72,7 @@ class MonteCarlo:
         self.state = None
         # Initialise dictionary of statistics
         self.statistics = {}
-        self.stat_gen = True
+        self.stat_gen = False
 
     def update(self, state):
         """
