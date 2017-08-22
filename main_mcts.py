@@ -29,7 +29,7 @@ def main():
     game_limit = args.game_limit
     move_limit = args.move_limit
     c = args.C
-    print(args)
+    print(f'Game Limit: {game_limit}, Move Limit: {move_limit}, C: {c}')
 
     # misc setup
     gui_vars = GUIVariables.from_global()
