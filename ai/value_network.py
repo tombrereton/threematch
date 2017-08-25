@@ -36,6 +36,7 @@ colour_channels, type_channels, ice_channels, medal_channels
 """
 states, labels = get_states_labels()
 eval_states, eval_labels = get_states_labels(evaluation_data=True)
+print(sum(labels) / len(labels))
 
 # split states
 split = 400
@@ -150,13 +151,14 @@ def simple_net(weight_path=None):
 
 
 # -----------------------------------------------
-def simple_conv_net(lmbda, weight_path=None):
+def simple_conv_net(lmbda=None, weight_path=None):
     model_name = 'simple_conv_net'
     inputs = Input(shape=input_shape)
-    x = Conv2D(12, (5, 5), kernel_regularizer=regularizers.l2(lmbda))(inputs)
+    x = Conv2D(6, (5, 5), kernel_regularizer=regularizers.l2(lmbda))(inputs) if lmbda else Conv2D(6, (5, 5))(inputs)
     x = Activation('relu')(x)
     x = Dropout(0.5)(x)
     x = Flatten()(x)
+    x = Dense(32, activation='sigmoid')(x)
     output = Dense(1, activation='sigmoid')(x)
     model = Model(inputs=inputs, outputs=output)
     return model, model_name
@@ -165,29 +167,32 @@ def simple_conv_net(lmbda, weight_path=None):
 # -----------------------------------------------
 if __name__ == "__main__":
     # hyper parameters
-    learning_rate = 0.001
+    learning_rate = 1e-2
     lmbda_reg = 0.01
     batch_size = 16
     epochs = 5
     steps_per_epoch = len(training_states) * 720 / batch_size
-    validation_steps = len(validation_states) * 720 / 5
+    validation_steps = len(validation_states) * 720 / 100
     eval_steps = len(eval_states) * 720 / 5
     log_id = time()
     tensorboard = TensorBoard(log_dir=f"logs/{log_id}")
 
     # compile the model
-    model, model_name = simple_conv_net(lmbda=lmbda_reg)
+    model, model_name = simple_conv_net(lmbda=None)
     sgd = SGD(lr=learning_rate)
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     # data generators
     train_gen = data_generator_eval(training_states, training_labels)
+    batch_train_gen = batch_generator_eval(train_gen, batch_size)
     valid_gen = data_generator_eval(validation_states, validation_labels)
+    batch_valid_gen = batch_generator_eval(valid_gen, batch_size)
     eval_gen = data_generator_eval(eval_states, eval_labels)
+    batch_eval_gen = batch_generator_eval(eval_gen, 1)
 
     # train the model
     start = time()
-    model.fit_generator(generator=train_gen, validation_data=valid_gen,
+    model.fit_generator(generator=batch_train_gen, validation_data=batch_valid_gen,
                         steps_per_epoch=steps_per_epoch, validation_steps=validation_steps,
                         epochs=epochs, callbacks=[tensorboard], use_multiprocessing=True)
     duration = (time() - start) / 60
@@ -197,7 +202,7 @@ if __name__ == "__main__":
     model.save('data/value_network.h5')
 
     # evaluate model
-    score = model.evaluate_generator(generator=eval_gen,
+    score = model.evaluate_generator(generator=batch_eval_gen,
                                      steps=len(eval_states))
     print('\n\nTest loss:', score[0], ', Test accuracy: ', score[1])
 

@@ -15,24 +15,14 @@ def get_states_labels(evaluation_data=False, eval_data_split=200):
     states = np.load('data/states.npy')
     labels = np.load('data/labels.npy')
 
-    game_id_indices = []
-    start_index = 0
-    end_index = 0
-    current_id = None
-    rolling_id = game_ids[0]
+    l = {game_ids[i]: i for i in range(len(game_ids))}.values()
+    l = [0, *l]
+    game_id_indices = [random.randrange(l[i - 1], l[i]) for i in range(1, len(l))]
 
-    while end_index < len(game_ids):
-        start_index = end_index
-        current_id = game_ids[end_index]
-
-        while end_index != len(game_ids) and rolling_id == current_id:
-            rolling_id = game_ids[end_index]
-            end_index += 1
-
-        game_id_indices.append(random.randrange(start_index, end_index))
-
-    game_id_indices = np.array(game_id_indices, dtype='int8')
     states = states[game_id_indices]
+
+    # TODO change this label to a expected utility
+    # Do this by running MCTS on sampled state
     labels = labels[game_id_indices]
 
     states = np.reshape(states, [-1, 9, 9, 4])
@@ -54,7 +44,7 @@ def data_generator_eval(states, labels):
     while True:
         # outer loop for each epoch
 
-        index_list = [i for i in range(len(states))]
+        index_list = list(range(len(states)))
         while index_list:
             index = index_list.pop(random.randrange(len(index_list)))
 
@@ -64,9 +54,23 @@ def data_generator_eval(states, labels):
                 # we convert to one hot encoding
                 state = one_hot(original_state, perm)
 
-                yield np.array([state]), np.array([labels[index]])
+                yield state, labels[index]
+
+
+def batch_generator_eval(generator, batch_size):
+    while True:
+        states = []
+        labels = []
+
+        for _ in range(batch_size):
+            state, label = generator.__next__()
+            states.append(state)
+            labels.append(label)
+
+        yield np.array(states), np.array(labels)
 
 
 if __name__ == '__main__':
-    s, l = get_states_labels()
+    # s, l = get_states_labels()
+    generate_files()
     # print(s, l)

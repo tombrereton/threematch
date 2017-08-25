@@ -95,7 +95,7 @@ class EvaluationFunction:
 
         # feature weightings
         nn_weight = 1
-        moves_rem_weight = 1
+        moves_rem_weight = 0
         total_weight = nn_weight + moves_rem_weight
 
         # moves remaining feature calculation
