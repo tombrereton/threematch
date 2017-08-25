@@ -161,3 +161,17 @@ def data_from_generator(generator, steps):
     gen = [g for g, _ in zip(generator, range(steps))]
 
     return np.concatenate([g[0] for g in gen]), np.concatenate([g[1] for g in gen])
+
+
+def shuffle_multiple(*lists):
+    """
+        Function to shuffle a list.
+        :param lists: A list of lists to shuffle.
+        :return: None
+    """
+    i = len(lists[0]) - 1
+    while 0 < i:
+        j = random.randrange(i)
+        for l in lists:
+            l[i], l[j] = l[j], l[i]
+        i -= 1

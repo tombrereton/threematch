@@ -1,3 +1,5 @@
+from time import time
+
 from keras import backend as K
 from keras import regularizers
 from keras.callbacks import TensorBoard
