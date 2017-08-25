@@ -16,7 +16,6 @@ class PseudoBoard:
         self.current_move = 0
         self.total_medals = None
         self.total_moves = None
-        self.ice_rows = None
         self.init_variables()
         self.parser = StateParser()
 
@@ -34,7 +33,12 @@ class PseudoBoard:
         if self.level == 1:
             self.total_moves = 20
             self.total_medals = 3
-            self.ice_rows = 5
+        elif self.level == 2:
+            self.total_moves = 25
+            self.total_medals = 4
+        elif self.level == 3:
+            self.total_moves = 30
+            self.total_medals = 5
 
     def first_state(self, file_index):
         # Returns a representation of the starting state of the game.
@@ -220,19 +224,3 @@ class PseudoBoard:
 
         medals_remaining = moves_medals[1] - medals_in_grid
         return medal_grid, medals_remaining
-
-
-if __name__ == '__main__':
-    # get initial state
-    s = PseudoBoard()
-    cs = s.get_state_from_data(2, 16)
-    s.current_state = cs
-    print(s)
-
-    # get legal moves
-    legal_moves = s.legal_moves(cs)
-
-    # get next state from move 23
-    move = legal_moves[23]
-    ns = s.next_state(cs, move)
-    print(s.is_winner(ns))
