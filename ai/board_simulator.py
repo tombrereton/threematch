@@ -6,7 +6,7 @@ from ai.state_functions import moves_three
 from model.game import SimpleBoard
 
 
-class PseudoBoard:
+class BoardSimulator:
     def __init__(self, level=1):
         self.current_state = ()
         self.level = level

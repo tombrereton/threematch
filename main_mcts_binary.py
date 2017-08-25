@@ -1,6 +1,6 @@
 import argparse
 
-from ai.board_simulator import PseudoBoard
+from ai.board_simulator import BoardSimulator
 from ai.evaluation_functions import EvaluationFunction
 from ai.mcts import MonteCarlo
 from ai.policies import AllPolicy
@@ -37,7 +37,7 @@ def main():
     event_manager = EventManager()
 
     # ai controller setup
-    pseudo_board = PseudoBoard()
+    pseudo_board = BoardSimulator()
     eval_function_object = EvaluationFunction(pseudo_board)
     eval_function = eval_function_object.evaluation_func_binary
     mc = MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit,

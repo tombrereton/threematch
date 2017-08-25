@@ -1,7 +1,7 @@
 import math
 import random
 
-from ai.board_simulator import PseudoBoard
+from ai.board_simulator import BoardSimulator
 from ai.state_functions import start_state
 
 
@@ -52,7 +52,7 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy, eval_function, level=1,
+    def __init__(self, board: BoardSimulator, game_limit, move_limit, c, policy, eval_function, level=1,
                  get_q_values=False):
         """
         Constructor for the class
