@@ -6,19 +6,6 @@ from itertools import permutations
 import numpy as np
 
 
-def shuffle(l):
-    """
-        Function to shuffle a list
-        :param l: List to shuffle
-        :return: None
-    """
-    i = len(l) - 1
-    while 0 < i:
-        j = random.randrange(i)
-        l[i], l[j] = l[j], l[i]
-        i -= 1
-
-
 def shuffle_multiple(*lists):
     """
         Function to shuffle a list
@@ -85,37 +72,119 @@ def data_generator(states, actions, labels, game_ids, moves_remaining):
         for p in this_state_perms:
             state = one_hot(state, p)
 
+            print("don't use this generator")
             yield np.array([state]), output
 
 
 def move_evaluator(states, actions, labels, game_ids, moves_remaining):
-    perms = list(permutations(range(6)))
+    state_perm = []
+
+    colour_perms = list(permutations(range(6)))
+    games = sorted(set(game_ids))
+    index = 0
+
+    for game_id in games:
+        top = min(index + 30, len(game_ids))
+        sub_indices = [i for i in range(index, top) if game_ids[i] == game_id]
+        states_in_game = len(sub_indices)
+
+        for i in sub_indices:
+            state_perm.extend((i, p) for p in range(i - index, 720, states_in_game))
+
+        index += states_in_game
 
     while True:
-        index = random.randrange(len(states))
+        random.shuffle(state_perm)
 
-        state = states[index]
-        action = actions[index]
-        label = labels[index]
-        game_id = game_ids[index]
-        moves = moves_remaining[index]
+        for state_i, perm_i in state_perm:
+            state = states[state_i]
+            action = actions[state_i]
+            label = labels[state_i]
+            moves = moves_remaining[state_i]
 
-        r = range(max(0, index - 30), min(len(game_ids), index + 30))
-        this_game_indices = [i for i in r if game_ids[i] == game_id]
-        states_in_game = len(this_game_indices)
-        sub_index = this_game_indices.index(index)
-        this_state_perms = [random.choice(perms[sub_index::states_in_game])]
+            perm = colour_perms[perm_i]
 
-        move_channel = np.full((9, 9), False)
-        move_channel[action[0]][action[1]] = True
-        move_channel[action[2]][action[3]] = True
+            state = one_hot(state, perm)
 
-        for p in this_state_perms:
-            state = one_hot(state, p)
+            move_channel = np.full((9, 9), False)
+            move_channel[action[0]][action[1]] = True
+            move_channel[action[2]][action[3]] = True
 
             state = np.concatenate((state, [move_channel]))
 
-            yield np.array([state]), np.array([label])
+            yield state, label
+
+
+def batch_generator(generator, batch_size, ):
+    states = []
+    labels = []
+
+    while True:
+        for _ in range(2 * batch_size):
+            state, label = generator.__next__()
+
+            states.append(state)
+            labels.append(label)
+
+        yield np.array(states), np.array(labels)
+
+        states.clear()
+        labels.clear()
+
+
+def batch_generator2(generator, batch_size):
+    states = []
+    labels = []
+
+    while True:
+        wins_expected = int(batch_size * random.random())
+        losses_expected = batch_size - wins_expected
+
+        wins = 0
+        losses = 0
+
+        while len(states) < batch_size:
+            state, label = generator.__next__()
+
+            if (label and (wins < wins_expected)) or (not label and (losses < losses_expected)):
+                states.append(state)
+                labels.append(label)
+
+                wins, losses = wins + 1 if label else wins, losses if label else losses + 1
+
+        yield np.array(states), np.array(labels)
+
+        states.clear()
+        labels.clear()
+
+
+def data_from_generator(generator, steps):
+    gen = [g for g, _ in zip(generator, range(steps))]
+
+    return np.concatenate([g[0] for g in gen]), np.concatenate([g[1] for g in gen])
+
+
+def splitter(split_fractions, states, actions, labels, game_ids, moves_remaining):
+    data_length = len(game_ids)
+
+    # Size of sections
+    foo = [int(data_length * fraction) for fraction in split_fractions]
+
+    # Indices of splits
+    foo = [data_length - sum(foo[i:]) for i in range(len(split_fractions))]
+
+    # Game IDs at these splits
+    bar = [game_ids[i] for i in foo]
+
+    # Start of these games
+    baz = [min(j for j in range(max(0, foo[i] - 30), foo[i] + 1) if game_ids[j] == game_id) for i, game_id in
+           enumerate(bar)]
+
+    qux = [0, *baz, data_length]
+
+    for i in range(len(split_fractions) + 1):
+        yield states[qux[i]:qux[i + 1]], actions[qux[i]:qux[i + 1]], labels[qux[i]:qux[i + 1]], \
+              game_ids[qux[i]:qux[i + 1]], moves_remaining[qux[i]:qux[i + 1]]
 
 
 class FileParser:
@@ -266,7 +335,7 @@ class FileParser:
         files = [file for file in os.listdir() if file.find('.txt') != -1]
 
         # TODO For testing, remove this eventually
-        shuffle(files)
+        random.shuffle(files)
 
         # Go through all files, getting the data from them
         for game_id, file in enumerate(files):
