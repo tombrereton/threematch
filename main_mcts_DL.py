@@ -1,7 +1,7 @@
 import argparse
 
+from ai.board_simulator import PseudoBoard
 from ai.evaluation_functions import EvaluationFunction
-from ai.helpers.pseudo_board import PseudoBoard
 from ai.mcts import MonteCarlo
 from ai.policies import AllPolicy
 from controller.controllers import CPUSpinnerController, MonteCarloController, MouseController

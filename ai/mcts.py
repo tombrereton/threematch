@@ -1,8 +1,8 @@
 import math
 import random
 
-from ai.helpers.pseudo_board import PseudoBoard
-from ai.helpers.state_converter import start_state
+from ai.board_simulator import PseudoBoard
+from ai.state_functions import start_state
 
 
 def pick_move_helper(element):
@@ -249,4 +249,7 @@ class MonteCarlo:
                     print('\nRandom move: {}'.format(move))
 
         # print('Move: ', move)
-        return move if not self.get_q_values else moves
+        if self.get_q_values:
+            return move, moves
+        else:
+            return move

@@ -1,4 +1,4 @@
-from ai.helpers.move_finder import pick_move
+from ai.state_functions import pick_move
 from controller.controllers import NaiveAIControllerV1, MouseController, CPUSpinnerController
 from events.event_manager import EventManager
 from global_variables import *
