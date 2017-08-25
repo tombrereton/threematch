@@ -304,7 +304,7 @@ def one_hot(state, permutation=range(6)):
 
 def utility_function(state, monte_carlo, board_simulator):
     """
-    This functions takes in a state performs uses monte carlo
+    This functions takes in a state and performs monte carlo
     tree search. It returns the utility of the state and
     the reward for each possible actions.
     :param board_simulator: a board_simulator class

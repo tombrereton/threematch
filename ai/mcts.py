@@ -250,6 +250,7 @@ class MonteCarlo:
 
         # print('Move: ', move)
         if self.get_q_values:
-            return move, moves
+            q_values = [(m, s[1] / s[0]) for m, s in zip(moves, stats)]
+            return move, q_values
         else:
             return move
