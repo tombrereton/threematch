@@ -7,14 +7,17 @@ from model.game import SimpleBoard
 
 
 class PseudoBoard:
-    def __init__(self):
+    def __init__(self, level=1):
         self.current_state = ()
+        self.level = level
         self.rows = 9
         self.cols = 9
         self.gem_types = 6
-        self.total_medals = 3
         self.current_move = 0
-        self.total_moves = 20
+        self.total_medals = None
+        self.total_moves = None
+        self.ice_rows = None
+        self.init_variables()
         self.parser = StateParser()
 
     def __str__(self):
@@ -26,6 +29,12 @@ class PseudoBoard:
 
         s = f'Score, medals: {score_medals}\n' + b.__str__()
         return s
+
+    def init_variables(self):
+        if self.level == 1:
+            self.total_moves = 20
+            self.total_medals = 3
+            self.ice_rows = 5
 
     def first_state(self, file_index):
         # Returns a representation of the starting state of the game.
@@ -211,6 +220,7 @@ class PseudoBoard:
 
         medals_remaining = moves_medals[1] - medals_in_grid
         return medal_grid, medals_remaining
+
 
 if __name__ == '__main__':
     # get initial state
