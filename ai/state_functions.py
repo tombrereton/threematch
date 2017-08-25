@@ -203,7 +203,7 @@ def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medal_number: in
         medal_check = (foo[r + i][c + j] == -1 for i, j in product(range(2), range(2)))
 
         # Check if there is a gap or a medal here
-        if not(all(ice_check) and all(medal_check)):
+        if not (all(ice_check) and all(medal_check)):
             # If so remove from to_check
             to_check.pop(index)
 
@@ -302,12 +302,14 @@ def one_hot(state, permutation=range(6)):
     return state
 
 
-def utility_function(state, monte_carlo, board_simulator, level):
+def utility_function(state, monte_carlo, board_simulator):
     """
     This functions takes in a state performs uses monte carlo
     tree search. It returns the utility of the state and
     the reward for each possible actions.
-    :param state:
+    :param board_simulator: a board_simulator class
+    :param monte_carlo: a monte_carlo class
+    :param state: The state should be in the form that monte_carlo requires.
     :return: U(state), Q(state,action) for all actions in A
     """
     game_limit = 100
