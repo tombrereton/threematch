@@ -1,8 +1,8 @@
 import math
 import random
 
-from ai.helpers.pseudo_board import PseudoBoard
-from ai.helpers.state_converter import start_state
+from ai.board_simulator import BoardSimulator
+from ai.state_functions import start_state
 
 
 def pick_move_helper(element):
@@ -42,7 +42,7 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy, eval_function, level=1,
+    def __init__(self, board: BoardSimulator, game_limit, move_limit, c, policy, eval_function, level=1,
                  get_q_values=False):
         """
         Constructor for the class
@@ -211,4 +211,7 @@ class MonteCarlo:
                 if not self.stat_gen:
                     print(f'\nRandom move: {move}')
 
-        return move if not self.get_q_values else moves
+        if self.get_q_values:
+            return move, moves
+        else:
+            return move

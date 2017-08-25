@@ -2,7 +2,7 @@ from itertools import product
 
 import numpy as np
 
-from file_parser.file_parser import one_hot
+from ai.state_functions import one_hot
 
 
 class EvaluationFunction:

@@ -9,19 +9,7 @@ from keras.models import Model
 from keras.models import Sequential
 from keras.optimizers import SGD
 
-from ai.helpers.evaluation_generator import *
-from time import time
-
-from keras import backend as K
-from keras import regularizers
-from keras.callbacks import TensorBoard
-from keras.layers import Conv2D, Activation, BatchNormalization, Input, Dense, Dropout, Flatten, MaxPooling2D, \
-    ZeroPadding2D
-from keras.models import Model
-from keras.models import Sequential
-from keras.optimizers import SGD
-
-from ai.helpers.evaluation_generator import *
+from ai.data_generators import *
 
 # -----------------------------------------------
 input_shape = (14, 9, 9)

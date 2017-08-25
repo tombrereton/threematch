@@ -1,40 +1,16 @@
 import os
 import random
 import re
-import time
 from itertools import permutations
 
 import numpy as np
 
-
-def shuffle_multiple(*lists):
-    """
-        Function to shuffle a list.
-        :param lists: A list of lists to shuffle.
-        :return: None
-    """
-    i = len(lists[0]) - 1
-    while 0 < i:
-        j = random.randrange(i)
-        for l in lists:
-            l[i], l[j] = l[j], l[i]
-        i -= 1
+from ai.state_functions import one_hot, utility_function
 
 
 def renumber(game_ids):
     translate = {orig: new for new, orig in enumerate(set(game_ids))}
     return np.array([translate[orig] for orig in game_ids], dtype='i2')
-
-
-def one_hot(state, permutation=range(6)):
-    colour_channels = [state[0] == colour for colour in permutation]
-    type_channels = [state[1] == t for t in range(2, 5)]
-    ice_channels = [state[2] != -1]
-    medal_channels = [state[3] == portion for portion in range(4)]
-
-    state = np.concatenate((colour_channels, type_channels, ice_channels, medal_channels))
-
-    return state
 
 
 def reformat_action(action):
@@ -44,37 +20,6 @@ def reformat_action(action):
     else:
         # Swap along x axis.
         return 1, action[0], min(action[1], action[3])
-
-
-def data_generator(states, actions, labels, game_ids, moves_remaining):
-    perms = list(permutations(range(6)))
-
-    while True:
-        index = random.randrange(len(states))
-
-        state = states[index]
-        action = actions[index]
-        label = labels[index]
-        game_id = game_ids[index]
-        moves = moves_remaining[index]
-
-        r = range(max(0, index - 30), min(len(game_ids), index + 30))
-        this_game_indices = [i for i in r if game_ids[i] == game_id]
-        states_in_game = len(this_game_indices)
-        sub_index = this_game_indices.index(index)
-        this_state_perms = perms[sub_index::states_in_game]
-
-        output = np.full((1, 4, 9, 9), False)
-        action = reformat_action(action)
-        output[0, action[0], action[1], action[2]] = True
-        if label:
-            output[0, 2 + action[0], action[1], action[2]] = True
-
-        for p in this_state_perms:
-            state = one_hot(state, p)
-
-            print("don't use this generator")
-            yield np.array([state]), output
 
 
 def move_evaluator(states, actions, labels, game_ids, moves_remaining):
@@ -114,55 +59,6 @@ def move_evaluator(states, actions, labels, game_ids, moves_remaining):
             state = np.concatenate((state, [move_channel]))
 
             yield state, label
-
-
-def batch_generator(generator, batch_size, ):
-    states = []
-    labels = []
-
-    while True:
-        for _ in range(2 * batch_size):
-            state, label = generator.__next__()
-
-            states.append(state)
-            labels.append(label)
-
-        yield np.array(states), np.array(labels)
-
-        states.clear()
-        labels.clear()
-
-
-def batch_generator2(generator, batch_size):
-    states = []
-    labels = []
-
-    while True:
-        wins_expected = int(batch_size * random.random())
-        losses_expected = batch_size - wins_expected
-
-        wins = 0
-        losses = 0
-
-        while len(states) < batch_size:
-            state, label = generator.__next__()
-
-            if (label and (wins < wins_expected)) or (not label and (losses < losses_expected)):
-                states.append(state)
-                labels.append(label)
-
-                wins, losses = wins + 1 if label else wins, losses if label else losses + 1
-
-        yield np.array(states), np.array(labels)
-
-        states.clear()
-        labels.clear()
-
-
-def data_from_generator(generator, steps):
-    gen = [g for g, _ in zip(generator, range(steps))]
-
-    return np.concatenate([g[0] for g in gen]), np.concatenate([g[1] for g in gen])
 
 
 def splitter(split_fractions, states, actions, labels, game_ids, moves_remaining):
@@ -366,8 +262,32 @@ class FileParser:
         np.save('levels', levels)
 
 
-if __name__ == '__main__':
-    t0 = time.time()
-    FileParser().open_files('data')
-    t1 = time.time()
-    print(t1 - t0)
+def create_utility_labels(data_dir):
+    states = np.load(data_dir + 'states.npy')
+
+    utility, q_values = utility_function(states[0])
+
+    utility_labels = np.array(utility)
+    q_value_labels = np.array(q_values)
+
+
+# if __name__ == '__main__':
+#     create_utility_labels('../ai/data/')
+#     # t0 = time.time()
+#     # FileParser().open_files('data')
+#     # t1 = time.time()
+#     # print(t1 - t0)
+#
+#     states = np.transpose(np.reshape(np.load('../ai/data/states.npy'), (-1, 9, 9, 4)), (0, 3, 1, 2))
+#     actions = np.load('../ai/data/actions.npy')
+#     labels = np.load('../ai/data/labels.npy')
+#     game_ids = np.load('../ai/data/game_ids.npy')
+#     moves_left = np.load('../ai/data/moves_left.npy')
+#
+#     # for output in data_generator(states, actions, labels, game_ids, moves_left):
+#     #     print(output)
+#     #     break
+#     t0 = time.time()
+#     FileParser().open_files('data')
+#     t1 = time.time()
+#     print(t1 - t0)

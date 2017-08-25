@@ -1,15 +1,16 @@
-import numpy as np
 import time
 
+import numpy as np
+
 t = time.time()
-import keras
-from keras.layers import Conv2D, Dense, Flatten, Dropout, Input
-from keras.models import Sequential, Model
+from keras.layers import Conv2D, Dense, Flatten, Input
+from keras.models import Model
 from keras.optimizers import SGD
-from keras import regularizers
+
 print(f'Import time: {time.time() - t}')
 
-from file_parser.file_parser import move_evaluator, splitter, batch_generator, batch_generator2, data_from_generator
+from file_parser.file_parser import move_evaluator, splitter
+from ai.data_generators import batch_generator, batch_generator2, data_from_generator
 
 
 def rescale(layer, factor):
