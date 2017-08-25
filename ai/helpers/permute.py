@@ -1,6 +1,6 @@
-import numpy as np
-
 from itertools import permutations
+
+import numpy as np
 
 
 def permute(orig_data):

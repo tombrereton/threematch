@@ -1,6 +1,5 @@
-import random
 import copy
-
+import random
 from itertools import product
 
 

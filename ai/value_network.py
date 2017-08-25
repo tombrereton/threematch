@@ -9,7 +9,7 @@ from keras.models import Model
 from keras.models import Sequential
 from keras.optimizers import SGD
 
-from ai.evaluation_numpy_gen import *
+from ai.helpers.evaluation_numpy_gen import *
 from time import time
 
 from keras import backend as K
@@ -21,7 +21,7 @@ from keras.models import Model
 from keras.models import Sequential
 from keras.optimizers import SGD
 
-from ai.evaluation_numpy_gen import *
+from ai.helpers.evaluation_numpy_gen import *
 
 # -----------------------------------------------
 input_shape = (14, 9, 9)

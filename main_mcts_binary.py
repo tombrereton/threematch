@@ -1,9 +1,9 @@
 import argparse
 
 from ai.evaluation_functions import EvaluationFunction
+from ai.helpers.pseudo_board import PseudoBoard
 from ai.mcts import MonteCarlo
 from ai.policies import AllPolicy
-from ai.pseudo_board import PseudoBoard
 from controller.controllers import CPUSpinnerController, MonteCarloController, MouseController
 from events.event_manager import EventManager
 from global_variables import *

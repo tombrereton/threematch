@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from ai.state_parser import StateParser
+from ai.helpers.state_parser import StateParser
 
 # change this depending on the win/loss folder
 is_win_folder = True

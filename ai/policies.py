@@ -1,4 +1,4 @@
-from ai.move_finder import moves_three
+from ai.helpers.move_finder import moves_three
 
 
 class AbstractPolicy:

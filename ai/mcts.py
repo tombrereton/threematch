@@ -1,8 +1,8 @@
 import math
 import random
 
-from ai.pseudo_board import PseudoBoard
-from ai.state_converter import start_state
+from ai.helpers.pseudo_board import PseudoBoard
+from ai.helpers.state_converter import start_state
 
 
 def pick_move_helper(element):

@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from ai.medal_placer import medal_grid_filler
+from ai.helpers.medal_placer import medal_grid_filler
 from model.game import Grid
 
 
