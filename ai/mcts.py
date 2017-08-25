@@ -52,7 +52,8 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy, eval_function):
+    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy, eval_function, level=1,
+                 get_q_values=False):
         """
         Constructor for the class
         :param board: Board object containing the game
@@ -73,6 +74,8 @@ class MonteCarlo:
         # Initialise dictionary of statistics
         self.statistics = {}
         self.stat_gen = False
+        self.level = level
+        self.get_q_values = get_q_values
 
     def update(self, state):
         """
@@ -174,7 +177,7 @@ class MonteCarlo:
         # Game over or move limit reached
         # Find the winner of the game
         # 1 == win, 0 == loss
-        state_score = self.eval_function(state)
+        state_score = self.eval_function(state, self.level)
         p(f'State_score: {state_score}')
 
         # Update statistics
@@ -187,7 +190,7 @@ class MonteCarlo:
             # If statistics did not exist add them now
             self.statistics[first_move] = [1, state_score]
 
-    def pick_move(self, get_q_values=False):
+    def pick_move(self):
         """
         Simulates some games and picks a move
         :return: Picked move
@@ -246,4 +249,4 @@ class MonteCarlo:
                     print('\nRandom move: {}'.format(move))
 
         # print('Move: ', move)
-        return move if not get_q_values else moves
+        return move if not self.get_q_values else moves

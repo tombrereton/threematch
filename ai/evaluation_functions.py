@@ -35,7 +35,7 @@ class EvaluationFunction:
 
         return 1 if portion_ratio == 1 else 0
 
-    def evaluation_func_simple(self, state):
+    def evaluation_func_simple(self, state, level=1):
         """
         Takes in the state and evaluates it by giving a number between 0 and 1,
         where 1 is most optimal.
@@ -60,7 +60,7 @@ class EvaluationFunction:
 
         # medal portion feature calculation
         medals_remaining = moves_medals[1]
-        total_portions = 12
+        total_portions = 4 * (2 + level)
         portion_count = 0
         for i, j in product(range(9), range(9)):
             if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
