@@ -187,7 +187,7 @@ class MonteCarlo:
             # If statistics did not exist add them now
             self.statistics[first_move] = [1, state_score]
 
-    def pick_move(self):
+    def pick_move(self, get_q_values=False):
         """
         Simulates some games and picks a move
         :return: Picked move
@@ -246,4 +246,4 @@ class MonteCarlo:
                     print('\nRandom move: {}'.format(move))
 
         # print('Move: ', move)
-        return move
+        return move if not get_q_values else moves

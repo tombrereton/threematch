@@ -4,7 +4,7 @@ from file_parser.file_parser import *
 def generate_files():
     # generate files
     parser = FileParser()
-    parser.open_files(directory='data')
+    parser.open_files(directory='../data')
 
 
 def get_states_labels(evaluation_data=False, eval_data_split=200):
@@ -16,7 +16,7 @@ def get_states_labels(evaluation_data=False, eval_data_split=200):
     labels = np.load('data/labels.npy')
 
     l = {game_ids[i]: i for i in range(len(game_ids))}.values()
-    l = [0, *l]
+    l = [0, *[i + 1 for i in l]]
     game_id_indices = [random.randrange(l[i - 1], l[i]) for i in range(1, len(l))]
 
     states = states[game_id_indices]
@@ -71,6 +71,6 @@ def batch_generator_eval(generator, batch_size):
 
 
 if __name__ == '__main__':
-    # s, l = get_states_labels()
-    generate_files()
+    s, l = get_states_labels()
+    # generate_files()
     # print(s, l)
