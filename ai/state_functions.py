@@ -302,6 +302,20 @@ def one_hot(state, permutation=range(6)):
     return state
 
 
+def numpy_to_native(state):
+    # If state is flat
+    state = np.reshape(state, (9, 9, 4))
+    state = np.transpose(state, (2, 0, 1))
+
+    gem_grid = np.transpose(state[0:2], (1, 2, 0))
+    ice_grid = state[2]
+    medal_grid = state[3]
+
+    moves_medals = None
+
+    return gem_grid, ice_grid, medal_grid, moves_medals
+
+
 def utility_function(state, monte_carlo, board_simulator):
     """
     This functions takes in a state performs uses monte carlo
