@@ -337,3 +337,6 @@ def utility_function(state, monte_carlo, board_simulator):
     utility, q_values = mc.pick_move()
 
     return utility, q_values
+
+if __name__ == '__main__':
+    pass

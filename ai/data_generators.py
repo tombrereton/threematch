@@ -5,7 +5,6 @@ import numpy as np
 
 from ai.state_functions import one_hot
 from file_parser.file_parser import FileParser
-from file_parser.file_parser import reformat_action
 
 
 def generate_files():
@@ -175,3 +174,75 @@ def shuffle_multiple(*lists):
         for l in lists:
             l[i], l[j] = l[j], l[i]
         i -= 1
+
+
+def move_evaluator(states, actions, labels, game_ids, moves_remaining):
+    state_perm = []
+
+    colour_perms = list(permutations(range(6)))
+    games = sorted(set(game_ids))
+    index = 0
+
+    for game_id in games:
+        top = min(index + 30, len(game_ids))
+        sub_indices = [i for i in range(index, top) if game_ids[i] == game_id]
+        states_in_game = len(sub_indices)
+
+        for i in sub_indices:
+            state_perm.extend((i, p) for p in range(i - index, 720, states_in_game))
+
+        index += states_in_game
+
+    while True:
+        random.shuffle(state_perm)
+
+        for state_i, perm_i in state_perm:
+            state = states[state_i]
+            action = actions[state_i]
+            label = labels[state_i]
+            moves = moves_remaining[state_i]
+
+            perm = colour_perms[perm_i]
+
+            state = one_hot(state, perm)
+
+            move_channel = np.full((9, 9), False)
+            move_channel[action[0]][action[1]] = True
+            move_channel[action[2]][action[3]] = True
+
+            state = np.concatenate((state, [move_channel]))
+
+            yield state, label
+
+
+def splitter(split_fractions, control, *lists):
+    data_length = len(control)
+
+    # Size of sections.
+    individual_section_sizes = [int(data_length * fraction) for fraction in split_fractions]
+
+    # Cumulative section sizes.
+    cumulative_section_sizes = [data_length - sum(individual_section_sizes[i:]) for i in range(len(split_fractions))]
+
+    # Control IDs at these splits.
+    control_ids = [control[i] for i in cumulative_section_sizes]
+
+    # Start of these sections according to control.
+    shifted_indices = [min(index for index in range(max(0, size - 29), size + 1) if control[index] == control_id)
+                       for size, control_id in zip(cumulative_section_sizes, control_ids)]
+
+    # Add start and end of the lists
+    all_indices = [0, *shifted_indices, data_length]
+
+    for i in range(len(split_fractions) + 1):
+        yield [control[all_indices[i]:all_indices[i + 1]], *[l[all_indices[i]:all_indices[i + 1]] for l in lists]]
+
+
+def reformat_action(action):
+    # TODO remove this
+    if action[1] == action[3]:
+        # Swap along y axis.
+        return 0, min(action[0], action[2]), action[3]
+    else:
+        # Swap along x axis.
+        return 1, action[0], min(action[1], action[3])

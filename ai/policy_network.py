@@ -9,8 +9,7 @@ from keras.optimizers import SGD
 
 print(f'Import time: {time.time() - t}')
 
-from file_parser.file_parser import move_evaluator, splitter
-from ai.data_generators import batch_generator, batch_generator2, data_from_generator
+from ai.data_generators import batch_generator, batch_generator2, data_from_generator, move_evaluator, splitter
 
 
 def rescale(layer, factor):
