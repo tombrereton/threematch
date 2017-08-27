@@ -1,5 +1,5 @@
 \documentclass{bhamthesis}
-\title{Solving Match Three with Artificial Intelligence: Using Monte Carlo Tree Search and Deep Learning}
+\title{Solving Match Three with Artificial Intelligence: A Comparison of Evaluation Functions}
 \author{Thomas Brereton}
 \date{August 2017}  %% Version 2009/12/26
 
@@ -7,6 +7,10 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{blindtext}
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
+
 
 \newtheorem*{thm}{Theorem}
 
@@ -60,16 +64,48 @@ To be completed.
 \blindtext
 
 \chapter{Literature Review}
+\section{Utility Theory}
+\section{Game Theory}
+\section{Markov Decision Process}
+\section{Monte Carlo Tree Search}
+\subsection{Tree Policy}
+\subsection{Roll-out}
+\subsection{One Look-ahead}
+\subsection{One Look-ahead with Roll-out}
+\subsection{Full Monte Carlo Tree Search}
+\section{Neural Networks and Deep Learning}
 \blindtext
 
-\chapter{Project Specification}
+\chapter{Problem Domain}
+Classify the problem i.e. non deterministic hidden info. Some level of deterministic.
 \blindtext
 
-\chapter{Methodology and Solution Design}
+\chapter{Solution Design}
+Apply literature review to problem domain. Give overview of MCTS and DL design. To do this we needed to build a game and gather data. This implementation of this will be discussed in the Technical requirements.
 Explain design.
 Justify design.
 Show how it is implemented.
-Show snippets of code as pseudocode.
+Show snippets of code as pseudo-code.
+
+\section{Monte Carlo Tree Search}
+\blindtext
+
+\section{No Evaluation Function}
+Full tree. Win 1 loss 0.
+
+\section{Crude Evaluation Function}
+Counts medal portions.
+
+\section{Heuristic Based Evaluation Function}
+Counts medal portions plus other features.
+
+\section{Evaluation Network with Outcome Labels}
+\blindtext
+
+\section{Evaluation Network with Utility Labels}
+\blindtext
+
+\chapter{Technical Requirements}
 
 \section{Game Design}
 \blindtext
@@ -77,21 +113,19 @@ Show snippets of code as pseudocode.
 \section{Website Design}
 \blindtext
 
-\section{Monte Carlo Tree Search Design}
-\blindtext
-
-\section{Evaluation Neural Network Design}
-\blindtext
-
 \chapter{Artificial Intelligence Performance Analysis}
-How the analysis was performed (how to reproduce results).
-\blindtext
-
-\chapter{Results}
-Results from analysis.
+\section{Analysis Methodology}
+\section{Results}
+Results from analysis. \cite{Browne2012}
 Which algorithms and parameters performed better.
 Why did they perform better.
 Why did some fail.
+\section{Comparison of Evaluation Functions}
+How the analysis was performed (how to reproduce results).
+\blindtext
+
+\chapter{Evaluation of Project}
+\blindtext
 
 \chapter{Conclusion}
 Summary of results and findings. Recommendations of design and parameters for similar AI and game design.
@@ -99,16 +133,12 @@ Summary of results and findings. Recommendations of design and parameters for si
 \chapter{Further Study}
 \blindtext
 
-\chapter{Evaluation of Project}
-\blindtext
 
-
-
-
-
-\backmatter
-\bibliographystyle{plain}
-\bibliography{bibeg}
+%\backmatter
+\chapter{References}
+\printbibliography[heading=none]
+%\bibliographystyle{plain}
+%\bibliography{bibeg}
 
 \chapter{Appendices}
 \end{document}
