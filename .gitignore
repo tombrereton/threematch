@@ -386,3 +386,5 @@ TSWLatexianTemp*
 *-tags.tex
 
 training_data/*
+/ai/data/
+/ai/logs/
