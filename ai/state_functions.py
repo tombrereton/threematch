@@ -348,8 +348,14 @@ if __name__ == '__main__':
     move_limit = 5
     c = 1.4
     eval_function = EvaluationFunction(board_simulator).evaluation_func_simple
-    monte_carlo = MonteCarlo(board_simulator, game_limit=game_limit, move_limit=move_limit,
-                             c=c, policy=AllPolicy(), eval_function=eval_function)
+    monte_carlo = MonteCarlo(board_simulator,
+                             game_limit=game_limit,
+                             move_limit=move_limit,
+                             c=c,
+                             policy=AllPolicy(),
+                             eval_function=eval_function,
+                             get_q_values=True,
+                             print_move_ratings=False) # Change this to True if you want a formatted print of q_values
 
     for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(10)):
         state = numpy_to_native(grid, moves, medals)

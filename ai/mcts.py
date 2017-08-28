@@ -43,7 +43,7 @@ class MonteCarlo:
     """
 
     def __init__(self, board: BoardSimulator, game_limit, move_limit, c, policy, eval_function, level=1,
-                 get_q_values=False):
+                 get_q_values=False, print_move_ratings=True):
         """
         Constructor for the class
         :param board: Board object containing the game
@@ -63,7 +63,7 @@ class MonteCarlo:
         self.state = None
         # Initialise dictionary of statistics
         self.statistics = {}
-        self.stat_gen = False
+        self.print_move_ratings = print_move_ratings
         self.level = level
         self.get_q_values = get_q_values
 
@@ -178,7 +178,7 @@ class MonteCarlo:
         moves = self.policy.moves(current_state)
 
         count = 0
-        if not self.stat_gen:
+        if self.print_move_ratings:
             print('\nNext move:')
             for move in moves:
                 play_wins = self.statistics.get(move)
@@ -203,16 +203,17 @@ class MonteCarlo:
             if len(stats):
                 # Return move with the best win rate
                 move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
-                if not self.stat_gen:
+                if self.print_move_ratings:
                     print(f'\nStats based move: {move}, Rating: {stat[1] / stat[0]:.3}')
             else:
                 # Return a random move from the moves without statistics
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
-                if not self.stat_gen:
+                if self.print_move_ratings:
                     print(f'\nRandom move: {move}')
 
         if self.get_q_values:
             q_values = [(m, s[1] / s[0]) for m, s in zip(moves, stats)]
-            return move, q_values
+            utility = max(q_values, key=lambda x: x[1])[1]
+            return utility, q_values
         else:
             return move
