@@ -11,67 +11,6 @@ import numpy as np
 from model.game import Grid
 
 
-def gems_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[state[i][j][0] for j in rows] for i in cols]
-
-
-def gems_plus_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[(state[i][j][0], state[i][j][1], 0) for j in rows] for i in cols]
-
-
-def ice_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[state[i][j][2] for j in rows] for i in cols]
-
-
-def medals_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[state[i][j][3] for j in rows] for i in cols]
-
-
-def state_to_grids(state):
-    rows = range(len(state) - 1)
-    cols = range(len(state[0]))
-
-    gem_grid_wrapper = Grid(0, 0)
-    ice_grid_wrapper = Grid(0, 0)
-    medal_grid_wrapper = Grid(0, 0)
-
-    moves_medals = state[-1]
-
-    gem_grid = gems_plus_from_state(state, rows, cols)
-    ice_grid = ice_from_state(state, rows, cols)
-    medal_grid = medals_from_state(state, rows, cols)
-    medal_grid = medal_grid_filler(ice_grid, medal_grid, moves_medals[1]).__next__()
-
-    gem_grid_wrapper.grid = gem_grid
-    ice_grid_wrapper.grid = ice_grid
-    medal_grid_wrapper.grid = medal_grid
-
-    return gem_grid_wrapper.grid, ice_grid_wrapper.grid, medal_grid_wrapper.grid, moves_medals
-
-
-def start_state(state):
-    gem_grid, ice_grid, medal_grid, moves_medals = state
-    medal_grid = medal_grid_filler(ice_grid, medal_grid, moves_medals[1]).__next__()
-
-    return deepcopy(gem_grid), deepcopy(ice_grid), medal_grid, moves_medals
-
-
 class StateParser:
     def __init__(self):
         self.rows = 9
@@ -135,6 +74,13 @@ class StateParser:
         grid.grid.append(state[:2])
         parsed_state = tuple(map(tuple, grid.grid))
         return parsed_state
+
+
+def start_state(state):
+    gem_grid, ice_grid, medal_grid, moves_medals = state
+    medal_grid = medal_grid_filler(ice_grid, medal_grid, moves_medals[1]).__next__()
+
+    return deepcopy(gem_grid), deepcopy(ice_grid), medal_grid, moves_medals
 
 
 def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medals_remaining: int):
@@ -235,7 +181,7 @@ def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medals_remaining
                     break
 
 
-def moves_three(grid: list):
+def find_legal_moves(grid: list):
     """
     Function that returns a list of moves that can be made
     :param grid: Grid to search for moves, should not contain matches
@@ -284,7 +230,7 @@ def moves_three(grid: list):
 
 
 def pick_move(grid: list):
-    moves = moves_three(grid)
+    moves = find_legal_moves(grid)
     return random.choice(moves) if len(moves) else None
 
 
@@ -330,6 +276,7 @@ def utility_function(state, monte_carlo):
 
     return utility, q_values
 
+
 if __name__ == '__main__':
     grids = np.load('../file_parser/grids.npy')
     grids = np.reshape(grids, (-1, 9, 9, 4))
@@ -355,7 +302,7 @@ if __name__ == '__main__':
                              policy=AllPolicy(),
                              eval_function=eval_function,
                              get_q_values=True,
-                             print_move_ratings=False) # Change this to True if you want a formatted print of q_values
+                             print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
     for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(10)):
         state = numpy_to_native(grid, moves, medals)

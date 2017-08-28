@@ -172,6 +172,7 @@ class MonteCarlo:
         :return: Picked move
         """
         self.statistics = {}
+        stats = None
         # Simulate games, builds tree
         for _ in range(self.game_limit):
             # Simulate one game
