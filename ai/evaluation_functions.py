@@ -13,10 +13,10 @@ class EvaluationFunction:
             from keras.models import load_model
             self.model = load_model(model_path)
 
-    def evaluation_func_binary(self, state):
+    @staticmethod
+    def evaluation_func_binary(state):
         """
         Takes in a terminal state and returns 1 if it is a win, 0 for a loss.
-        :param level:
         :param state:
         :return:
         """
@@ -100,7 +100,7 @@ class EvaluationFunction:
                     portion_count += 1
             return (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
-    def evaluation_simple_conv(self, state):
+    def evaluation_simple_conv_NN(self, state):
         """
         Takes in the state uses a neural network to evaluate how likely
         the state will result in a win.
@@ -113,8 +113,6 @@ class EvaluationFunction:
 
         # feature weightings
         nn_weight = 1
-        moves_rem_weight = 0
-        total_weight = nn_weight + moves_rem_weight
 
         # moves remaining feature calculation
         moves_remaining = moves_medals[0]  # feature weightings

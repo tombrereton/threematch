@@ -39,8 +39,12 @@ class SimpleBoard:
         self.gem_types = gem_types
         self.total_medals = medals_remaining
         self.medals_remaining = medals_remaining
+        self.game_state = ""
 
+        self.additions = []
+        self.movements = []
         self.medals_removed = []
+        self.ice_removed = []
         self.match_list = []
         self.gem_grid_copy = []
         self.cascade = 0
@@ -753,7 +757,7 @@ class Board(SimpleBoard):
 
         # game variables
         self.ice_rows = ice_rows
-        self.total_moves = None # set by number of ice rows
+        self.total_moves = None  # set by number of ice rows
         self.set_max_moves()
         self.bonus_types = bonus_types
         self.terminal_state = False
