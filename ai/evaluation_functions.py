@@ -53,13 +53,14 @@ class EvaluationFunction:
         gem_grid, ice_grid, medal_grid, moves_medals = state
 
         # feature weightings
-        medal_portion_weight = 3
+        medal_portion_weight = 5
         ice_removed_weight = 0
         moves_rem_weight = 1
         total_weight = medal_portion_weight + moves_rem_weight + ice_removed_weight
 
         # medal portion feature calculation
         medals_remaining = moves_medals[1]
+        portions_remaining = medals_remaining * 4
         total_portions = 4 * (2 + level)
         portion_count = 0
         for i, j in product(range(9), range(9)):
