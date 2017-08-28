@@ -137,19 +137,19 @@ class StateParser:
         return parsed_state
 
 
-def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medal_number: int):
+def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medals_remaining: int):
     """
     Fills in a medal grid
     :param ice_grid: Grid of ice
     :param partial_medal_grid: Partial medal grid, only uncovered medals will show
-    :param medal_number: Number of medals that need to be in the grid
+    :param medals_remaining: Number of medals that need to be in the grid
     :return: Filled medal grid
     """
     # Copy medal grid
     foo = copy.deepcopy(partial_medal_grid)
 
     # If there are no medals return now
-    if not medal_number:
+    if not medals_remaining:
         yield foo
         return
 
@@ -180,7 +180,7 @@ def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medal_number: in
                 for i, j in product(range(2), range(2)):
                     foo[r - i][c - j] = 3 - (2 * i + j)
                 # Check if all the medals have been added yet
-                if medals_existing == medal_number:
+                if medals_existing == medals_remaining:
                     # If so return the new medal grid
                     yield foo
                     return
@@ -229,7 +229,7 @@ def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medal_number: in
                 for i, j in product(range(2), range(2)):
                     bar[r + i][c + j] = 2 * i + j
                 # Check if all the medals have been added yet
-                if medals_existing + added == medal_number:
+                if medals_existing + added == medals_remaining:
                     # If so return the new medal grid
                     yield bar
                     break
