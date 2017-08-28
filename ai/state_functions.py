@@ -335,6 +335,7 @@ if __name__ == '__main__':
     grids = np.reshape(grids, (-1, 9, 9, 4))
     grids = np.transpose(grids, (0, 3, 1, 2))
     grids[:, 2][grids[:, 2] == 1] = 0
+    grids[:, 1] -= 1
     moves_left = np.load('../file_parser/moves_left.npy')
     medals_left = np.load('../file_parser/medals_left.npy')
 
