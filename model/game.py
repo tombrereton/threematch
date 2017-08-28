@@ -28,12 +28,12 @@ class SimpleBoard:
     def __init__(self, rows, columns, gem_types, medals_remaining, moves_remaining):
 
         # grids
-        self.moves_remaining = moves_remaining
         self.gem_grid = Grid(rows, columns)
         self.ice_grid = Grid(rows, columns)
         self.medal_grid = Grid(rows, columns)
 
         # board variables
+        self.moves_remaining = moves_remaining
         self.rows = rows
         self.columns = columns
         self.gem_types = gem_types
