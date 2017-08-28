@@ -708,6 +708,9 @@ class SimpleBoard:
 
         return gem_grid, ice_grid, medal_grid, moves_medals
 
+    def move_made(self):
+        self.moves_remaining -= 1
+
 
 class Board(SimpleBoard):
     """
@@ -1154,9 +1157,6 @@ class Board(SimpleBoard):
 
         else:
             return False
-
-    def move_made(self):
-        self.moves_remaining -= 1
 
     def file_header(self):
         """

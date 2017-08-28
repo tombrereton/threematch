@@ -26,6 +26,7 @@ class BoardSimulator:
 
         board.set_swap_locations(action)
         board.swap_gems()
+        board.move_made()
 
         while True:
             matches, bonuses = board.find_matches()
