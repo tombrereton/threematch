@@ -136,9 +136,9 @@ class MonteCarlo:
 
         first_move = None
         for move_count in range(self.move_limit):
-            # first check if winning state and break if so
-            medals_remaining = state[3][1]
-            if medals_remaining == 0:
+            # first check if terminal state and break if so
+            moves_remaining, medals_remaining = state[3]
+            if moves_remaining == 0 or medals_remaining == 0:
                 break
 
             # Get the list of all possible moves at this point
