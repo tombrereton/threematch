@@ -300,9 +300,14 @@ def one_hot(state, permutation=range(6)):
 
 
 def numpy_to_native(grid, moves_left, medals_left):
-    gem_grid = np.transpose(grid[0:2], (1, 2, 0))
+    gem_grid = grid[:2]
+    gem_grid = np.array([*gem_grid, np.full((9, 9), 0)])
+    gem_grid = np.transpose(gem_grid, (1, 2, 0))
+    gem_grid = [[(*el,) for el in row] for row in gem_grid]
     ice_grid = grid[2]
+    ice_grid = [[el for el in row] for row in ice_grid]
     medal_grid = grid[3]
+    medal_grid = [[el for el in row] for row in medal_grid]
 
     moves_medals = moves_left, medals_left
 
@@ -326,18 +331,16 @@ def utility_function(state, monte_carlo):
     return utility, q_values
 
 if __name__ == '__main__':
-    print(os.getcwd())
     grids = np.load('../file_parser/grids.npy')
     grids = np.reshape(grids, (-1, 9, 9, 4))
     grids = np.transpose(grids, (0, 3, 1, 2))
+    grids[:, 2][grids[:, 2] == 1] = 0
     moves_left = np.load('../file_parser/moves_left.npy')
     medals_left = np.load('../file_parser/medals_left.npy')
 
     from ai.mcts import MonteCarlo, BoardSimulator
     from ai.evaluation_functions import EvaluationFunction
     from ai.policies import AllPolicy
-
-    print('imported')
 
     board_simulator = BoardSimulator()
     game_limit = 100
@@ -347,9 +350,6 @@ if __name__ == '__main__':
     monte_carlo = MonteCarlo(board_simulator, game_limit=game_limit, move_limit=move_limit,
                              c=c, policy=AllPolicy(), eval_function=eval_function)
 
-    print('loop')
-
-    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(1)):
+    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(10)):
         state = numpy_to_native(grid, moves, medals)
-        utility_function(state, monte_carlo)
-        print('hi')
+        print(utility_function(state, monte_carlo))
