@@ -55,18 +55,21 @@ class EvaluationFunction:
         # feature weightings
         medal_portion_weight = 5
         ice_removed_weight = 0
-        moves_rem_weight = 1
+        moves_rem_weight = 0
         total_weight = medal_portion_weight + moves_rem_weight + ice_removed_weight
 
         # medal portion feature calculation
         medals_remaining = moves_medals[1]
         portions_remaining = medals_remaining * 4
         total_portions = 4 * (2 + level)
-        portion_count = 0
-        for i, j in product(range(9), range(9)):
-            if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
-                portion_count += 1
-        feature_medal_portions = (portion_count / total_portions) * medal_portion_weight / total_weight
+        if portions_remaining == 0:
+            feature_medal_portions = 1 * medal_portion_weight / total_weight
+        else:
+            portion_count = 0
+            for i, j in product(range(9), range(9)):
+                if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
+                    portion_count += 1
+            feature_medal_portions = (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
         # ice removed feature calculation
         ice_removed = 0

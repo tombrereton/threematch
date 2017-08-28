@@ -266,7 +266,7 @@ def test_1_8_swap_in_bonus_and_activate_vertical():
     """
     print('\n\nTest 1.8 swap in a cross bonus and removing all gems vertically:\n')
 
-    b2 = Board(rows=5, columns=1, ice_rows=0, medals=0, moves=10, gem_types=3, test='vertical',
+    b2 = Board(rows=5, columns=1, ice_rows=0, medals_remaining=0, moves_remaining=10, gem_types=3, test='vertical',
                event_manager=event_manager)
 
     # Set up grid for testing
@@ -304,7 +304,7 @@ def test_1_9_swap_in_bonus_and_activate_horizontal():
     """
     print('\n\nTest 1.9 swap in a cross bonus and removing all gems horizontally:\n')
 
-    b2 = Board(rows=1, columns=5, ice_rows=0, medals=0, moves=10, gem_types=3, test='horizontal',
+    b2 = Board(rows=1, columns=5, ice_rows=0, medals_remaining=0, moves_remaining=10, gem_types=3, test='horizontal',
                event_manager=event_manager)
 
     # Set up grid for testing
@@ -341,7 +341,7 @@ def test_1_10_swap_in_bonus_from_above_and_activate_horizontal():
     """
     print('\n\nTest 1.10 swap in a cross bonus from above and remove all gems horizontally:\n')
 
-    b2 = Board(rows=2, columns=5, ice_rows=0, medals=0, moves=10, gem_types=3, test='horizontal',
+    b2 = Board(rows=2, columns=5, ice_rows=0, medals_remaining=0, moves_remaining=10, gem_types=3, test='horizontal',
                event_manager=event_manager)
 
     # Set up grid for testing
@@ -374,7 +374,7 @@ def test_1_11_diamond_grid():
 
     print('\n\nTest 1.11 grid full of diamonds, remove all:\n')
 
-    b2 = Board(rows=3, columns=3, ice_rows=0, medals=0, moves=10, gem_types=1, test='horizontal',
+    b2 = Board(rows=3, columns=3, ice_rows=0, medals_remaining=0, moves_remaining=10, gem_types=1, test='horizontal',
                event_manager=event_manager)
     print(b2)
 
@@ -448,7 +448,7 @@ def test_2_2_remove_ice_when_creating_bonus():
     """
     print('\n\nTest 2.3 removing ice when creating a bonus:\n')
 
-    b2 = Board(rows=1, columns=4, ice_rows=1, medals=0, moves=10, gem_types=3, test='horizontal',
+    b2 = Board(rows=1, columns=4, ice_rows=1, medals_remaining=0, moves_remaining=10, gem_types=3, test='horizontal',
                event_manager=event_manager)
 
     print(b2)
@@ -479,7 +479,7 @@ def test_3_1_get_game_state():
     """
     print('\n\nTest 3.1 get state in vector form:\n')
 
-    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+    b = Board(rows=2, columns=3, ice_rows=2, medals_remaining=1, moves_remaining=10, gem_types=3, test='horizontal',
               event_manager=event_manager)
 
     b.medal_grid.grid = [[0, 1, -1], [2, 3, -1]]
@@ -504,7 +504,7 @@ def test_3_2_get_game_state():
     """
     print('\n\nTest 3.1 get state in vector form:\n')
 
-    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+    b = Board(rows=2, columns=3, ice_rows=2, medals_remaining=1, moves_remaining=10, gem_types=3, test='horizontal',
               event_manager=event_manager)
 
     print(b)
@@ -527,7 +527,7 @@ def test_3_3_get_game_state():
     """
     print('\n\nTest 3.1 get state in vector form:\n')
 
-    b = Board(rows=2, columns=3, ice_rows=2, medals=1, moves=10, gem_types=3, test='horizontal',
+    b = Board(rows=2, columns=3, ice_rows=2, medals_remaining=1, moves_remaining=10, gem_types=3, test='horizontal',
               event_manager=event_manager)
 
     for i, j in product(range(2), range(3)):

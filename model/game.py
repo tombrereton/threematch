@@ -25,9 +25,10 @@ class Grid:
 
 
 class SimpleBoard:
-    def __init__(self, rows, columns, gem_types, medals):
+    def __init__(self, rows, columns, gem_types, medals_remaining, moves_remaining):
 
         # grids
+        self.moves_remaining = moves_remaining
         self.gem_grid = Grid(rows, columns)
         self.ice_grid = Grid(rows, columns)
         self.medal_grid = Grid(rows, columns)
@@ -36,8 +37,8 @@ class SimpleBoard:
         self.rows = rows
         self.columns = columns
         self.gem_types = gem_types
-        self.total_medals = medals
-        self.medals = medals
+        self.total_medals = medals_remaining
+        self.medals_remaining = medals_remaining
 
         self.medals_removed = []
         self.match_list = []
@@ -606,7 +607,7 @@ class SimpleBoard:
                 self.remove_medal(row, column)
 
                 # decrement medals
-                self.medals -= 1
+                self.medals_remaining -= 1
 
     def remove_medal(self, row: int, column: int):
         """
@@ -620,7 +621,7 @@ class SimpleBoard:
         """
         for i, j in product(range(2), range(2)):
             # remove from grid
-            # self.medal_grid.grid[row + i][column + j] = -1
+            self.medal_grid.grid[row + i][column + j] = -1
 
             # remove from medal locations list
             portion = j + 2 * i
@@ -650,7 +651,7 @@ class SimpleBoard:
         :return:
         """
         # get medals uncovered and score
-        medals_uncovered = self.total_medals - self.medals
+        medals_uncovered = self.total_medals - self.medals_remaining
         score = self.score
 
         game_state = str(score) + '\t' + str(medals_uncovered) + '\t'
@@ -698,6 +699,15 @@ class SimpleBoard:
 
         return action
 
+    def get_obscured_game_state(self):
+        gem_grid = deepcopy(self.gem_grid.grid)
+        ice_grid = deepcopy(self.ice_grid.grid)
+        medal_grid = self.medal_grid.grid
+        medal_grid = [[medal if ice else -1 for ice, medal in zip(*rows)] for rows in zip(ice_grid, medal_grid)]
+        moves_medals = (self.moves_remaining, self.medals_remaining)
+
+        return gem_grid, ice_grid, medal_grid, moves_medals
+
 
 class Board(SimpleBoard):
     """
@@ -724,15 +734,15 @@ class Board(SimpleBoard):
                  rows: int,
                  columns: int,
                  ice_rows: int,
-                 medals: int,
-                 moves: int,
+                 medals_remaining: int,
+                 moves_remaining: int,
                  event_manager: EventManager,
                  gem_types: int = GEM_TYPES,
                  bonus_types: int = BONUS_TYPES,
                  ice_layers=ICE_LAYERS,
                  test=None,
                  random_seed=RANDOM_SEED):
-        super().__init__(rows, columns, gem_types, medals)
+        super().__init__(rows, columns, gem_types, medals_remaining, moves_remaining)
 
         # event manager
         self.event_manager = event_manager
@@ -740,8 +750,8 @@ class Board(SimpleBoard):
 
         # game variables
         self.ice_rows = ice_rows
-        self.total_moves = moves
-        self.moves = moves
+        self.total_moves = None # set by number of ice rows
+        self.set_max_moves()
         self.bonus_types = bonus_types
         self.terminal_state = False
         self.win_state = False
@@ -774,7 +784,7 @@ class Board(SimpleBoard):
 
     def state(self):
         return self.gem_grid.grid, self.ice_grid.grid, self.medal_grid.grid, (
-            self.moves, self.medals, self.score, False, False)
+            self.moves_remaining, self.medals_remaining, self.score, False, False)
 
     def notify(self, event):
         if isinstance(event, SwapGemsRequest):
@@ -850,6 +860,14 @@ class Board(SimpleBoard):
             for col in range(columns):
                 self.ice_grid.grid[row][col] = self.ice_layers
 
+    def set_max_moves(self):
+        if self.ice_rows == 5:
+            self.total_moves = 20
+        elif self.ice_rows == 7:
+            self.total_moves = 25
+        elif self.ice_rows == 9:
+            self.total_moves = 30
+
     def init_medal_grid(self):
         """
         Initialises the medal grid with portions of medals.
@@ -865,7 +883,7 @@ class Board(SimpleBoard):
         rows = self.rows
         columns = self.columns
         i = 0
-        while i < self.medals:
+        while i < self.medals_remaining:
             # get random choice
             row = choice(range(rows - self.ice_rows, rows - 1))
             column = choice(range(columns - 1))
@@ -929,7 +947,7 @@ class Board(SimpleBoard):
         Simple getter to get game information
         :return:
         """
-        return self.moves, self.medals, self.score, self.terminal_state, self.win_state
+        return self.moves_remaining, self.medals_remaining, self.score, self.terminal_state, self.win_state
 
     def extrapolate_score(self):
         """
@@ -938,8 +956,8 @@ class Board(SimpleBoard):
         for the number of moves left.
         :return:
         """
-        avg_per_move = self.score / (self.total_moves - self.moves)
-        bonus_points = avg_per_move * self.moves
+        avg_per_move = self.score / (self.total_moves - self.moves_remaining)
+        bonus_points = avg_per_move * self.moves_remaining
 
         self.score += bonus_points
 
@@ -1067,7 +1085,7 @@ class Board(SimpleBoard):
 
             # ---------------------------------------
             # check for terminal state
-            if self.medals == 0:
+            if self.medals_remaining == 0:
                 # WON
 
                 # write state if terminal state
@@ -1080,7 +1098,7 @@ class Board(SimpleBoard):
                 # give bonus points for moves remaining
                 self.extrapolate_score()
 
-            elif self.moves == 0:
+            elif self.moves_remaining == 0:
                 # LOST
 
                 # write state if terminal state
@@ -1138,7 +1156,7 @@ class Board(SimpleBoard):
             return False
 
     def move_made(self):
-        self.moves -= 1
+        self.moves_remaining -= 1
 
     def file_header(self):
         """
@@ -1153,7 +1171,7 @@ class Board(SimpleBoard):
 
         line3 = 'tmo\ttme\tr\tc\n'
         divider = '\n'
-        line5 = str(self.moves) + '\t' + str(self.total_medals) + '\t' + str(self.rows) + '\t' + str(
+        line5 = str(self.moves_remaining) + '\t' + str(self.total_medals) + '\t' + str(self.rows) + '\t' + str(
             self.columns) + '\n'
 
         key_about = '\nKey for state and progress information.\n2 lines represent a state-action pair:\n'
@@ -1229,15 +1247,6 @@ class Board(SimpleBoard):
                 row.append((gems[i][j][0], gems[i][j][1], ice[i][j], m))
             state.append(tuple(row))
 
-        state.append((self.moves, self.medals))
+        state.append((self.moves_remaining, self.medals_remaining))
 
         return tuple(state)
-
-    def get_obscured_game_state(self):
-        gem_grid = deepcopy(self.gem_grid.grid)
-        ice_grid = deepcopy(self.ice_grid.grid)
-        medal_grid = self.medal_grid.grid
-        medal_grid = [[medal if ice else -1 for ice, medal in zip(*rows)] for rows in zip(ice_grid, medal_grid)]
-        moves_medals = (self.moves, self.medals)
-
-        return gem_grid, ice_grid, medal_grid, moves_medals
