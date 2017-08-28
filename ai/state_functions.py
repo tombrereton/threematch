@@ -294,7 +294,7 @@ if __name__ == '__main__':
     game_limit = 100
     move_limit = 5
     c = 1.4
-    eval_function = EvaluationFunction(board_simulator).evaluation_func_simple
+    eval_function = EvaluationFunction(board_simulator).evaluation_func_crude
     monte_carlo = MonteCarlo(board_simulator,
                              game_limit=game_limit,
                              move_limit=move_limit,

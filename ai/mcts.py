@@ -147,24 +147,22 @@ class MonteCarlo:
                 # No valid moves available, game is over
                 break
             if move_count == 0:
-                # Still expanding, add this to visited set
+                # store first move so we can add statistics to it
                 first_move = move
             state = self.board.next_state(state, move)
 
-        # Game over or move limit reached
-        # Find the winner of the game
-        # 1 == win, 0 == loss
-        state_score = self.eval_function(state, self.level)
+        # evaluate last state reached
+        state_rating = self.eval_function(state)
 
         # Update statistics
         stat = self.statistics.get(first_move)
         if stat:
             # Statistics exist, increment plays
             stat[0] += 1
-            stat[1] += state_score
+            stat[1] += state_rating
         else:
             # If statistics did not exist add them now
-            self.statistics[first_move] = [1, state_score]
+            self.statistics[first_move] = [1, state_rating]
 
     def pick_move(self):
         """

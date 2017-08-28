@@ -13,7 +13,7 @@ class EvaluationFunction:
             from keras.models import load_model
             self.model = load_model(model_path)
 
-    def evaluation_func_binary(self, state, level=1):
+    def evaluation_func_binary(self, state):
         """
         Takes in a terminal state and returns 1 if it is a win, 0 for a loss.
         :param level:
@@ -22,20 +22,14 @@ class EvaluationFunction:
         """
 
         gem_grid, ice_grid, medal_grid, moves_medals = state
+        moves_remaining, medals_remaining = moves_medals
 
-        # medal portion feature calculation
-        medals_remaining = moves_medals[1]
-        total_portions = 4 * (2 + level)
-        portion_count = 0
-        for i, j in product(range(9), range(9)):
-            if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
-                portion_count += 1
+        if medals_remaining == 0:
+            return 1
+        else:
+            return 0
 
-        portion_ratio = portion_count / total_portions
-
-        return 1 if portion_ratio == 1 else 0
-
-    def evaluation_func_simple(self, state, level=1):
+    def evaluation_func_crude(self, state):
         """
         Takes in the state and evaluates it by giving a number between 0 and 1,
         where 1 is most optimal.
@@ -58,33 +52,53 @@ class EvaluationFunction:
         moves_rem_weight = 0
         total_weight = medal_portion_weight + moves_rem_weight + ice_removed_weight
 
-        # medal portion feature calculation
-        medals_remaining = moves_medals[1]
-        portions_remaining = medals_remaining * 4
-        total_portions = 4 * (2 + level)
-        if portions_remaining == 0:
-            feature_medal_portions = 1 * medal_portion_weight / total_weight
-        else:
-            portion_count = 0
-            for i, j in product(range(9), range(9)):
-                if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
-                    portion_count += 1
-            feature_medal_portions = (portion_count / portions_remaining) * medal_portion_weight / total_weight
+        feature_medal_portions = self.feature_medal_portions(ice_grid,
+                                                             medal_grid,
+                                                             medal_portion_weight,
+                                                             moves_medals,
+                                                             total_weight)
 
+        feature_ice_removed = self.feature_ice_removed(ice_grid,
+                                                       ice_removed_weight,
+                                                       total_weight)
+
+        feature_moves_remaining = self.feature_moves_remaining(moves_medals,
+                                                               moves_rem_weight,
+                                                               total_weight)
+
+        return feature_medal_portions + feature_moves_remaining + feature_ice_removed
+
+    @staticmethod
+    def feature_moves_remaining(moves_medals, moves_rem_weight, total_weight):
+        # moves remaining feature calculation
+        moves_remaining = moves_medals[0]
+        total_moves = 20
+        rating = moves_remaining / total_moves * moves_rem_weight / total_weight
+        return rating
+
+    @staticmethod
+    def feature_ice_removed(ice_grid, ice_removed_weight, total_weight):
         # ice removed feature calculation
         ice_removed = 0
         total_ice = 81
         for i, j in product(range(9), range(9)):
             if ice_grid[i][j] == -1:
                 ice_removed += 1
-        feature_ice_removed = ice_removed / total_ice * ice_removed_weight / total_weight
+        return ice_removed / total_ice * ice_removed_weight / total_weight
 
-        # moves remaining feature calculation
-        moves_remaining = moves_medals[0]
-        total_moves = 20
-        feature_moves_remaining = moves_remaining / total_moves * moves_rem_weight / total_weight
-
-        return feature_medal_portions + feature_moves_remaining + feature_ice_removed
+    @staticmethod
+    def feature_medal_portions(ice_grid, medal_grid, medal_portion_weight, moves_medals, total_weight):
+        # medal portion feature calculation
+        medals_remaining = moves_medals[1]
+        portions_remaining = medals_remaining * 4
+        if portions_remaining == 0:
+            return 1 * medal_portion_weight / total_weight
+        else:
+            portion_count = 0
+            for i, j in product(range(9), range(9)):
+                if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
+                    portion_count += 1
+            return (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
     def evaluation_simple_conv(self, state):
         """
