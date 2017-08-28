@@ -213,14 +213,11 @@ def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medal_number: in
         added = 0
         # Copy the medals grid
         bar = copy.deepcopy(foo)
-        # Copy the list of coordinates to check
-        to_check_copy = copy.copy(to_check)
+        # Shuffle list of coordinated to check
+        random.shuffle(to_check)
 
-        # Loop whilst there are still coordinates to check
-        while to_check_copy:
-            # Pick and remove a a random coordinate
-            r, c = to_check_copy.pop(random.randrange(len(to_check_copy)))
-
+        # Go through coordinates to check
+        for r, c in to_check:
             # Generator to check for existing medals, yields True if no medal or False if there is a medal
             medal_check = (bar[r + i][c + j] == -1 for i, j in product(range(2), range(2)))
 
@@ -302,41 +299,57 @@ def one_hot(state, permutation=range(6)):
     return state
 
 
-def numpy_to_native(state):
-    # If state is flat
-    state = np.reshape(state, (9, 9, 4))
-    state = np.transpose(state, (2, 0, 1))
+def numpy_to_native(grid, moves_left, medals_left):
+    gem_grid = np.transpose(grid[0:2], (1, 2, 0))
+    ice_grid = grid[2]
+    medal_grid = grid[3]
 
-    gem_grid = np.transpose(state[0:2], (1, 2, 0))
-    ice_grid = state[2]
-    medal_grid = state[3]
-
-    moves_medals = None
+    moves_medals = moves_left, medals_left
 
     return gem_grid, ice_grid, medal_grid, moves_medals
 
 
-def utility_function(state, monte_carlo, board_simulator):
+def utility_function(state, monte_carlo):
     """
     This functions takes in a state and performs monte carlo
     tree search. It returns the utility of the state and
     the reward for each possible actions.
-    :param board_simulator: a board_simulator class
     :param monte_carlo: a monte_carlo class
     :param state: The state should be in the form that monte_carlo requires.
     :return: U(state), Q(state,action) for all actions in A
     """
-    game_limit = 100
-    move_limit = 5
-    c = 1.4
+    # TODO functions to change level on monte carlo?
     level = 1
-    mc = monte_carlo
-    # functions to change level on monte carlo?
-    pseudo_board = board_simulator
-    mc.update(state)
-    utility, q_values = mc.pick_move()
+    monte_carlo.update(state)
+    utility, q_values = monte_carlo.pick_move()
 
     return utility, q_values
 
 if __name__ == '__main__':
-    pass
+    print(os.getcwd())
+    grids = np.load('../file_parser/grids.npy')
+    grids = np.reshape(grids, (-1, 9, 9, 4))
+    grids = np.transpose(grids, (0, 3, 1, 2))
+    moves_left = np.load('../file_parser/moves_left.npy')
+    medals_left = np.load('../file_parser/medals_left.npy')
+
+    from ai.mcts import MonteCarlo, BoardSimulator
+    from ai.evaluation_functions import EvaluationFunction
+    from ai.policies import AllPolicy
+
+    print('imported')
+
+    board_simulator = BoardSimulator()
+    game_limit = 100
+    move_limit = 5
+    c = 1.4
+    eval_function = EvaluationFunction(board_simulator).evaluation_func_simple
+    monte_carlo = MonteCarlo(board_simulator, game_limit=game_limit, move_limit=move_limit,
+                             c=c, policy=AllPolicy(), eval_function=eval_function)
+
+    print('loop')
+
+    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(1)):
+        state = numpy_to_native(grid, moves, medals)
+        utility_function(state, monte_carlo)
+        print('hi')

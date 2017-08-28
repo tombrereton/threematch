@@ -190,15 +190,6 @@ class FileParser:
         np.save('win', win)
         np.save('game_ids', game_ids)
 
-
-# def create_utility_labels(data_dir):
-#     states = np.load(data_dir + 'states.npy')
-#
-#     utility, q_values = utility_function(states[0])
-#
-#     utility_labels = np.array(utility)
-#     q_value_labels = np.array(q_values)
-
 if __name__ == '__main__':
     t0 = time.time()
     FileParser().open_files('data')
