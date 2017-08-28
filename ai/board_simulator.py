@@ -1,18 +1,11 @@
-from ai.state_functions import StateParser
 from model.game import SimpleBoard
 
 
 class BoardSimulator:
-    def __init__(self, level=1):
-        self.current_state = ()
-        self.level = level
-        self.rows = 9
-        self.cols = 9
-        self.gem_types = 6
-        self.current_move = 0
-        self.total_medals = 3
-        self.total_moves = None
-        self.parser = StateParser()
+    def __init__(self, rows=9, cols=9, gem_types=6):
+        self.rows = rows
+        self.cols = cols
+        self.gem_types = gem_types
 
     def next_state(self, state, action):
         """
