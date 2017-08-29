@@ -35,7 +35,7 @@ def main(g_limit, m_limit, stats_file_path=None):
     board_simulator = BoardSimulator()
     eval_function_object = EvaluationFunction(board_simulator)
     eval_function = eval_function_object.evaluation_func_crude
-    mc = MonteCarlo(board_simulator,
+    mc = MonteCarlo(board_simulator=board_simulator,
                     game_limit=game_limit,
                     move_limit=move_limit,
                     c=c,

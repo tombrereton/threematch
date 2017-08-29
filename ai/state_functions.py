@@ -287,7 +287,8 @@ if __name__ == '__main__':
     moves_left = np.load('../file_parser/moves_left.npy')
     medals_left = np.load('../file_parser/medals_left.npy')
 
-    from ai.mcts import MonteCarlo, BoardSimulator
+    from ai.mcts import MonteCarlo
+    from ai.board_simulator import BoardSimulator
     from ai.evaluation_functions import EvaluationFunction
     from ai.policies import AllPolicy
 
