@@ -6,6 +6,7 @@ from collections import Counter
 from copy import deepcopy
 from itertools import product
 import time
+import sys
 
 import numpy as np
 
@@ -279,8 +280,52 @@ def utility_function(state, monte_carlo):
     return utility, q_values
 
 
-def relabel(start, amount):
+def new_labels_section(monte_carlo, grids, moves_left, medals_left, game_ids, start, amount, one_per_game):
     t = time.time()
+
+    grids = grids[start:start + amount]
+    moves_left = moves_left[start:start + amount]
+    medals_left = medals_left[start:start + amount]
+    game_ids = game_ids[start:start + amount]
+
+    utility_ids = []
+    utility_values = []
+    q_ints = []
+    q_floats = []
+
+    indices = None
+
+    if one_per_game:
+        indices = []
+        foo = 0
+        for game_id in sorted(set(game_ids)):
+            l = sum(1 for i in range(foo, min(len(game_ids), foo + 30)) if game_ids[i] == game_id)
+            indices.append(random.randint(foo, foo + l - 1))
+            foo += l
+    else:
+        indices = range(len(grids))
+
+    for i in indices:
+        grid = grids[i]
+        moves = moves_left[i]
+        medals = medals_left[i]
+
+        state = numpy_to_native(grid, moves, medals)
+        u, q = utility_function(state, monte_carlo)
+        utility_ids.append(start + i)
+        utility_values.append(u)
+        q_ints.extend((start + i, *[coord for coord_pair in q_value[0] for coord in coord_pair]) for q_value in q)
+        q_floats.extend(q_value[1] for q_value in q)
+
+    np.save(f'utility_ids[{start}-{amount}]', utility_ids)
+    np.save(f'utility_values[{start}-{amount}]', utility_values)
+    np.save(f'q_ints[{start}-{amount}]', q_ints)
+    np.save(f'q_floats[{start}-{amount}]', q_floats)
+
+    print(time.time() - t)
+
+
+def new_labels():
     grids = np.load('../file_parser/grids.npy')
     grids = np.reshape(grids, (-1, 9, 9, 4))
     grids = np.transpose(grids, (0, 3, 1, 2))
@@ -288,10 +333,7 @@ def relabel(start, amount):
     grids[:, 1] -= 1
     moves_left = np.load('../file_parser/moves_left.npy')
     medals_left = np.load('../file_parser/medals_left.npy')
-
-    grids = grids[start:start + amount]
-    moves_left = moves_left[start:start + amount]
-    medals_left = medals_left[start:start + amount]
+    game_ids = np.load('../file_parser/game_ids.npy')
 
     # TODO make this nice
     from ai.mcts import MonteCarlo
@@ -300,7 +342,7 @@ def relabel(start, amount):
     from ai.policies import AllPolicy
 
     board_simulator = BoardSimulator()
-    game_limit = 200
+    game_limit = 100
     move_limit = 5
     c = 1.4
     eval_function = EvaluationFunction(board_simulator).evaluation_func_crude
@@ -313,22 +355,7 @@ def relabel(start, amount):
                              get_q_values=True,
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    new_labels = []
-    q_ints = []
-    q_floats = []
-
-    for grid, moves, medals, i in zip(grids, moves_left, medals_left, range(len(grids))):
-        state = numpy_to_native(grid, moves, medals)
-        u, q = utility_function(state, monte_carlo)
-        new_labels.append(u)
-        q_ints.extend((start + i, *[coord for coord_pair in q_value[0] for coord in coord_pair]) for q_value in q)
-        q_floats.extend(q_value[1] for q_value in q)
-
-    np.save(f'new_labels[{start}-{amount}]', new_labels)
-    np.save(f'q_ints[{start}-{amount}]', q_ints)
-    np.save(f'q_floats[{start}-{amount}]', q_floats)
-
-    print(time.time() - t)
+    new_labels_section(monte_carlo, grids, moves_left, medals_left, game_ids, 0, 100, one_per_game=True)
 
 if __name__ == '__main__':
-    relabel(0, 10)
+    new_labels()
