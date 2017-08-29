@@ -100,6 +100,38 @@ class EvaluationFunction:
                     portion_count += 1
             return (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
+    @staticmethod
+    def feature_medal_portions(ice_grid, medal_grid, medal_portion_weight, total_weight, medals_remaining):
+        if medals_remaining == 0:
+            return medal_portion_weight / total_weight
+
+        # Most portions that can be removed
+        portions_remaining = 4 * medals_remaining
+
+        # Count how many medals are in the grid
+        medals_in_grid = 0
+        # Count how many portions are showing
+        showing_sections = 0
+
+        for i, j in product(range(9), range(9)):
+            # Portion showing
+            if ice_grid[i][j] == -1 and medal_grid[i][j] != -1:
+                # Increment count
+                showing_sections += 1
+
+            # Medal in grid
+            if medal_grid[i][j] == 0:
+                # Increment count
+                medals_in_grid += 1
+
+        # How many medals have been full removed
+        fully_removed = medals_remaining - medals_in_grid
+        # How many portions have been completely removed
+        portion_count = 4 * fully_removed + showing_sections
+
+        return (portion_count / portions_remaining) * medal_portion_weight / total_weight
+
+
     def evaluation_simple_conv_NN(initial_state, final_state):
         """
         Takes in the state uses a neural network to evaluate how likely
