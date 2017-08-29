@@ -355,7 +355,13 @@ def new_labels():
                              get_q_values=True,
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    new_labels_section(monte_carlo, grids, moves_left, medals_left, game_ids, 0, 100, one_per_game=True)
+    start = 0
+    batch_size = 100
+    batches = 10
+
+    for i in range(batches):
+        s = start + i * batch_size
+        new_labels_section(monte_carlo, grids, moves_left, medals_left, game_ids, s, batch_size, one_per_game=True)
 
 if __name__ == '__main__':
     new_labels()
