@@ -157,6 +157,15 @@ class FileParser:
             self.win.append(win)
             self.game_ids.append(game_id)
 
+    @staticmethod
+    def remove_uncovered(grids):
+        medal_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 3]
+
+        for grid, r, c in zip(*np.where(medal_grids == 0)):
+            if all(medal_grids[grid, r + i, c + j] == 2 * i + j for i, j in ((0, 1), (1, 0), (1, 1))):
+                for i, j in product(range(2), range(2)):
+                    medal_grids[grid, r + i, c + j] = -1
+
     def open_files(self, directory='.'):
         """
             Method to read in all files.
@@ -182,56 +191,22 @@ class FileParser:
         win = np.array(self.win)
         game_ids = renumber(self.game_ids)
 
-        # Remove uncovered medals
+        FileParser.remove_uncovered(grids)
 
-        medal_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 3]
+        np.save('grids', grids)
+        np.save('moves_left', moves_left)
+        np.save('levels', levels)
+        np.save('medals_left', medals_left)
+        np.save('actions', actions)
+        np.save('win', win)
+        np.save('game_ids', game_ids)
 
-        s0 = [sum((medal_grids == i).flatten()) for i in range(4)]
-        print(s0)
 
-        # for grid in medal_grids:
-        #     for row in grid:
-        #         for el in row:
-        #             print(str(el).ljust(3), end='')
-        #         print()
-        #     print()
-
-        for grid, r, c in zip(*np.where(medal_grids == 0)):
-            if all(medal_grids[grid, r + i, c + j] == 2 * i + j for i, j in ((0, 1), (1, 0), (1, 1))):
-                print(f'removal at {grid}, {r}, {c}')
-                for i, j in product(range(2), range(2)):
-                    medal_grids[grid, r + i, c + j] = -1
-
-        s1 = [sum((medal_grids == i).flatten()) for i in range(4)]
-        print(s1)
-        print(*[s0[i] - s1[i] for i in range(4)])
-
-        # np.save('grids', grids)
-        # np.save('moves_left', moves_left)
-        # np.save('levels', levels)
-        # np.save('medals_left', medals_left)
-        # np.save('actions', actions)
-        # np.save('win', win)
-        # np.save('game_ids', game_ids)
-
-if __name__ == '__main__':
+def open_time(directory='.'):
     t0 = time.time()
-    FileParser().open_files('data')
+    FileParser().open_files(directory)
     t1 = time.time()
     print(t1 - t0)
 
-    #     create_utility_labels('../ai/data/')
-    # t0 = time.time()
-    # FileParser().open_files('data')
-    # t1 = time.time()
-    # print(t1 - t0)
-    #
-    #     states = np.transpose(np.reshape(np.load('../ai/data/states.npy'), (-1, 9, 9, 4)), (0, 3, 1, 2))
-    #     actions = np.load('../ai/data/actions.npy')
-    #     labels = np.load('../ai/data/labels.npy')
-    #     game_ids = np.load('../ai/data/game_ids.npy')
-    #     moves_left = np.load('../ai/data/moves_left.npy')
-    #
-    # for output in data_generator(states, actions, labels, game_ids, moves_left):
-    #     print(output)
-    #     break
+if __name__ == '__main__':
+    open_time('data')
