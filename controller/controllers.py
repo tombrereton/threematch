@@ -38,11 +38,11 @@ class MonteCarloController:
     To do
     """
 
-    def __init__(self, event_manager, monte_carlo_move_finder):
+    def __init__(self, event_manager, monte_carlo_move_finder, quit_on_no_moves=False):
         self.event_manager = event_manager
         self.event_manager.register_listener(self)
         self.move_finder = monte_carlo_move_finder
-        self.quit_on_no_moves = False
+        self.quit_on_no_moves = quit_on_no_moves
 
         # ----------------------------------------------------------------------
 

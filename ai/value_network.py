@@ -22,8 +22,7 @@ it isn't all wins then losses and so the validation and training
 data are random. Each state element is represented as a 14 one hot labels: 
 colour_channels, type_channels, ice_channels, medal_channels
 """
-states, labels = get_states_labels()
-eval_states, eval_labels = get_states_labels(evaluation_data=True)
+states, labels, eval_states, eval_labels = get_states_labels()
 print(sum(labels) / len(labels))
 
 # split states

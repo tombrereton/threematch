@@ -1,7 +1,6 @@
 import math
 import random
 
-from ai.board_simulator import BoardSimulator
 from ai.state_functions import start_state
 
 
@@ -42,29 +41,39 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: BoardSimulator, game_limit, move_limit, c, policy, eval_function, level=1,
-                 get_q_values=False, print_move_ratings=True):
+    def __init__(self,
+                 board_simulator,
+                 game_limit,
+                 move_limit,
+                 c,
+                 policy,
+                 eval_function,
+                 get_q_values=False,
+                 print_move_ratings=True):
         """
         Constructor for the class
-        :param board: Board object containing the game
+        :param board_simulator: Board object containing the game
         :param game_limit: The number of games to play per move choice
         :param move_limit: Maximum depth to play to
         :param c: Parameter to control exploration
         :param policy: Policy object to use
         """
         # Set field variables
-        self.board = board
+        self.board_simulator = board_simulator
         self.game_limit = game_limit
         self.move_limit = move_limit
         self.c = c
         self.policy = policy
         self.eval_function = eval_function
+
         # Initialise list of states
         self.state = None
+
         # Initialise dictionary of statistics
         self.statistics = {}
+
+        # Modifiers
         self.print_move_ratings = print_move_ratings
-        self.level = level
         self.get_q_values = get_q_values
 
     def update(self, state):
@@ -136,30 +145,33 @@ class MonteCarlo:
 
         first_move = None
         for move_count in range(self.move_limit):
+            # first check if terminal state and break if so
+            moves_remaining, medals_remaining = state[3]
+            if moves_remaining == 0 or medals_remaining == 0:
+                break
+
             # Get the list of all possible moves at this point
             move = self.interim_move(state) if move_count == 0 else self.roll_out(state)
             if move is None:
                 # No valid moves available, game is over
                 break
             if move_count == 0:
-                # Still expanding, add this to visited set
+                # store first move so we can add statistics to it
                 first_move = move
-            state = self.board.next_state(state, move)
+            state = self.board_simulator.next_state(state, move)
 
-        # Game over or move limit reached
-        # Find the winner of the game
-        # 1 == win, 0 == loss
-        state_score = self.eval_function(state, self.level)
+        # evaluate last state reached
+        state_rating = self.eval_function(state)
 
         # Update statistics
         stat = self.statistics.get(first_move)
         if stat:
             # Statistics exist, increment plays
             stat[0] += 1
-            stat[1] += state_score
+            stat[1] += state_rating
         else:
             # If statistics did not exist add them now
-            self.statistics[first_move] = [1, state_score]
+            self.statistics[first_move] = [1, state_rating]
 
     def pick_move(self):
         """
@@ -167,6 +179,7 @@ class MonteCarlo:
         :return: Picked move
         """
         self.statistics = {}
+        stats = None
         # Simulate games, builds tree
         for _ in range(self.game_limit):
             # Simulate one game

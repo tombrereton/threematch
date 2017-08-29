@@ -11,67 +11,6 @@ import numpy as np
 from model.game import Grid
 
 
-def gems_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[state[i][j][0] for j in rows] for i in cols]
-
-
-def gems_plus_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[(state[i][j][0], state[i][j][1], 0) for j in rows] for i in cols]
-
-
-def ice_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[state[i][j][2] for j in rows] for i in cols]
-
-
-def medals_from_state(state, rows=None, cols=None):
-    if not rows or not cols:
-        rows = range(len(state) - 1)
-        cols = range(len(state[0]))
-
-    return [[state[i][j][3] for j in rows] for i in cols]
-
-
-def state_to_grids(state):
-    rows = range(len(state) - 1)
-    cols = range(len(state[0]))
-
-    gem_grid_wrapper = Grid(0, 0)
-    ice_grid_wrapper = Grid(0, 0)
-    medal_grid_wrapper = Grid(0, 0)
-
-    moves_medals = state[-1]
-
-    gem_grid = gems_plus_from_state(state, rows, cols)
-    ice_grid = ice_from_state(state, rows, cols)
-    medal_grid = medals_from_state(state, rows, cols)
-    medal_grid = medal_grid_filler(ice_grid, medal_grid, moves_medals[1]).__next__()
-
-    gem_grid_wrapper.grid = gem_grid
-    ice_grid_wrapper.grid = ice_grid
-    medal_grid_wrapper.grid = medal_grid
-
-    return gem_grid_wrapper.grid, ice_grid_wrapper.grid, medal_grid_wrapper.grid, moves_medals
-
-
-def start_state(state):
-    gem_grid, ice_grid, medal_grid, moves_medals = state
-    medal_grid = medal_grid_filler(ice_grid, medal_grid, moves_medals[1]).__next__()
-
-    return deepcopy(gem_grid), deepcopy(ice_grid), medal_grid, moves_medals
-
-
 class StateParser:
     def __init__(self):
         self.rows = 9
@@ -80,17 +19,20 @@ class StateParser:
         self.ice_grid = Grid(self.rows, self.cols)
         self.medal_grid = Grid(self.rows, self.cols)
 
-    def get_file_list(self):
+    @staticmethod
+    def get_file_list():
         os.chdir(os.getcwd() + '/../training_data')
         logging.debug(f'files in directory: \n{os.listdir()}\n')
-        return os.listdir()
+        return os.listdir(path='.')
 
-    def get_full_filename(self, file_name):
+    @staticmethod
+    def get_full_filename(file_name):
         main_dir = os.getcwd() + '/../training_data/'
         file_path = main_dir + file_name
         return file_path
 
-    def get_state(self, file_name, state_index):
+    @staticmethod
+    def get_state(file_name, state_index):
         # skip every second line
         state_index *= 2
 
@@ -135,6 +77,13 @@ class StateParser:
         grid.grid.append(state[:2])
         parsed_state = tuple(map(tuple, grid.grid))
         return parsed_state
+
+
+def start_state(state):
+    gem_grid, ice_grid, medal_grid, moves_medals = state
+    medal_grid = medal_grid_filler(ice_grid, medal_grid, moves_medals[1]).__next__()
+
+    return deepcopy(gem_grid), deepcopy(ice_grid), medal_grid, moves_medals
 
 
 def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medals_remaining: int):
@@ -235,7 +184,7 @@ def medal_grid_filler(ice_grid: list, partial_medal_grid: list, medals_remaining
                     break
 
 
-def moves_three(grid: list):
+def find_legal_moves(grid: list):
     """
     Function that returns a list of moves that can be made
     :param grid: Grid to search for moves, should not contain matches
@@ -284,7 +233,7 @@ def moves_three(grid: list):
 
 
 def pick_move(grid: list):
-    moves = moves_three(grid)
+    moves = find_legal_moves(grid)
     return random.choice(moves) if len(moves) else None
 
 
@@ -323,12 +272,11 @@ def utility_function(state, monte_carlo):
     :param state: The state should be in the form that monte_carlo requires.
     :return: U(state), Q(state,action) for all actions in A
     """
-    # TODO functions to change level on monte carlo?
-    level = 1
     monte_carlo.update(state)
     utility, q_values = monte_carlo.pick_move()
 
     return utility, q_values
+
 
 if __name__ == '__main__':
     grids = np.load('../file_parser/grids.npy')
@@ -344,10 +292,10 @@ if __name__ == '__main__':
     from ai.policies import AllPolicy
 
     board_simulator = BoardSimulator()
-    game_limit = 100
+    game_limit = 200
     move_limit = 5
     c = 1.4
-    eval_function = EvaluationFunction(board_simulator).evaluation_func_simple
+    eval_function = EvaluationFunction(board_simulator).evaluation_func_crude
     monte_carlo = MonteCarlo(board_simulator,
                              game_limit=game_limit,
                              move_limit=move_limit,
@@ -355,8 +303,8 @@ if __name__ == '__main__':
                              policy=AllPolicy(),
                              eval_function=eval_function,
                              get_q_values=True,
-                             print_move_ratings=False) # Change this to True if you want a formatted print of q_values
+                             print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(10)):
+    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(40)):
         state = numpy_to_native(grid, moves, medals)
         print(utility_function(state, monte_carlo))

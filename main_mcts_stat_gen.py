@@ -1,4 +1,5 @@
 import sys
+from time import time
 
 from ai.board_simulator import BoardSimulator
 from ai.evaluation_functions import EvaluationFunction
@@ -14,7 +15,7 @@ from model.game import Board
 # logging.basicConfig(filename='game.log', filemode='w', level=logging.DEBUG)
 # logging.basicConfig(level=logging.INFO)
 # ------------------------------------------------------------------------------
-def main(g_limit, m_limit):
+def main(g_limit, m_limit, stats_file_path=None):
     """..."""
 
     if len(sys.argv) > 1:
@@ -23,28 +24,39 @@ def main(g_limit, m_limit):
         game_limit, move_limit, c = g_limit, m_limit, 1.4
 
     # append scores and hyper params to file
-    file_name = 'mcts_standard.csv'
     line = f'\n1, {game_limit}, {move_limit}, {c}, '
-    with open(file_name, 'a') as file:
+    with open(stats_file_path, 'a') as file:
         file.write(line)
 
     # gui_vars = GUIVariables.from_global()
     event_manager = EventManager()
 
     # ai controller setup
-    pseudo_board = BoardSimulator()
-    eval_function_object = EvaluationFunction(pseudo_board)
-    eval_function = eval_function_object.evaluation_func_binary
-    mc = MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit,
-                    c=c, policy=AllPolicy(), eval_function=eval_function)
-    mcts_cont = MonteCarloController(event_manager, mc)
+    board_simulator = BoardSimulator()
+    eval_function_object = EvaluationFunction(board_simulator)
+    eval_function = eval_function_object.evaluation_func_crude
+    mc = MonteCarlo(board_simulator,
+                    game_limit=game_limit,
+                    move_limit=move_limit,
+                    c=c,
+                    policy=AllPolicy(),
+                    eval_function=eval_function,
+                    print_move_ratings=False)
+    mcts_cont = MonteCarloController(event_manager=event_manager,
+                                     monte_carlo_move_finder=mc,
+                                     quit_on_no_moves=True)
 
     # mouse controller setup
     # mouse_cont = MouseController(event_manager, gui_vars)
 
     # board setup
-    game_board = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT,
-                       event_manager=event_manager)
+    game_board = Board(rows=PUZZLE_ROWS,
+                       columns=PUZZLE_COLUMNS,
+                       ice_rows=ICE_ROWS,
+                       medals_remaining=LEVEL_1_TOTAL_MEDALS,
+                       moves_remaining=MOVES_LEFT,
+                       event_manager=event_manager,
+                       stats_file_path=stats_file_path)
 
     # view setup
     # view = GUI(gui_vars, *game_board.state(), event_manager=event_manager)
@@ -55,7 +67,14 @@ def main(g_limit, m_limit):
 
 
 if __name__ == "__main__":
-    for g_limit in [1, 3, 5, 50, 100, 200]:
-        for m_limit in [1, 3, 5, 10, 20]:
-            for _ in range(100):
-                main(g_limit=g_limit, m_limit=m_limit)
+    file_name = 'evaluation_functions.csv'
+    for g_limit in [100]:
+        for m_limit in [5]:
+            for i in range(100):
+                start_time = time()
+                main(g_limit=g_limit, m_limit=m_limit, stats_file_path=file_name)
+                duration = time() - start_time
+                line = f', {duration:4.3f}'
+                print(f'Finished g: {g_limit}, m: {m_limit}, round: {i}, in time: {duration:4.3f}')
+                with open(file_name, 'a') as file:
+                    file.write(line)
