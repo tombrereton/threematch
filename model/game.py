@@ -713,6 +713,14 @@ class SimpleBoard:
 
         return gem_grid, ice_grid, medal_grid, moves_medals
 
+    def get_full_game_state(self):
+        gem_grid = deepcopy(self.gem_grid.grid)
+        ice_grid = deepcopy(self.ice_grid.grid)
+        medal_grid = deepcopy(self.medal_grid.grid)
+        moves_medals = (self.moves_remaining, self.medals_remaining)
+
+        return gem_grid, ice_grid, medal_grid, moves_medals
+
     def move_made(self):
         self.moves_remaining -= 1
 

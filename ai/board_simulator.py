@@ -42,6 +42,6 @@ class BoardSimulator:
             if len(matches) + len(bonuses) == 0:
                 break
 
-        state = board.get_obscured_game_state()
+        state = board.get_full_game_state()
 
         return state
