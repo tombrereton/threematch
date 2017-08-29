@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-# from ai.state_functions import utility_function
+from itertools import product
 
 
 def renumber(game_ids):
@@ -182,13 +182,37 @@ class FileParser:
         win = np.array(self.win)
         game_ids = renumber(self.game_ids)
 
-        np.save('grids', grids)
-        np.save('moves_left', moves_left)
-        np.save('levels', levels)
-        np.save('medals_left', medals_left)
-        np.save('actions', actions)
-        np.save('win', win)
-        np.save('game_ids', game_ids)
+        # Remove uncovered medals
+
+        medal_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 3]
+
+        s0 = [sum((medal_grids == i).flatten()) for i in range(4)]
+        print(s0)
+
+        # for grid in medal_grids:
+        #     for row in grid:
+        #         for el in row:
+        #             print(str(el).ljust(3), end='')
+        #         print()
+        #     print()
+
+        for grid, r, c in zip(*np.where(medal_grids == 0)):
+            if all(medal_grids[grid, r + i, c + j] == 2 * i + j for i, j in ((0, 1), (1, 0), (1, 1))):
+                print(f'removal at {grid}, {r}, {c}')
+                for i, j in product(range(2), range(2)):
+                    medal_grids[grid, r + i, c + j] = -1
+
+        s1 = [sum((medal_grids == i).flatten()) for i in range(4)]
+        print(s1)
+        print(*[s0[i] - s1[i] for i in range(4)])
+
+        # np.save('grids', grids)
+        # np.save('moves_left', moves_left)
+        # np.save('levels', levels)
+        # np.save('medals_left', medals_left)
+        # np.save('actions', actions)
+        # np.save('win', win)
+        # np.save('game_ids', game_ids)
 
 if __name__ == '__main__':
     t0 = time.time()
