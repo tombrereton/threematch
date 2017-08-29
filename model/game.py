@@ -48,7 +48,7 @@ class SimpleBoard:
         self.match_list = []
         self.gem_grid_copy = []
         self.cascade = 0
-        self.medal_locations = []
+        self.medal_locations = []  # TODO make it so board_simulator adds to this
         self.action = []
         self.score = 0
         self.bonus_list = []
@@ -604,9 +604,10 @@ class SimpleBoard:
         :return:
         """
         self.medals_removed = []
-        grid = self.ice_grid.grid
-        for row, column, portion in self.medal_locations:
-            if grid[row][column] == -1 and portion == 0 and self.is_freeable_medal(row, column):
+        ice_grid = self.ice_grid.grid
+        medal_grid = self.medal_grid.grid
+        for row, column in product(range(self.rows), range(self.columns)):
+            if ice_grid[row][column] == -1 and medal_grid[row][column] == 0 and self.is_freeable_medal(row, column):
                 # medal is completely uncovered, remove it from grid
                 self.remove_medal(row, column)
 
@@ -629,7 +630,7 @@ class SimpleBoard:
 
             # remove from medal locations list
             portion = j + 2 * i
-            self.medal_locations.remove((row + i, column + j, portion))
+            # self.medal_locations.remove((row + i, column + j, portion))
 
             # add to medals removed list
             self.medals_removed.append((row + i, column + j, portion))
@@ -714,6 +715,44 @@ class SimpleBoard:
 
     def move_made(self):
         self.moves_remaining -= 1
+
+    def check_medal_boundaries(self, y_coord: int, x_coord: int):
+        """
+        Method to check is a medal can be added at a certain location
+        :param y_coord: y coordinate to check (top left of medal)
+        :param x_coord: x coordinate to check (top left of medal)
+        :return: None
+        """
+        rows = self.rows
+        columns = self.columns
+        if x_coord < columns - 1 and y_coord < rows - 1:
+            for i in range(2):
+                for j in range(2):
+                    if self.medal_grid.grid[y_coord + i][x_coord + j] != -1:
+                        return False
+            return True
+        return False
+
+    def add_medal(self, row: int, column: int):
+        """
+        Method to add a medal (four medal portions) to the grid. The medal
+        portions will appear like the following:
+
+        |0|1|
+        -----
+        |2|3|
+
+        :param row: y coordinate to add medal at (top left of medal)
+        :param column: x coordinate to add beat at (top left of medal)
+        :return: None
+        """
+        for i in range(2):
+            for j in range(2):
+                portion = j + 2 * i
+                self.medal_grid.grid[row + i][column + j] = portion
+
+                # add portion to medal location list
+                self.medal_locations.append((row + i, column + j, portion))
 
 
 class Board(SimpleBoard):
@@ -899,44 +938,6 @@ class Board(SimpleBoard):
                 # if no medal already there, add medal
                 self.add_medal(row, column)
                 i = i + 1
-
-    def check_medal_boundaries(self, y_coord: int, x_coord: int):
-        """
-        Method to check is a medal can be added at a certain location
-        :param y_coord: y coordinate to check (top left of medal)
-        :param x_coord: x coordinate to check (top left of medal)
-        :return: None
-        """
-        rows = self.rows
-        columns = self.columns
-        if x_coord < columns - 1 and y_coord < rows - 1:
-            for i in range(2):
-                for j in range(2):
-                    if self.medal_grid.grid[y_coord + i][x_coord + j] != -1:
-                        return False
-            return True
-        return False
-
-    def add_medal(self, row: int, column: int):
-        """
-        Method to add a medal (four medal portions) to the grid. The medal
-        portions will appear like the following:
-
-        |0|1|
-        -----
-        |2|3|
-
-        :param row: y coordinate to add medal at (top left of medal)
-        :param column: x coordinate to add beat at (top left of medal)
-        :return: None
-        """
-        for i in range(2):
-            for j in range(2):
-                portion = j + 2 * i
-                self.medal_grid.grid[row + i][column + j] = portion
-
-                # add portion to medal location list
-                self.medal_locations.append((row + i, column + j, portion))
 
     def get_swap_movement(self):
         """
