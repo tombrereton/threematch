@@ -42,8 +42,15 @@ class MonteCarlo:
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: BoardSimulator, game_limit, move_limit, c, policy, eval_function, level=1,
-                 get_q_values=False, print_move_ratings=True):
+    def __init__(self,
+                 board: BoardSimulator,
+                 game_limit,
+                 move_limit,
+                 c,
+                 policy,
+                 eval_function,
+                 get_q_values=False,
+                 print_move_ratings=True):
         """
         Constructor for the class
         :param board: Board object containing the game
@@ -59,12 +66,15 @@ class MonteCarlo:
         self.c = c
         self.policy = policy
         self.eval_function = eval_function
+
         # Initialise list of states
         self.state = None
+
         # Initialise dictionary of statistics
         self.statistics = {}
+
+        # Modifiers
         self.print_move_ratings = print_move_ratings
-        self.level = level
         self.get_q_values = get_q_values
 
     def update(self, state):

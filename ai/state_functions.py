@@ -304,6 +304,6 @@ if __name__ == '__main__':
                              get_q_values=True,
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(10)):
+    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(30)):
         state = numpy_to_native(grid, moves, medals)
         print(utility_function(state, monte_carlo))
