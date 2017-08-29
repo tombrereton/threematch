@@ -306,6 +306,18 @@ if __name__ == '__main__':
                              get_q_values=True,
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(40)):
+    new_labels = []
+    q_ints = []
+    q_floats = []
+
+    for grid, moves, medals, i in zip(grids, moves_left, medals_left, range(len(grids[:10]))):
         state = numpy_to_native(grid, moves, medals)
-        print(utility_function(state, monte_carlo))
+        u, q = utility_function(state, monte_carlo)
+        new_labels.append(u)
+        q_ints.extend((i, *[coord for coord_pair in q_value[0] for coord in coord_pair]) for q_value in q)
+        q_floats.extend(q_value[1] for q_value in q)
+
+    np.save('new_labels', new_labels)
+    np.save('q_ints', q_ints)
+    np.save('q_floats', q_floats)
+

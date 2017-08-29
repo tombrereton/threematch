@@ -14,14 +14,14 @@ class EvaluationFunction:
             self.model = load_model(model_path)
 
     @staticmethod
-    def evaluation_func_binary(state):
+    def evaluation_func_binary(initial_state, final_state):
         """
         Takes in a terminal state and returns 1 if it is a win, 0 for a loss.
-        :param state:
+        :param final_state:
         :return:
         """
 
-        gem_grid, ice_grid, medal_grid, moves_medals = state
+        gem_grid, ice_grid, medal_grid, moves_medals = final_state
         moves_remaining, medals_remaining = moves_medals
 
         if medals_remaining == 0:
@@ -29,7 +29,7 @@ class EvaluationFunction:
         else:
             return 0
 
-    def evaluation_func_crude(self, state):
+    def evaluation_func_crude(self, initial_state, final_state):
         """
         Takes in the state and evaluates it by giving a number between 0 and 1,
         where 1 is most optimal.
@@ -41,10 +41,11 @@ class EvaluationFunction:
         The features are given a weighting so that the output is still
         between 0 and 1.
         :return:
-        :param state:
+        :param initial_state:
+        :param final_state:
         :return:
         """
-        gem_grid, ice_grid, medal_grid, moves_medals = state
+        gem_grid, ice_grid, medal_grid, moves_medals = final_state
 
         # feature weightings
         medal_portion_weight = 1
@@ -54,9 +55,9 @@ class EvaluationFunction:
 
         feature_medal_portions = self.feature_medal_portions(ice_grid,
                                                              medal_grid,
-                                                             moves_medals,
                                                              medal_portion_weight,
-                                                             total_weight)
+                                                             total_weight,
+                                                             initial_state[-1][1])
 
         feature_ice_removed = self.feature_ice_removed(ice_grid,
                                                        ice_removed_weight,
@@ -87,9 +88,8 @@ class EvaluationFunction:
         return ice_removed / total_ice * ice_removed_weight / total_weight
 
     @staticmethod
-    def feature_medal_portions(ice_grid, medal_grid, moves_medals, medal_portion_weight, total_weight):
+    def feature_medal_portions(ice_grid, medal_grid, medal_portion_weight, total_weight, medals_remaining):
         # medal portion feature calculation
-        medals_remaining = moves_medals[1]
         portions_remaining = medals_remaining * 4
         if portions_remaining == 0:
             return 1 * medal_portion_weight / total_weight
@@ -100,16 +100,17 @@ class EvaluationFunction:
                     portion_count += 1
             return (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
-    def evaluation_simple_conv_NN(self, state):
+    def evaluation_simple_conv_NN(initial_state, final_state):
         """
         Takes in the state uses a neural network to evaluate how likely
         the state will result in a win.
-        :param state:
+        :param initial_state:
+        :param final_state:
         :return: A rating where a value of 1 is certain that it will win.
         """
 
         # convert state to one hot encoding
-        gem_grid, ice_grid, medal_grid, moves_medals = state
+        gem_grid, ice_grid, medal_grid, moves_medals = final_state
 
         # feature weightings
         nn_weight = 1
@@ -138,10 +139,10 @@ class EvaluationFunction:
             bonus.append(temp_bonus)
 
         state_for_one_hot = np.array([gem_colour, bonus, ice_grid, medal_grid])
-        state = np.array([one_hot(state_for_one_hot)])
+        final_state = np.array([one_hot(state_for_one_hot)])
 
         # predict likelihood of winning
-        prediction = self.model.predict(x=state, batch_size=1)[0][0]
+        prediction = self.model.predict(x=final_state, batch_size=1)[0][0]
 
         feature_nn = prediction * nn_weight / total_weight
 

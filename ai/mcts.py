@@ -161,7 +161,7 @@ class MonteCarlo:
             state = self.board_simulator.next_state(state, move)
 
         # evaluate last state reached
-        state_rating = self.eval_function(state)
+        state_rating = self.eval_function(self.state, state)
 
         # Update statistics
         stat = self.statistics.get(first_move)
