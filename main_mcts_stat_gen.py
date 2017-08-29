@@ -34,7 +34,7 @@ def main(g_limit, m_limit, stats_file_path=None):
     # ai controller setup
     board_simulator = BoardSimulator()
     eval_function_object = EvaluationFunction(board_simulator)
-    eval_function = eval_function_object.evaluation_func_crude
+    eval_function = eval_function_object.evaluation_func_binary
     mc = MonteCarlo(board_simulator=board_simulator,
                     game_limit=game_limit,
                     move_limit=move_limit,
@@ -67,9 +67,9 @@ def main(g_limit, m_limit, stats_file_path=None):
 
 
 if __name__ == "__main__":
-    file_name = 'evaluation_functions.csv'
+    file_name = 'eval_binary.csv'
     for g_limit in [100]:
-        for m_limit in [5]:
+        for m_limit in [20]:
             for i in range(100):
                 start_time = time()
                 main(g_limit=g_limit, m_limit=m_limit, stats_file_path=file_name)
