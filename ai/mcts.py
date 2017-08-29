@@ -1,7 +1,6 @@
 import math
 import random
 
-from ai.board_simulator import BoardSimulator
 from ai.state_functions import start_state
 
 
@@ -43,7 +42,7 @@ class MonteCarlo:
     """
 
     def __init__(self,
-                 board: BoardSimulator,
+                 board_simulator,
                  game_limit,
                  move_limit,
                  c,
@@ -53,14 +52,14 @@ class MonteCarlo:
                  print_move_ratings=True):
         """
         Constructor for the class
-        :param board: Board object containing the game
+        :param board_simulator: Board object containing the game
         :param game_limit: The number of games to play per move choice
         :param move_limit: Maximum depth to play to
         :param c: Parameter to control exploration
         :param policy: Policy object to use
         """
         # Set field variables
-        self.board = board
+        self.board_simulator = board_simulator
         self.game_limit = game_limit
         self.move_limit = move_limit
         self.c = c
@@ -159,7 +158,7 @@ class MonteCarlo:
             if move_count == 0:
                 # store first move so we can add statistics to it
                 first_move = move
-            state = self.board.next_state(state, move)
+            state = self.board_simulator.next_state(state, move)
 
         # evaluate last state reached
         state_rating = self.eval_function(state)

@@ -19,17 +19,20 @@ class StateParser:
         self.ice_grid = Grid(self.rows, self.cols)
         self.medal_grid = Grid(self.rows, self.cols)
 
-    def get_file_list(self):
+    @staticmethod
+    def get_file_list():
         os.chdir(os.getcwd() + '/../training_data')
         logging.debug(f'files in directory: \n{os.listdir()}\n')
-        return os.listdir()
+        return os.listdir(path='.')
 
-    def get_full_filename(self, file_name):
+    @staticmethod
+    def get_full_filename(file_name):
         main_dir = os.getcwd() + '/../training_data/'
         file_path = main_dir + file_name
         return file_path
 
-    def get_state(self, file_name, state_index):
+    @staticmethod
+    def get_state(file_name, state_index):
         # skip every second line
         state_index *= 2
 
@@ -269,8 +272,6 @@ def utility_function(state, monte_carlo):
     :param state: The state should be in the form that monte_carlo requires.
     :return: U(state), Q(state,action) for all actions in A
     """
-    # TODO functions to change level on monte carlo?
-    level = 1
     monte_carlo.update(state)
     utility, q_values = monte_carlo.pick_move()
 
@@ -291,7 +292,7 @@ if __name__ == '__main__':
     from ai.policies import AllPolicy
 
     board_simulator = BoardSimulator()
-    game_limit = 100
+    game_limit = 200
     move_limit = 5
     c = 1.4
     eval_function = EvaluationFunction(board_simulator).evaluation_func_crude
@@ -304,6 +305,6 @@ if __name__ == '__main__':
                              get_q_values=True,
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(30)):
+    for grid, moves, medals, _ in zip(grids, moves_left, medals_left, range(40)):
         state = numpy_to_native(grid, moves, medals)
         print(utility_function(state, monte_carlo))

@@ -36,18 +36,26 @@ def main():
     event_manager = EventManager()
 
     # ai controller setup
-    pseudo_board = BoardSimulator()
-    eval_function_object = EvaluationFunction(pseudo_board)
+    board_simulator = BoardSimulator()
+    eval_function_object = EvaluationFunction(board_simulator)
     eval_function = eval_function_object.evaluation_func_crude
-    mc = MonteCarlo(pseudo_board, game_limit=game_limit, move_limit=move_limit,
-                    c=c, policy=AllPolicy(), eval_function=eval_function)
+    mc = MonteCarlo(board_simulator=board_simulator,
+                    game_limit=game_limit,
+                    move_limit=move_limit,
+                    c=c,
+                    policy=AllPolicy(),
+                    eval_function=eval_function)
     mcts_cont = MonteCarloController(event_manager, mc)
 
     # mouse controller setup
     mouse_cont = MouseController(event_manager, gui_vars)
 
     # board setup
-    game_board = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT,
+    game_board = Board(rows=PUZZLE_ROWS,
+                       columns=PUZZLE_COLUMNS,
+                       ice_rows=ICE_ROWS,
+                       medals_remaining=LEVEL_1_TOTAL_MEDALS,
+                       moves_remaining=MOVES_LEFT,
                        event_manager=event_manager)
 
     # view setup

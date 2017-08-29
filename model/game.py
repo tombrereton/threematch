@@ -748,7 +748,8 @@ class Board(SimpleBoard):
                  bonus_types: int = BONUS_TYPES,
                  ice_layers=ICE_LAYERS,
                  test=None,
-                 random_seed=RANDOM_SEED):
+                 random_seed=RANDOM_SEED,
+                 stats_file_path=None):
         super().__init__(rows, columns, gem_types, medals_remaining, moves_remaining)
 
         # event manager
@@ -778,7 +779,7 @@ class Board(SimpleBoard):
         self.line_number = 0
 
         # file operations
-        # self.create_file()
+        self.stats_file_path = stats_file_path
 
         # initialise grids
         self.init_gem_grid()
@@ -1114,6 +1115,16 @@ class Board(SimpleBoard):
 
                 self.win_state = False
                 self.terminal_state = True
+
+            # write stats to file
+            if self.stats_file_path and self.terminal_state:
+                outcome = 1 if self.win_state else 0
+                medals_left = self.medals_remaining
+                moves_made = self.total_moves - self.moves_remaining
+                score = self.score
+                line = f'{outcome}, {medals_left}, {moves_made}, {score:0.0f}'
+                with open(self.stats_file_path, 'a') as file:
+                    file.write(line)
 
             # Create bag
             info = self.get_game_info()

@@ -47,15 +47,15 @@ class EvaluationFunction:
         gem_grid, ice_grid, medal_grid, moves_medals = state
 
         # feature weightings
-        medal_portion_weight = 5
+        medal_portion_weight = 1
         ice_removed_weight = 0
         moves_rem_weight = 0
         total_weight = medal_portion_weight + moves_rem_weight + ice_removed_weight
 
         feature_medal_portions = self.feature_medal_portions(ice_grid,
                                                              medal_grid,
-                                                             medal_portion_weight,
                                                              moves_medals,
+                                                             medal_portion_weight,
                                                              total_weight)
 
         feature_ice_removed = self.feature_ice_removed(ice_grid,
@@ -87,7 +87,7 @@ class EvaluationFunction:
         return ice_removed / total_ice * ice_removed_weight / total_weight
 
     @staticmethod
-    def feature_medal_portions(ice_grid, medal_grid, medal_portion_weight, moves_medals, total_weight):
+    def feature_medal_portions(ice_grid, medal_grid, moves_medals, medal_portion_weight, total_weight):
         # medal portion feature calculation
         medals_remaining = moves_medals[1]
         portions_remaining = medals_remaining * 4
