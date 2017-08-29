@@ -173,7 +173,7 @@ class FileParser:
             :return: None
         """
         # Get a list of all .txt files.
-        files = [f'{directory}/{file}' for file in os.listdir(directory) if file[-4:] == '.txt']
+        files = sorted([f'{directory}/{file}' for file in os.listdir(directory) if file[-4:] == '.txt'])
 
         # Go through all files, getting the data from them.
         for game_id, file in enumerate(files):
