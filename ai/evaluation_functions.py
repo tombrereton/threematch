@@ -118,7 +118,6 @@ class EvaluationFunction:
 
         return (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
-
     def evaluation_simple_conv_NN(initial_state, final_state):
         """
         Takes in the state uses a neural network to evaluate how likely

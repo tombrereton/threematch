@@ -5,6 +5,7 @@ import random
 from collections import Counter
 from copy import deepcopy
 from itertools import product
+import time
 
 import numpy as np
 
@@ -278,7 +279,8 @@ def utility_function(state, monte_carlo):
     return utility, q_values
 
 
-if __name__ == '__main__':
+def relabel(start, amount):
+    t = time.time()
     grids = np.load('../file_parser/grids.npy')
     grids = np.reshape(grids, (-1, 9, 9, 4))
     grids = np.transpose(grids, (0, 3, 1, 2))
@@ -287,6 +289,11 @@ if __name__ == '__main__':
     moves_left = np.load('../file_parser/moves_left.npy')
     medals_left = np.load('../file_parser/medals_left.npy')
 
+    grids = grids[start:start + amount]
+    moves_left = moves_left[start:start + amount]
+    medals_left = medals_left[start:start + amount]
+
+    # TODO make this nice
     from ai.mcts import MonteCarlo
     from ai.board_simulator import BoardSimulator
     from ai.evaluation_functions import EvaluationFunction
@@ -310,14 +317,18 @@ if __name__ == '__main__':
     q_ints = []
     q_floats = []
 
-    for grid, moves, medals, i in zip(grids, moves_left, medals_left, range(len(grids[:10]))):
+    for grid, moves, medals, i in zip(grids, moves_left, medals_left, range(len(grids))):
         state = numpy_to_native(grid, moves, medals)
         u, q = utility_function(state, monte_carlo)
         new_labels.append(u)
-        q_ints.extend((i, *[coord for coord_pair in q_value[0] for coord in coord_pair]) for q_value in q)
+        q_ints.extend((start + i, *[coord for coord_pair in q_value[0] for coord in coord_pair]) for q_value in q)
         q_floats.extend(q_value[1] for q_value in q)
 
-    np.save('new_labels', new_labels)
-    np.save('q_ints', q_ints)
-    np.save('q_floats', q_floats)
+    np.save(f'new_labels[{start}-{amount}]', new_labels)
+    np.save(f'q_ints[{start}-{amount}]', q_ints)
+    np.save(f'q_floats[{start}-{amount}]', q_floats)
 
+    print(time.time() - t)
+
+if __name__ == '__main__':
+    relabel(0, 10)
