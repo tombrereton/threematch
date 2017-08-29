@@ -1,0 +1,15 @@
+import os
+import re
+import numpy as np
+
+prefix_pattern = re.compile(r'^(.*)\[')
+number_pattern = re.compile(r'\[(\d*)\-')
+
+files = os.listdir()
+files = [file for file in files if file[-4:] == '.npy']
+prefixes = sorted({re.search(prefix_pattern, file).group(1) for file in files})
+files.sort(key=lambda element: (re.search(prefix_pattern, element).group(1), int(re.search(number_pattern, element).group(1))))
+files = np.reshape(np.array(files), (len(prefixes), -1))
+
+for prefix, sub_files in zip(prefixes, files):
+    np.save(prefix, np.concatenate([np.load(file) for file in sub_files]))
