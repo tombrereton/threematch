@@ -6,8 +6,8 @@ from ai.state_functions import one_hot
 
 
 class EvaluationFunction:
-    def __init__(self, pseudo_board, model_path=None):
-        self.pseudo_board = pseudo_board
+    def __init__(self, board_simulator, model_path=None):
+        self.board_simulator = board_simulator
         self.model_path = model_path
         if model_path:
             from keras.models import load_model
@@ -116,9 +116,12 @@ class EvaluationFunction:
         # How many portions have been completely removed
         portion_count = 4 * fully_removed + showing_sections
 
+        if (portion_count / portions_remaining) > 1:
+            print('over one!')
+
         return (portion_count / portions_remaining) * medal_portion_weight / total_weight
 
-    def evaluation_simple_conv_NN(initial_state, final_state):
+    def evaluation_simple_conv_NN(self, initial_state, final_state):
         """
         Takes in the state uses a neural network to evaluate how likely
         the state will result in a win.

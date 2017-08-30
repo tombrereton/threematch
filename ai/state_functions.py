@@ -354,9 +354,9 @@ def new_labels():
                              get_q_values=True,
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
-    start = 0
+    start = 1000
     batch_size = 1000
-    batches = 80
+    batches = 1
 
     for i in range(batches):
         s = start + i * batch_size
