@@ -159,12 +159,20 @@ class FileParser:
 
     @staticmethod
     def remove_uncovered(grids):
+        ice_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 2]
         medal_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 3]
+        offsets = ((0, 0), (0, -1), (-1, 0), (-1, -1))
 
-        for grid, r, c in zip(*np.where(medal_grids == 0)):
-            if all(medal_grids[grid, r + i, c + j] == 2 * i + j for i, j in ((0, 1), (1, 0), (1, 1))):
-                for i, j in product(range(2), range(2)):
-                    medal_grids[grid, r + i, c + j] = -1
+        for portion, offset in zip(range(4), offsets):
+            for grid, r, c, in zip(*np.where(medal_grids == portion)):
+                r += offset[0]
+                c += offset[1]
+
+                ice_check = (ice_grids[grid, r + i, c + j] == -1 for i, j in product(range(2), range(2)))
+
+                if all(ice_check):
+                    for i, j in product(range(2), range(2)):
+                        medal_grids[grid, r + i, c + j] = -1
 
     def open_files(self, directory='.'):
         """

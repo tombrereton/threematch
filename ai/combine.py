@@ -9,7 +9,7 @@ def key(element):
 prefix_pattern = re.compile(r'^(.*)\[')
 number_pattern = re.compile(r'\[(\d*)-')
 
-files = [file for file in os.listdir('.') if file[-4:] == '.npy']
+files = [file for file in os.listdir('.') if file[-5:] == '].npy']
 prefixes = sorted({re.search(prefix_pattern, file).group(1) for file in files})
 files.sort(key=key)
 files = np.reshape(np.array(files), (len(prefixes), -1))
