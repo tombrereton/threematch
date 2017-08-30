@@ -41,3 +41,20 @@ class SimplePolicy(AllPolicy):
         # moves.sort()
 
         return moves[:limit]
+
+
+class IceTargetPolicy(AllPolicy):
+    def __init__(self):
+        pass
+
+    def moves(self, state, limit=None):
+        if all(state[-1]):
+            legal_moves = find_legal_moves(state[0])
+            return legal_moves
+        else:
+            return []
+
+        moves.sort()
+
+        return moves[:limit]
+

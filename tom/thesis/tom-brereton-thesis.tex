@@ -1,0 +1,271 @@
+\documentclass{bhamthesis}
+\title{Solving Match Three with Artificial Intelligence: A Comparison of Evaluation Functions}
+\author{Thomas Brereton}
+\date{August 2017}  %% Version 2009/12/26
+
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage[toc]{glossaries}
+
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+
+\newtheorem*{thm}{Theorem}
+
+\theoremstyle{definition}
+\newtheorem*{defn}{Definition}
+
+\newcommand{\mar}[1]{\marginpar{\raggedright#1}}
+\newcommand{\clsname}{\textsf{bhamthesis}}
+\newcommand{\bktitle}[1]{\textit{#1}}
+\newcommand{\ZF}{\mathrm{ZF}}
+\newcommand{\IN}{\mathbb{N}}
+
+\makeatletter
+\newcommand{\makecrestcover}{%
+\begin{titlepage}
+\centering\singlespacing
+\vspace*{1cm}
+{\huge\bfseries University of Birmingham\par}
+\vspace*{2cm}
+\includegraphics[width=.3\textwidth]{crest}\par
+\vspace*{\stretch{1}}
+{\Huge\bfseries
+\@author\par
+\vspace{1cm}
+\@title\par}
+\vspace*{\stretch{1}}
+{\Large\@date\par}
+\end{titlepage}
+}
+%\makeatother
+%
+%\prefixappendix
+
+
+\makeglossaries
+
+\newglossaryentry{latex}
+{
+	name=latex,
+	description={Is a mark up language specially suited 
+		for scientific documents}
+}
+
+
+\begin{document}
+\frontmatter
+
+%% Optional/alternative cover with crest
+%\makecrestcover
+\maketitle
+
+
+\begin{abstract}
+To be completed.
+\end{abstract}
+
+\tableofcontents
+\mainmatter
+
+
+\clearpage
+\printglossaries
+
+\chapter{Introduction}
+The game of Go has long been considered the hardest challenge of artificial intelligence (AI) due to its intractable search space ($10^{170}$ possible positions \cite{Gelly2012}). In this dissertation we introduce a new game to test the performance of AI; match three. We do not claim match three to be more challenging, however, the stochastic nature of the game leads to a comparable search space and a much larger branching factor. For example, the branching factor for Go is 200 on average \cite{Gelly2012} while for match three it is conservatively 1080. This branching factor can reach a value of up to $1 \times 10^{60}$ 
+
+Remove this sentence?
+The search space of go is approximately $1 \times 10^{170}$ which is larger than match three which has $1 \times 10^{60}$, however, if we compare it to the $9*9$ version of Go, which has a search space of $1 \times 10^{38}$, it is larger.
+
+We then create an AI program that successfully beats match three with a win rate of 85\% and mean of 13 moves to finish (out of 20). This AI uses several variants of Monte Carlo Tree Search (MCTS) including no evaluation function, a crude evaluation function, and a neural network based function. The main contribution of this report is the comparison of MCTS with varying evaluation functions and we find that the MCTS with a crude evaluation function performs best. The second major contribution is the game of match three itself, which is as an open source application programming interface (API) tailored for AI research including gathering training data and easy access to the game state.
+
+\chapter{Literature Review}
+In this chapter we highlight the literature required to complete and understand this thesis.
+\section{The Agent}
+In this dissertation we refer to the AI program as the Agent. Where the agent senses the environment, makes some rational decision, then acts upon the environment. The environment in this case is the match three game; Gem Island.
+
+An agent is anything that perceives the environment through sensors and acts upon it through actuators \cite{Russell2016}. A rational agent is an agent which chooses the best action value given some reward function. In other words, it makes the right decision given some state of the environment. For example, if we have a self-driving car and it sees a person on the road through some camera sensors, the right decision would be to stop.
+
+The agent program is how it maps the state to an action and it is this which makes the agent rational. A optimum agent program would be perfectly rational whereas a suboptimal program might only be rational by chance.
+
+\section{Decision Theory}
+Decision theory is the theory of making the best decisions based upon utility and probability theory. Where utility is the `usefulness' of a state or, in other words, the happiness of the agent in a certain state. Utility is agent specific as for example two agents in chess, one white and the other black, the white agent would prefer a state where it won much more than the black agent. 
+
+
+
+\section{Markov Decision Process}
+A Markov Decision process (MDP) is a way to model sequential decision processes. The environments are fully observable and sequential decisions are made independent of previous states. The four components used to model an MDP are \cite{Russell2016}:
+
+\begin{itemize}
+	\item $S$: A set of states, with $s_0$ being the initial state.
+	\item $A$: A set of actions.
+	\item $T(s,a,s')$: A transition model that determines the probability of reaching state $s'$ if action $a$ is applied to state $s$.
+	\item $R(s)$: A reward function.
+\end{itemize}
+
+Where $T(s,a,s')$ is equal to:
+
+\begin{equation}\label{mdp}
+P(s' | s,a)
+\end{equation}
+
+\section{Game Theory}
+Game theory extends decision and is concerned with how multiple self-interested agents interact. (What does self-interested mean). Single player with stochastic elements can be modelled using game theory as the agent playing against the `puzzle maker,' where the puzzle maker is, for example, the dealer in blackjack.
+
+A game is generally represented with the following terms \cite{Browne2012}:
+
+\begin{itemize}
+	\item $S$: A set of states, with $s_0$ being the initial state.
+	\item $S_T \subseteq S$: The set of terminal states.
+	\item $n \in N$: The number of players.
+	\item $A$: A set of actions.
+	\item $T(s,a,s')$: A transition model that determines the probability of reaching state $s'$ if action $a$ is applied to state $s$.
+	\item $R(s)$: A reward function.
+\end{itemize}
+
+
+
+\section{Monte Carlo Tree Search}
+Monte Carlo Tree Search (MCTS) has been ground-breaking in helping solve games with intractable search space. Previous brute force approaches could not handle the search space of Go as it could not fit into memory or it would take too long to compute. MCTS overcomes this by simulating a game with a default move policy and recording the outcome $W$, i.e. win or lose. This process is repeated hundreds or thousands of times to record the outcomes and number of plays for each move and its previous state (state-action pairs). After $N$ simulations the move with the best win rate (denoted as $Z(s,a)$) is selected which is given by:
+
+\begin{equation}\label{utility}
+Z(s,a) = \frac{W}{N}
+\end{equation} 
+
+Where $s$ is the state and $a$ is the action from state $s$.
+
+Monte Carlo Tree Search builds a tree data structure in memory representing sequences of actions and each nodes stores the win rate ($W$ and $N$). This building process can be broken into four phases; selection, expansion, roll-out and back-propagation.
+
+To begin with we take the current state of the game as the root node (State $s_0$) of the tree as shown in Figure \ref{f:initTree}.
+\begin{figure}
+	
+	\caption{Initial tree}\label{f:initTree}
+\end{figure}
+We then simulate a game for all legal actions of that root node. This means we now have statistics for each action and its subsequent state. Figure \ref{f:initSim} shows the state $s_0$ as the root node, the legal actions as its branches, and the subsequent states of the actions as children nodes.
+\begin{figure}
+	
+	\caption{Initial Sims}\label{f:initSim}
+\end{figure}
+After initialising the tree we can enter the selection phase. This involves using an algorithm (refer Subsection \ref{s:tPolicy}) to pick the `best' child node as according to the algorithm. This process is repeated with subsequent child nodes until we reach one without any statistics. Selecting these nodes presents a problem of exploiting actions with known good win rates and exploring alternative actions which might have better win rates. This problem is known as the multi-armed bandit problem and has been studied extensively in literature.
+
+Reaching a node with no statistics means we enter the expansion phase. The new node is added to the tree and is initialised with the statistics $N=0$ and $W=0$. Following on from the example shown in Figure \ref{f:initSim}, the expansion phase is illustrated in Figure \ref{f:treeExpansion}.
+\begin{figure}
+	
+	\caption{Tree expansion}\label{f:treeExpansion}
+\end{figure}
+From there we enter the roll-out phase which means rapidly simulating the remaining moves of the game with a simple default policy (refer Subsection \ref{s:rollOut}) as depicted in Figure \ref{f:treeRollout}.
+\begin{figure}
+	
+	\caption{Tree Rollout}\label{f:treeRollout}
+\end{figure} 
+Once we reach the end of the game (terminal state), we can determine if we win or lose. As the name of the final phase suggest, this outcome is back-propagated up the sequence of moves carried out in the tree. For example, if the outcome was a win each node in the tree would have its win count $W$, and play count $N$, increased by one. This process is illustrated in Figure \ref{f:treeBackprop}, note that we do not have any nodes in the roll-out phase so no statistics are recorded in that section.
+
+\begin{figure}
+	
+	\caption{Tree Backprop}\label{f:treeBackprop}
+\end{figure}
+
+\subsection{Tree Policy}\label{s:tPolicy}
+The multi-armed problem is a problem of a gambler maximising his cumulative reward from several slot machine (one-armed bandits). THe gambler plays a slot machine to get a reward from some unknown probability distribution, the more he gambler plays, the more accurate he can estimate the distribution and therefore the expected (average) reward. The gambler must decide which mahince to play, how many times to play it, and when to switch to another. He balances this in order to maximise his cumulative reward over all the slot machines played. 
+
+The multi-armed bandit problem is a way of modelling the selection process of a child node in a Monte Carlo tree. Many solution exist but the most common and successful once is the Upper Confidence Bound for Tree (UCT) \cite{Browne2012}. This uses the formula:
+
+\begin{equation}\label{e:UCT}
+Z(s,a) = \frac{W(s,a)}{N(s,a)} + C\sqrt{\frac{\log(N(s))}{N(s,a)}}
+\end{equation} 
+
+
+Where $N(s,a)$ is the number of times action $a$ has been selection from state $s$, $W(s,a)$ the number of times this action has resulted in a win at the terminal state, $N(s)$ is the total number of simulations played from state $s$, and $C$ is a tuning constant.
+
+UCT is used to calculate the value of the child nodes and the one with the highest value is selected. This is repeated to follow a sequence through the current tree until we come to node which has not been explored before. It has two components; $\frac{W(s,a)}{N(s,a)}$ representing the win rate (exploration factor) and how `good' a node is, $\sqrt{\frac{\log(N(s))}{N(s,a)}}$ representing how much the node has been explored, and $C$ which is tuned to how much the exploration factor should have an impact. The exploitation factor is high for successful nodes and the exploration factor is high for nodes that have been explored very few times. This means the UCT tree policy favours actions that result in a good win rate but will still select action if they have not been explored very much in comparison.
+
+There are many other bandit-based algorithms to potentially improve upon the tree policy. Alternative upper confidence bound algorithms include UCB1-Tuned \cite{Auer2002}, Bayesian UCT \cite{Grunwald2010}, and EXP3 \cite{Auer1995} \cite{Audibert2009}, however the policy is not the focus of this report therefore the papers outlining these policies are not discussed and included in the references for the reader to view at his leisure.
+
+\subsection{Roll-out}\label{s:rollOut}
+The roll-out phase is designed for rapid play-out to reduce the overall computational expense of Monte Carlo Tree Search. This is achieved buy having a default policy which can be as simple as always selecting the move location at position (0,0) in subsequent states until a terminal state is reached. A more common approach is sampling over a uniform random distribution of legal moves but they can also be tailored to suit the problem domain to dramatically improve performance (cite).
+\subsection{One Look-ahead}
+\subsection{One Look-ahead with Roll-out}
+\subsection{Full Monte Carlo Tree Search}
+\section{Neural Networks and Deep Learning}
+
+
+\chapter{Problem Domain}\label{ch:pb}
+In this chapter we classify the game gave of match three in terms of determinism, hidden information, number of players.
+
+The dominating factor of match three is the non-deterministic nature of subsequent states. For example in Gem Island, if you match three gems of the same type, the matched gems will disappear, existing ones will fall leaving empty cells at the top where three gems will randomly appear. As there are 6 gem types, this means we have $6^3 = 216$ new states. This is the minimum number of new states from any move. It is also not uncommon for an entire row to be removed (9 gems) from a cross bonus (ref game rules). An entire row results in $6^9=10,077,696$ new states. Each state has equal probability of occurring therefore match three is dominated by this non-deterministic behaviour.
+
+Classify the problem i.e. non deterministic hidden info. Some level of deterministic.
+
+
+\chapter{Solution Design}
+In this chapter we discuss how we applied current literature solved our problem as classified in chapter \ref{ch:pb}. The design of our implementation of MCTS and DL including any modifications for our specific domain.
+
+Apply literature review to problem domain. Give overview of MCTS and DL design. To do this we needed to build a game and gather data. This implementation of this will be discussed in the Technical requirements.
+Explain design.
+Justify design.
+Show how it is implemented.
+Show snippets of code as pseudo-code.
+
+\section{Monte Carlo Tree Search}
+In this section we outline the specific implementation used to solve match three.
+
+
+\section{No Evaluation Function}
+Full tree. Win 1 loss 0.
+
+\section{Crude Evaluation Function}
+Counts medal portions.
+
+\section{Heuristic Based Evaluation Function}
+Counts medal portions plus other features.
+
+\section{Evaluation Network with Outcome Labels}
+
+\section{Evaluation Network with Utility Labels}
+
+\chapter{Technical Requirements}
+To build an agent to win match three we also needed an open source version of the game so we could get the game state and control it with AI. Therefore we designed and implemented our own version which is outlined in Section \ref{s:gamed}. 
+
+To train the neural network we needed data. To gather this data we built a website that recorded users moves and logged it all in files on the server. The design of the website is outlined in Section \ref{s:website}.
+
+
+\section{Game Design}\label{s:gamed}
+
+\section{Website Design}\label{s:website}
+
+
+\chapter{Artificial Intelligence Performance Analysis}
+\section{Analysis Methodology}
+\section{Results}
+Results from analysis. \cite{Browne2012}
+Which algorithms and parameters performed better.
+Why did they perform better.
+Why did some fail.
+\section{Comparison of Evaluation Functions}
+How the analysis was performed (how to reproduce results).
+
+
+\chapter{Evaluation of Project}
+In this chapter we discuss the limitation of the author and evaluate the difficulty and usefulness of the project.
+
+\chapter{Conclusion}
+Summary of results and findings. Recommendations of design and parameters for similar AI and game design.
+
+\chapter{Further Study}
+In this chapter we discuss possible future studies using the findings in this report and also the existing game API.
+
+
+
+\backmatter
+\chapter{References}
+\printbibliography[heading=none]
+%\bibliographystyle{plain}
+%\bibliography{bibeg}
+
+\chapter{Appendices}
+\end{document}

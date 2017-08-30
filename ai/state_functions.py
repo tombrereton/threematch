@@ -2,11 +2,10 @@ import copy
 import logging
 import os
 import random
+import time
 from collections import Counter
 from copy import deepcopy
 from itertools import product
-import time
-import sys
 
 import numpy as np
 
@@ -356,8 +355,8 @@ def new_labels():
                              print_move_ratings=False)  # Change this to True if you want a formatted print of q_values
 
     start = 0
-    batch_size = 100
-    batches = 10
+    batch_size = 1000
+    batches = 80
 
     for i in range(batches):
         s = start + i * batch_size

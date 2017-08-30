@@ -135,6 +135,29 @@ class MonteCarlo:
 
         return move
 
+    def ice_rollout(self, state):
+        """
+        Method to pick a move after transitions to the next state.
+        It randomly selects a move without relying on generated statistics
+        :param state:
+        :return:
+        """
+        moves = self.policy.moves(state)
+        ice_moves = [move for move in moves if move[0][0] > 3 or move[1][0] > 3]
+
+        if not moves:
+            # If there are no moves return None
+            move = None
+        elif len(moves) == 1:
+            # If there is only one possible move return this
+            move = moves[0]
+        elif ice_moves:
+            move = random.choice([move for move in ice_moves])
+        else:
+            move = random.choice([move for move in moves])
+
+        return move
+
     def play(self):
         """
         Simulates a game to build up the tree
