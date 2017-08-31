@@ -7,11 +7,6 @@ import numpy as np
 from itertools import product
 
 
-def renumber(game_ids):
-    translate = {orig: new for new, orig in enumerate(sorted(set(game_ids)))}
-    return np.array([translate[orig] for orig in game_ids], dtype='i2')
-
-
 class FileParser:
     """
         Class to process files in a directory.
@@ -174,6 +169,27 @@ class FileParser:
                     for i, j in product(range(2), range(2)):
                         medal_grids[grid, r + i, c + j] = -1
 
+    @staticmethod
+    def error_check(grids):
+        ice_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 2]
+        medal_grids = np.transpose(np.reshape(grids, (-1, 9, 9, 4)), (0, 3, 1, 2))[:, 3]
+        offsets = ((0, 0), (0, -1), (-1, 0), (-1, -1))
+
+        bad = set()
+
+        for portion, offset in zip(range(4), offsets):
+            for grid, r, c, in zip(*np.where(medal_grids == portion)):
+                r += offset[0]
+                c += offset[1]
+
+                ice_check = (ice_grids[grid, r + i, c + j] == -1 for i, j in product(range(2), range(2)))
+                medal_check = (medal_grids[grid, r + i, c + j] == -1 for i, j in product(range(2), range(2)))
+
+                if all(ice_check) and any(medal_check):
+                    bad.add(grid)
+
+        return bad
+
     def open_files(self, directory='.'):
         """
             Method to read in all files.
@@ -197,9 +213,9 @@ class FileParser:
         medals_left = np.array(self.medals_left, dtype='b')
         actions = np.array(self.actions)
         win = np.array(self.win)
-        game_ids = renumber(self.game_ids)
+        game_ids = np.array(self.game_ids, dtype='i2')
 
-        FileParser.remove_uncovered(grids)
+        # FileParser.remove_uncovered(grids)
 
         np.save('grids', grids)
         np.save('moves_left', moves_left)
@@ -216,5 +232,26 @@ def open_time(directory='.'):
     t1 = time.time()
     print(t1 - t0)
 
+
+def remove_bad(data_directory='.', label_directory='.'):
+    to_omit = FileParser.error_check(np.load(f'{data_directory}/grids.npy'))
+
+    qi = np.load(f'{label_directory}/q_ints.npy')
+    qf = np.load(f'{label_directory}/q_floats.npy')
+    ui = np.load(f'{label_directory}/utility_ids.npy')
+    uv = np.load(f'{label_directory}/utility_values.npy')
+
+    foo = np.invert(sum((qi[:, 0] == id for id in to_omit), np.full(qi[:, 0].shape, False)))
+    np.save(f'{label_directory}/new_q_ints.npy', qi[foo])
+    np.save(f'{label_directory}/new_q_floats.npy', qf[foo])
+
+    foo = np.invert(sum((ui == id for id in to_omit), np.full(ui.shape, False)))
+    np.save(f'{label_directory}/new_utility_ids.npy', ui[foo])
+    np.save(f'{label_directory}/new_utility_values.npy', uv[foo])
+
+
 if __name__ == '__main__':
-    open_time('data')
+    # open_time('data')
+    # grids = np.load('grids.npy')
+    # FileParser.error_check(grids)
+    remove_bad('.', '../ai')
