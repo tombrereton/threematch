@@ -72,19 +72,6 @@ def reshape_states(states_array):
     return states_array
 
 
-def batch_generator_eval(generator, batch_size):
-    while True:
-        states = []
-        labels = []
-
-        for _ in range(batch_size):
-            state, label = generator.__next__()
-            states.append(state)
-            labels.append(label)
-
-        yield np.array(states), np.array(labels)
-
-
 def data_generator(states, actions, labels, game_ids, moves_remaining):
     perms = list(permutations(range(6)))
 

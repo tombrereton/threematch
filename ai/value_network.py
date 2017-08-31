@@ -17,13 +17,20 @@ K.set_image_data_format('channels_first')
 
 # -----------------------------------------------
 """
-Get states and labels. The order has been randomised so
-it isn't all wins then losses and so the validation and training
-data are random. Each state element is represented as a 14 one hot labels: 
-colour_channels, type_channels, ice_channels, medal_channels
+Load in the states, labels, and label ids.
+
+The label ids identify the corresponding states for the labels. 
+
+We then reshape and shuffle them.
 """
-states, labels, eval_states, eval_labels = get_states_labels()
-print(sum(labels) / len(labels))
+states = load_numpy_file('../file_parser/grids.npy')
+label_ids = load_numpy_file('utility_data/new_utility_ids.npy')
+labels = load_numpy_file('utility_data/new_utility_values.npy')
+states = slice_states(states, label_ids)
+states = reshape_states(states)
+
+# we randomise states
+shuffle_multiple(states, labels)
 
 # split states
 split = 400
@@ -152,30 +159,45 @@ def simple_conv_net(lmbda=None, weight_path=None):
 
 
 # -----------------------------------------------
+def simple_utility_conv_net(lmbda=None, weight_path=None):
+    model_name = 'simple_utility_conv_net'
+    inputs = Input(shape=input_shape)
+    x = Conv2D(12, (3, 3), padding='same')(inputs)
+    x = Activation('relu')(x)
+    # x = Conv2D(6, (5, 5))(x)
+    # x = Activation('relu')(x)
+    x = Flatten()(x)
+    x = Dense(32, activation='sigmoid')(x)
+    output = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=inputs, outputs=output)
+    return model, model_name
+
+
+# -----------------------------------------------
 if __name__ == "__main__":
     # hyper parameters
-    learning_rate = 1e-2
+    learning_rate = 1e-7
     lmbda_reg = 0.01
-    batch_size = 16
-    epochs = 5
-    steps_per_epoch = len(training_states) * 720 / batch_size
-    validation_steps = len(validation_states) * 720 / 100
-    eval_steps = len(eval_states) * 720 / 5
+    batch_size = 8
+    epochs = 35
+    steps_per_epoch = len(training_states) / batch_size
+    validation_steps = len(validation_states)
+    # eval_steps = len(eval_states) * 720 / 5
     log_id = time()
     tensorboard = TensorBoard(log_dir=f"logs/{log_id}")
 
     # compile the model
-    model, model_name = simple_conv_net(lmbda=None)
+    model, model_name = simple_utility_conv_net(lmbda=None)
     sgd = SGD(lr=learning_rate)
     model.compile(optimizer=sgd, loss='binary_crossentropy', metrics=['accuracy'])
 
     # data generators
     train_gen = data_generator_eval(training_states, training_labels)
-    batch_train_gen = batch_generator_eval(train_gen, batch_size)
+    batch_train_gen = batch_generator(train_gen, batch_size)
     valid_gen = data_generator_eval(validation_states, validation_labels)
-    batch_valid_gen = batch_generator_eval(valid_gen, batch_size)
-    eval_gen = data_generator_eval(eval_states, eval_labels)
-    batch_eval_gen = batch_generator_eval(eval_gen, 1)
+    batch_valid_gen = batch_generator(valid_gen, batch_size)
+    # eval_gen = data_generator_eval(eval_states, eval_labels)
+    # batch_eval_gen = batch_generator_eval(eval_gen, 1)
 
     # train the model
     start = time()
@@ -189,13 +211,14 @@ if __name__ == "__main__":
     model.save('data/value_network.h5')
 
     # evaluate model
-    score = model.evaluate_generator(generator=batch_eval_gen,
-                                     steps=len(eval_states))
-    print('\n\nTest loss:', score[0], ', Test accuracy: ', score[1])
+    # score = model.evaluate_generator(generator=batch_eval_gen,
+    #                                  steps=len(eval_states))
+    # print('\n\nTest loss:', score[0], ', Test accuracy: ', score[1])
 
     # append scores and hyper params to file
-    file_name = 'scores_eval.csv'
-    line = f'\n{model_name}, {log_id}, {learning_rate}, {lmbda_reg}, {batch_size}, {epochs}, {score[0]}, {score[1]}, ' \
-           f'{duration:4.2f}'
-    with open(file_name, 'a') as file:
-        file.write(line)
+    # file_name = 'scores_eval.csv'
+    # line = f'\n{model_name}, {log_id}, {learning_rate}, {lmbda_reg}, {batch_size}, {epochs}, {score[0]},
+    # {score[1]}, ' \
+    #        f'{duration:4.2f}'
+    # with open(file_name, 'a') as file:
+    #     file.write(line)

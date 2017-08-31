@@ -79,8 +79,8 @@ if __name__ == "__main__":
         with open(file_name, 'a') as file:
             file.write(heading)
 
-    for g_limit in [100]:
-        for m_limit in [5]:
+    for g_limit in [98]:
+        for m_limit in [20]:
             for i in range(100):
                 start_time = time()
                 main(g_limit=g_limit, m_limit=m_limit, stats_file_path=file_name)
