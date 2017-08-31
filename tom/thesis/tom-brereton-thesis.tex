@@ -212,7 +212,7 @@ Neural networks are made up of an input, output, and one hidden layer as shown i
 \end{figure}
 Whereas deep neural networks are the same except with more than one hidden layer.
 
-\subsection{Training Neural Networks}
+\subsection{Training Neural Networks}\label{s:nnTrainLit}
 
 \subsection{Convolution Layer}
 In this subsection we describe the convolution operation, how it is used in the convolutional layer, and what advantages they have.
@@ -366,6 +366,21 @@ To build an agent to win match three we also needed an open source version of th
 To train the neural network we needed data. To gather this data we built a website that recorded users moves and logged it all in files on the server. The design of the website is outlined in Section \ref{s:website}.
 
 \section{Game Design: Gem Island}\label{s:gamed}
+In this section we outline the game design, design patterns used, the game logic, and sprite animation.
+
+Put in game rules here. 6 gems, ice rows etc.
+
+The overall design pattern used was Model View Controller (MVC), where the model contained the game logic and sent the state and movement information to the view. This information was wrapped in a container class named \verb|UpdateBag|. The view was designed to be naive, in the sense that it only arranged the graphics on the screens as per the information sent in the \verb|UpdateBag|. The view also handled loading in the sprites (gem, ice, and mdeal graphics) and the animations of exploding and moving gems. This required an update loop to manipulates where the gem should be and what the sprite should look like for every frame. 
+
+Several different controllers were used but they all controlled the game by sending \verb|SwapGemsRequest| objects to the model. The \verb|SwapGemsRequest| class is designed to contain two coordinates to indicate the gems to be swapped. The \verb|MouseController| class listens for mouse events, such as the user clicking and dragging, and sends them via a \verb|SwapGemsRequest|. The \verb|NaiveAIController| reads in the encoded states, selects a legal move at random, and sends a swap request.
+Finally, the \verb|MCTSController| class is designed to read in the encoded states, run one of the various MCTS implementations, and send a swap request.
+
+The communication between the model, view, and controller classes was handled by an event manager class: \verb|EventManager|. The event manager class was passed into each of the model, view, and controllers so they could `register' themselves. Every registered class could now received events and requests via their own notify method, which \verb|EventManger| called by looping over the registered objects. Additionally, they could all send events and request by calling the \verb|post| method on the passed in \verb|EventManager| object.
+
+The model class was split into a parent and child class. The parent class contained the logic and could be used by the AI to simulate games quickly without any graphics. The child class contained additional methods for communicating with the view, such as to compute movement coordinates for te animations.
+
+The model and view are designed to be dynamically sized allowing the gem grid to be any $m \times n$ size. Furthermore, any number of ice rows, layers of ice, and medals could be added. Figure \textbf{ref} shows a sixteen by seven grid to illustrate the dynamic properties. A benefit of this dynamic design is the game can be changed to any difficulty therefore it can be more challenging for the AI or user.
+
 
 \begin{figure}
 	\centering
@@ -377,6 +392,10 @@ To train the neural network we needed data. To gather this data we built a websi
 The AI program must be able to read the current state of the game. This means the arrangement of the gems, ice, and medals must all be encoded so the program can determine what is shown on screen. For this we chose a simple string representation where a sequence of four numbers represented one cell in the $9 \times 9$ grid. The four numbers represented the gem type (colour), the bonus type, if ice was present, and a medal portion if it existed. This sequence of four numbers was repeated 81 times to represent each cell in the grid. The AI program could then decode this state string and simulate games via the Monte Carlo Search Tree.
 
 \section{Website Design}\label{s:website}
+
+The website was designed and constructed for users to play Gem Island on either there computer or phone. It was required so we could record the games and gather training data for the neural networks (refer Section \ref{s:nnTrainLit}). We recorded the files by sending an encoded state and the actions taken from it back to the server, which wrote it in a log file.
+
+The overall design was having the game client side (browser) and only the database and file manipulations would be handled on the server. The game was therefore re-written in JavaScript so it could run in the browser. This design was made as it was deemed easier than setting up a full python based server application and also the current Python implementation sends \verb|UpdateBags| for each movement of one cell, which would cause delays and stuttering. This would degrade from the game quality and discourage users to play.
 
 
 \chapter{Artificial Intelligence Performance Analysis}
