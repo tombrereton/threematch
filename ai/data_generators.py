@@ -102,12 +102,12 @@ def data_generator(states, actions, labels, game_ids, moves_remaining):
             yield np.array([state]), output
 
 
-def batch_generator(generator, batch_size, ):
+def batch_generator(generator, batch_size):
     states = []
     labels = []
 
     while True:
-        for _ in range(2 * batch_size):
+        for _ in range(batch_size):
             state, label = generator.__next__()
 
             states.append(state)
