@@ -68,6 +68,17 @@ def main(g_limit, m_limit, stats_file_path=None):
 
 if __name__ == "__main__":
     file_name = 'eval_binary.csv'
+    heading = 'Level, GameLimit, MoveLimit, C, Win, MedalLeft, MovesMade, Score, Duration\n'
+    write_heading = False
+    with open(file_name, 'r') as file:
+        first = file.readline()
+        if first != heading:
+            write_heading = True
+
+    if write_heading:
+        with open(file_name, 'a') as file:
+            file.write(heading)
+
     for g_limit in [100]:
         for m_limit in [20]:
             for i in range(100):
