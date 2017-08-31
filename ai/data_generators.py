@@ -58,6 +58,20 @@ def data_generator_eval(states, labels):
                 yield state, labels[index]
 
 
+def load_numpy_file(file_path):
+    return np.load(file_path)
+
+
+def slice_states(states, indices):
+    return states[indices]
+
+
+def reshape_states(states_array):
+    states_array = np.reshape(states_array, [-1, 9, 9, 4])
+    states_array = np.transpose(states_array, [0, 3, 1, 2])
+    return states_array
+
+
 def batch_generator_eval(generator, batch_size):
     while True:
         states = []

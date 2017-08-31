@@ -1,10 +1,9 @@
 import os
 import re
 import time
+from itertools import product
 
 import numpy as np
-
-from itertools import product
 
 
 class FileParser:
@@ -254,4 +253,4 @@ if __name__ == '__main__':
     # open_time('data')
     # grids = np.load('grids.npy')
     # FileParser.error_check(grids)
-    remove_bad('.', '../ai')
+    remove_bad('.', '../ai/utility_data/')
