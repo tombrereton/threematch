@@ -29,6 +29,10 @@ To account for the hidden information of the medals, we used a simulator to pred
 - six==1.10.0
 - Theano==0.9.0
 
+Install Python 3.6 via the URL below or your package manager (e.g. apt-get or brew).
+
+[https://www.python.org/downloads/release/python-362/](https://www.python.org/downloads/release/python-362/)
+
 To install prerequisites change into the directory and first create a python virtual environment to avoid any 
 dependency conflicts. Then install the dependencies via the requirements file. The commands for this are outlined below.
 
