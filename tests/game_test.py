@@ -128,38 +128,6 @@ def test_create_and_use_cross_bonus():
     assert expected_bonuses == actual_bonuses
 
 
-def test_use_star_bonus():
-    """
-    Testing that a star bonus (type 2)
-    removes all gems of the same type.
-
-    5 gems in a row.
-    2 gems of type 0. Then gem of type 0 and bonus type 2 (star).
-    Then gem of type 1. Then gem of type 0.
-
-    4 Gems should be removed (all of type 0).
-    :return:
-    """
-    print('\n\nTest use bonus type 2:\n')
-
-    # Set up grid for testing
-    row = b2.gem_grid.grid[0]
-    # Add type 2 bonus
-    row[2] = (0, 2, 0)
-    # Add type 1
-    row[3] = (1, 0, 0)
-    print(row)
-
-    # find matches by calling find_matches
-    actual_removals, actual_bonuses = b2.find_matches()
-
-    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 2, 0), (0, 4, 0, 0, 0)]
-    expected_bonuses = []
-
-    assert expected_removals == actual_removals
-    assert expected_bonuses == actual_bonuses
-
-
 def test_create_cross_over_diamond_bonus():
     """
     Tests creation of cross bonus over diamond bonus.
@@ -226,6 +194,38 @@ def test_create_cross_from_star_bonus():
     expected_bonuses = [(0, 0, 0, 1, 0)]
 
     actual_removals, actual_bonuses = b2.find_matches()
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_use_star_bonus():
+    """
+    Testing that a star bonus (type 2)
+    removes all gems of the same type.
+
+    5 gems in a row.
+    2 gems of type 0. Then gem of type 0 and bonus type 2 (star).
+    Then gem of type 1. Then gem of type 0.
+
+    4 Gems should be removed (all of type 0).
+    :return:
+    """
+    print('\n\nTest use bonus type 2:\n')
+
+    # Set up grid for testing
+    row = b2.gem_grid.grid[0]
+    # Add type 2 bonus
+    row[2] = (0, 2, 0)
+    # Add type 1
+    row[3] = (1, 0, 0)
+    print(row)
+
+    # find matches by calling find_matches
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 2, 0), (0, 4, 0, 0, 0)]
+    expected_bonuses = []
 
     assert expected_removals == actual_removals
     assert expected_bonuses == actual_bonuses
