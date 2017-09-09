@@ -59,7 +59,25 @@ cd ~/threematch
 python3 main.py
 ```
 
-3. Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
+4. Run Gem Island with Monte Carlo Tree Search and Heuristic Based Evaluation Function
+```
+cd ~/threematch
+python main_mcts.py
+```
+
+For help with inputs to change the MCTS parameters type:
+```
+cd ~/threematch
+python main_mcts.pt -h
+```
+
+5. Run Gem Island with Monte Carlo Tree Search and Value Network
+```
+cd ~/threematch
+python main_mcts_DL.py
+```
+
+6. Depending on if you have a HiDPi screen or not, you can change the `HD_SCALE` variable
 in `global_variables.py` under the GUI variables section. Recommended values are between and including 1 and 3.
 
 ## Game Rules
@@ -84,14 +102,7 @@ removes the column.
 
 ## Running tests
 
-Pytest is required to run the tests.
- 
-To install pytest use pip:
-
-1. Install pytest
-```
-pip install pytest
-```
+Pytest is required to run the tests and it is included in the requirements file.
 
 2. Run pytest 
 
@@ -99,7 +110,7 @@ To run the test change into the threematch directory and run pytest.
 You need to run pytest as a python command so that it adds the current directory to PYTHONPATH.
 ```
 cd ~/threematch
-python -m pytest
+pytest
 ```
 
 ## Style guide
