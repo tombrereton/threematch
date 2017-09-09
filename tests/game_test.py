@@ -1,7 +1,12 @@
-from itertools import product
+import os
+import sys
+
+myPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, myPath + '/../')
 
 from events.event_manager import EventManager
 from model.game import Board
+from itertools import product
 
 rows0 = 2
 columns0 = 3

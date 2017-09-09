@@ -75,7 +75,7 @@ To be completed.
 \chapter{Introduction}
 The game of Go has long been considered the hardest challenge of artificial intelligence (AI) due to its intractable search space (approx. $10^{170}$ possible states \cite{Gelly2012}). However, the game of Go is still deterministic in the sense that if we are in state $s_0$, and select a legal action $a_0$, we must transition to $s_1$, given the opponent is rational. This is far from real-life scenarios where there is significant factors of hidden information and randomness. This motivated us to build an AI program which would perform successfully in partially observable Markov Decision Processes (POMDPs) with stochastic elements. In this report we use Monte Carlo Tree Search (MCTS) and neural networks (NN) to beat a POMDP game (with stochastic elements) of our own making, Gem Island. 
 
-The aim of Gem Island (refer Section \ref{s:gamed}) is to match three or more gems of the same type over the ice to free the medals underneath. Each game begins by generating gems in a nine by nine grid each of which is randomly one of six different types. Additionally, opaque ice covers the bottom five row of the game to hide the medals, which are randomly placed underneath. Figure \ref{f:gemIsland} illustrates a beginning state of the game. A legal move is made by swapping two gems which results in at least one match.
+The aim of Gem Island (refer Section \ref{s:gamed}) is to match three or more gems of the same type over the ice to free the medals underneath. Each game begins by generating gems in a nine by nine grid each of which is randomly one of six different types. Additionally, opaque ice covers the bottom five row of the game to hide the medals, which are randomly placed underneath. Figure \ref{f:gemIsland} illustrates a beginning state of the game. A legal move is made by swapping two adjacent gems which results in at least one match.
 
 \begin{figure}[h]
 	\centering
@@ -87,9 +87,9 @@ To account for the hidden information of the medals, we used a simulator to pred
 
 The main contribution of this report is the comparison of different MCTS programs with varying evaluation functions. We find that the Heuristic Based (HB) evaluation function (refer Section \ref{s:hbF}) performs best with a win rate of 87\% and mean moves made of 12.5. in comparison to human ability, this is better than average (43\%) and comparable to elite human play (89\%).
 
-The second contribution is the game of Gem Island. It provides a standard test bed for POMDPs with stochastic elements and it is designed with an application programming interface (API) suited for AI research including a method for gathering data, easy access to the game state, and a simple method of connecting AI controllers. Gem Island has a much larger branching factor than full sized Go and its search space is larger than nine by nine Go. For a direct comparison, the branching factor of Go is 200 on average \cite{Gelly2006} whilst for Gem Island it is conservatively 1080. This branching factor can also reach a value of approximately $10^{60}$ as it is theoretically possible to reach any state from one move. Given these factors, it clearly has an intractable search space and proves to be a non-trivial game for AI to solve.
+The second contribution is the game of Gem Island. It provides a standard test bed for POMDPs with stochastic elements and it is designed with an application programming interface (API) suited for AI research, including a method for gathering data, easy access to the game state, and a simple method of connecting AI controllers. Gem Island has a much larger branching factor than full sized Go and its search space is also larger than $9 \times 9$ Go. For a direct comparison, the branching factor of Go is 200 on average \cite{Gelly2006} whilst for Gem Island it is conservatively 1080. This branching factor can also reach a value of approximately $10^{60}$ as it is theoretically possible to reach any state from one move. Given these factors, it clearly has an intractable search space and proves to be a non-trivial game for AI to solve.
 
-We begin this report by introducing Markov Decision Processes (MDPs), POMDPs, Monte Carlo Tree Search (MCTS), and neural networks (NN). We then classify the game in Chapter \ref{ch:pb}: Problem Domain so that we can design a solution as outlined in Chapter \ref{ch:solD}. We complete the report with a comparison of the evaluation functions, concluding remarks, and recommendation for future research.
+We begin this report by introducing Markov Decision Processes (MDPs), POMDPs, Monte Carlo Tree Search (MCTS), and neural networks (NN). We then classify the game in Chapter \ref{ch:pb}: Problem Domain so that we can design a solution as outlined in Chapter \ref{ch:solD}. The game design and rules are outlined in Chapter \ref{ch:techReq}: Technical Requirement and the report is then completed with a comparison of the evaluation functions, concluding remarks, and recommendation for future research.
 
 
 
@@ -507,10 +507,229 @@ The model and view are designed to be dynamically sized allowing the gem grid to
 The AI program must be able to read the current state of the game. This means the arrangement of the gems, ice, and medals must all be encoded so the program can determine what is shown on screen. For this we chose a simple string representation where a sequence of four numbers represented one cell in the $9 \times 9$ grid. The four numbers represented the gem type (colour), the bonus type, if ice is present, and a medal portion if it exists. This sequence of four numbers was repeated 81 times to represent each cell in the grid. The AI program could then decode this state string and simulate games via the Monte Carlo Search Tree.
 
 \section{Testing and Validation}
-Todo.
+In this section the unit tests used to test the game logic are listed. Only the title and description of each are included, for the full code refer to the URL below.
 
-\section{Analysis of Product Suitability}
-Todo.
+Test file:\\
+ \verb|https://github.com/tombrereton/threematch/blob/master/tests/game_test.py|
+
+
+\subsection{Bonus Creation Tests}
+
+
+\begin{verbatim}
+def test_create_diamond_bonus():
+  """
+  Test creation of diamond bonus.
+
+  Vertical is a three in a column.
+  Horizontal is a three in a row.
+
+  The swap makes the horizontal and vertical
+  intersect. The intersection is a
+  diamond bonus (type 3).
+
+  All matches should be removed including the gems
+  from the bonus action (points (1,1) and (1,3))
+  """
+\end{verbatim}
+
+
+\begin{verbatim}
+def test_create_and_use_cross_bonus():
+  """
+  Tests the use and creation of a cross bonus.
+
+  5 gems in a row. 3 gems of type 0.
+  Then 1 gem of type 0 and cross bonus (removes entire row).
+  Then gem of type 1.
+
+  Should remove all gems in row and create a bonus at 1st swap location.
+
+  Swap location is the zeroth element, and the bonus created should be
+  type 1.
+  """
+\end{verbatim}:
+
+\begin{verbatim}
+def test_create_cross_over_diamond_bonus():
+  """
+  Tests creation of cross bonus over diamond bonus.
+
+  Vertical and horizontal matches intersect but one is 4 long.
+  This means a cross should be created rather than a diamond.
+  """
+\end{verbatim}
+
+
+
+\begin{verbatim}
+def test_create_cross_from_star_bonus():
+  """
+  Testing that a cross bonus is still
+  created when using a bonus type 2.
+  8 gems in a row.
+
+  All gems of type 0 should be removed and a
+  bonus of type 1 should be created at location (0,0).
+
+  Bonus type 1 occurs from 4 in a row.
+  Bonus type 2 destroys all gems of that type.
+  """
+\end{verbatim}
+
+\subsection{Bonus Activation Tests}
+\begin{verbatim}
+def test_use_star_bonus():
+  """
+  Testing that a star bonus (type 2)
+  removes all gems of the same type.
+
+  5 gems in a row.
+  2 gems of type 0. Then gem of type 0 and bonus type 2 (star).
+  Then gem of type 1. Then gem of type 0.
+
+  4 Gems should be removed (all of type 0).
+  """
+\end{verbatim}
+
+
+
+\begin{verbatim}
+def test_cascade_bonus_activations():
+  """
+  Testing cascade of bonus activation.
+
+  Star bonus should remove all type 0 gems,
+  one of which is a cross bonus, which should
+  remove the remaining type 1 gem.
+
+  5 gems in a row.
+
+  1st gem is a diamond of type 0. 2nd is a gem of
+  type 1. 3rd is a star of type 0. The last 2
+  are normal gems of type 0.
+
+  The star should remove all gems of type 0, which
+  should the activate the 1st gem bonus, removing the
+  type 1 gem.
+
+  In short, this should remove all gems.
+  """
+\end{verbatim}
+
+
+
+\begin{verbatim}
+def test_using_cross_bonus_vertically():
+  """
+  Testing cross bonus removes column when
+  in vertical match.
+
+  5 gems in a column. 2 gems of type 0,
+  then a gem of type 1, then a cross gem of
+  type 0, then a gem of type 1.
+
+  All 5 gems should be removed.
+  """
+\end{verbatim}
+
+
+
+\begin{verbatim}
+def test_using_cross_bonus_horizontally():
+  """
+  Testing cross bonus removes row when
+  in horizontal match.
+
+  5 gems in a row. 2 gems of type 0,
+  then a gem of type 1, then a cross gem of
+  type 0, then a gem of type 1.
+
+  All 5 gems should be removed.
+  """
+\end{verbatim}
+
+
+\subsection{Ice Removal Tests}
+\begin{verbatim}
+def test_ice_removed():
+  """
+  Testing that all ice is removed
+  when gems are matched on top.
+
+  All gems should match and remove
+  the ice underneath.
+
+  Grid is 2 by 3.
+  """
+\end{verbatim}
+
+\begin{verbatim}
+def test_remove_ice_when_creating_bonus():
+  """
+  Testing that ice is removed when a bonus is
+  also created.
+
+  Row of 4 gems of type 0.
+
+  Should remove all gems except for the first,
+  where a bonus of type 1 is created.
+
+  The ice should all be removed underneath
+  """
+\end{verbatim}
+
+\subsection{Game State Tests}
+
+\begin{verbatim}
+def test_get_game_state():
+  """
+  The get game state function should
+  return all three states as a string in vector form.
+
+  Medals are obscured so they should be all -1 values.
+  """
+\end{verbatim}
+
+\begin{verbatim}
+def test_get_game_state_2():
+  """
+  The get game state function should
+  return all three states as a string in vector form.
+  """
+\end{verbatim}
+
+\begin{verbatim}
+def test_get_game_state_3():
+  """
+  The get game state function should
+  return all three states as a string in vector form.
+  """
+\end{verbatim}
+
+\section{Source Code Collaboration}
+This project was undertaken in collaboration with another Student, Elliott Davies. This section includes Table \ref{t:sourceCode}, which outlines how the source code was divided between the two of us.
+
+\begin{table}[]
+	\centering
+	\caption{The work allocation for this project.}
+	\label{t:sourceCode}
+	\begin{tabular}{lll}
+		\hline
+		Section                  & Python Main Author & JavaScript Main Author \\ \hline
+		Model                    & Thomas Brereton    & Elliott Davies         \\
+		View                     & Elliott Davies     & Thomas Brereton        \\
+		Controllers              & Thomas Brereton    & Thomas Brereton        \\
+		Event Manager and Events & Thomas Brereton    & -                      \\
+		Monte Carlo Tree Search  & Elliot Davies      & -                      \\
+		Evaluation Functions     & Thomas Brereton    & -                      \\
+		Policy                   & Elliott Davies     & -                      \\
+		Value Network            & Thomas Brereton    & -                      \\
+		Policy Network           & Elliott Davies     & -                     
+	\end{tabular}
+\end{table}
+
+
 
 \section{Website Design}\label{s:website}
 

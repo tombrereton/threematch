@@ -1,13 +1,13 @@
 # Three Match
 
-A bejeweled/candy crush type game. The aim is to free the medals underneath the ice by matching 3 or more gems of the 
-same type. Matching gems on top of ice removes it and once a medal is fully uncovered it is freed.
+The aim of Gem Island is to match three or more gems of the same type over the ice to free the medals underneath. 
+Each game begins by generating gems in a nine by nine grid each of which is randomly one of six different types. 
+Additionally, opaque ice covers the bottom five row of the game to hide the medals, which are randomly placed 
+underneath. The Figure below illustrates a beginning state of the game. A legal move is made by swapping two adjacent 
+gems which results in at least one match.
 
-This game is in development and is being built for a masters project at the University of Birmingham.
-
-Once the game is completed, we will build an AI to play and (hopefully) solve it.
-
-Game rules are detailed below.
+To account for the hidden information of the medals, we used a simulator to predict state $s$ given observations $o$
+. To handle the stochastic elements of the gem generation we used a flat UCT MCTS, which stores the actions only from the root state rather than building a tree. 
 
 <p align="center">
   <img src="https://i.imgur.com/2j0mG6i.png">
@@ -17,29 +17,36 @@ Game rules are detailed below.
 
 ### Prerequisites
 
-Pygame - install via pip
+- Python 3.6 (may work with 3.x)
+- Pip
+- virtualenv (should come with Python 3, if not pip install it)
+- h5py==2.7.1
+- Keras==2.0.8
+- numpy==1.13.1
+- pygame==1.9.3
+- PyYAML==3.12
+- scipy==0.19.1
+- six==1.10.0
+- Theano==0.9.0
 
-Python 3.x - install via website or your computer's package manager
+To install prerequisites change into the directory and first create a python virtual environment to avoid any 
+dependency conflicts. Then install the dependencies via the requirements file. The commands for this are outlined below.
 
-Once Python 3 is installed, install pygame
 ```
-pip install pygame
+cd ~/
+git clone https://github.com/tombrereton/threematch.git
+cd ~/threematch
+virtualenv env
+source /env/bin/activate
+pip install -r requirements.txt
 ```
 
 or on some machines
 ```
-pip3 install pygame
+pip3 install -r requirements.txt
 ```
 
-### Installing
-
-To install Gem Island clone the repository to your home directory or wherever you prefer, then run main.py with python.
-
-1. Clone repo: 
-```
-cd ~/
-git clone https://github.com/tombrereton/threematch.git
-```
+### Running the Game and AI
 
 2. Run Gem Island
 ```
@@ -73,7 +80,7 @@ removes the column.
 * 4 gems in a succession earns you a cross bonus.
 * 5 gems in a succession earns you a star bonus.
 * An intersection of a vertical and horizontal match earns you a diamond bonus.
-* If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, bonus.
+* If a match generates multiple bonuses only one is generated following the hierarchy: star, cross, diamond.
 
 ## Running tests
 
