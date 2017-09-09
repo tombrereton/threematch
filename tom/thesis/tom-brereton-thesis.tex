@@ -66,28 +66,42 @@
 
 
 \begin{abstract}
-To be completed.
+The game of Go has long been considered the hardest challenge of artificial intelligence (AI) due to its intractable search space (approx. $10^{170}$ possible states \cite{Gelly2012}). However, the game of Go is still deterministic in the sense that if we are in state $s_0$, and select a legal action $a_0$, we must transition to $s_1$, given the opponent is rational. This is far from real-life scenarios where there is significant factors of hidden information and randomness. This motivated us to build an AI program which would perform successfully in partially observable Markov Decision Processes (POMDPs) with stochastic elements. In this report we use Monte Carlo Tree Search (MCTS) and neural networks (NN) to beat a POMDP game (with stochastic elements) of our own making, Gem Island. We compare numerous evaluation functions and find that the Heuristic Based (HB) function (refer Section \ref{s:hbF}) performs best with a win rate of 87\% and mean moves made of 12.5. In comparison to human ability this is better than average (43\%) and comparable to elite human play (89\%). Moreover, Gem Island provides a standard test bed for POMDPs with stochastic elements and it is designed with an application programming interface (API) suited for AI research. Gem Island has a much larger branching than of Go, which is 200 on average \cite{Gelly2006} whilst for Gem Island it is conservatively 1080. This branching factor can also reach a value of approximately $10^{60}$ as it is theoretically possible to reach any state from one move. Given these factors, it clearly has an intractable search space and proves to be a non-trivial game for AI to solve.
+\end{abstract}
+
+\renewcommand{\abstractname}{Acknowledgements}
+\begin{abstract}
+I would first like to thank my thesis advisor Claudio Zito, PhD of the school of Computer Science at the University of Birmingham. The door to Claudio Zito's office was always open whenever I ran into a trouble spot or had a question about my research or writing. He consistently allowed this paper to be my own work, but steered me in the right the direction whenever he thought I needed it.
+
+I would also like to thank the participants who played the game to help generate the training data for this project. Without their passionate participation and input, the training of the neural networks could not have been successfully conducted.
+
+Finally, I must express my very profound gratitude to my parents and to my sisters for providing me with unfailing support and continuous encouragement throughout my years of study and through the process of researching and writing this thesis. This accomplishment would not have been possible without them. Thank you.
 \end{abstract}
 
 \tableofcontents
+\listoffigures
+\begingroup
+\let\clearpage\relax
+\listoftables
+\endgroup
 \mainmatter
 
 \chapter{Introduction}
 The game of Go has long been considered the hardest challenge of artificial intelligence (AI) due to its intractable search space (approx. $10^{170}$ possible states \cite{Gelly2012}). However, the game of Go is still deterministic in the sense that if we are in state $s_0$, and select a legal action $a_0$, we must transition to $s_1$, given the opponent is rational. This is far from real-life scenarios where there is significant factors of hidden information and randomness. This motivated us to build an AI program which would perform successfully in partially observable Markov Decision Processes (POMDPs) with stochastic elements. In this report we use Monte Carlo Tree Search (MCTS) and neural networks (NN) to beat a POMDP game (with stochastic elements) of our own making, Gem Island. 
 
-The aim of Gem Island (refer Section \ref{s:gamed}) is to match three or more gems of the same type over the ice to free the medals underneath. Each game begins by generating gems in a nine by nine grid each of which is randomly one of six different types. Additionally, opaque ice covers the bottom five row of the game to hide the medals, which are randomly placed underneath. Figure \ref{f:gemIsland} illustrates a beginning state of the game. A legal move is made by swapping two adjacent gems which results in at least one match.
+The aim of Gem Island (refer Section \ref{s:gamed}) is to match three or more gems of the same type over the ice to free the medals underneath. Each game begins by generating gems in a $9 \times 9$ grid each of which is randomly one of six different types. Additionally, opaque ice covers the bottom five rows of the game to hide the medals, which are randomly placed underneath. Figure \ref{f:gemIsland} illustrates a beginning state of the game. A legal move is made by swapping two adjacent gems which results in at least one match.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.4\textwidth]{media/img/screen2}
-	\caption{Gem Island: a match three game.}\label{f:gemIsland}
+	\caption{Gem Island: A match three game.}\label{f:gemIsland}
 \end{figure}
 
 To account for the hidden information of the medals, we used a simulator to predict state $s$ given observations $o$. To handle the stochastic elements of the gem generation we used a flat UCT MCTS \cite{Browne2012}, which stores the actions only from the root state rather than building a tree. 
 
 The main contribution of this report is the comparison of different MCTS programs with varying evaluation functions. We find that the Heuristic Based (HB) evaluation function (refer Section \ref{s:hbF}) performs best with a win rate of 87\% and mean moves made of 12.5. in comparison to human ability, this is better than average (43\%) and comparable to elite human play (89\%).
 
-The second contribution is the game of Gem Island. It provides a standard test bed for POMDPs with stochastic elements and it is designed with an application programming interface (API) suited for AI research, including a method for gathering data, easy access to the game state, and a simple method of connecting AI controllers. Gem Island has a much larger branching factor than full sized Go and its search space is also larger than $9 \times 9$ Go. For a direct comparison, the branching factor of Go is 200 on average \cite{Gelly2006} whilst for Gem Island it is conservatively 1080. This branching factor can also reach a value of approximately $10^{60}$ as it is theoretically possible to reach any state from one move. Given these factors, it clearly has an intractable search space and proves to be a non-trivial game for AI to solve.
+The second contribution is the game of Gem Island. It provides a standard test bed for POMDPs with stochastic elements and it is designed with an application programming interface (API) suited for AI research, including a method for gathering data, easy access to the game state, and a simple method of connecting AI controllers. Gem Island has a much larger branching factor than full sized Go and its search space is also larger than $9 \times 9$ Go. For a direct comparison, the branching factor of Go is 200 on average \cite{Gelly2006}, whilst for Gem Island it is conservatively 1080. This branching factor can also reach a value of approximately $10^{60}$ as it is theoretically possible to reach any state from one move. Given these factors, it clearly has an intractable search space and proves to be a non-trivial game for AI to solve.
 
 We begin this report by introducing Markov Decision Processes (MDPs), POMDPs, Monte Carlo Tree Search (MCTS), and neural networks (NN). We then classify the game in Chapter \ref{ch:pb}: Problem Domain so that we can design a solution as outlined in Chapter \ref{ch:solD}. The game design and rules are outlined in Chapter \ref{ch:techReq}: Technical Requirement and the report is then completed with a comparison of the evaluation functions, concluding remarks, and recommendation for future research.
 
@@ -97,7 +111,7 @@ We begin this report by introducing Markov Decision Processes (MDPs), POMDPs, Mo
 In this chapter we highlight the literature and background information relevant to the project. We begin by defining an Agent, which is a rational AI program, followed by Decision Theory which is about making the best decisions given the `usefulness' of each state. Markov Decision Process (MDPs) is outlined in the next section which builds on decision theory. It is a method of selecting a sequence of decisions which maximises the sum of the rewards from each state. We also build upon MDPs with Partially Observable Markov Decision Processes (POMDPs), which is similar except the agent can only make partial observations of the state and must guess the rest. In the next section we cover how Game Theory extends Decision Theory and that it is a way of modelling the interaction of rational agents. The penultimate section covers Monte Carlo Tree Search (MCTS) which is a method of finding the optimal move from the current state by simulating many games. We conclude the literature review with neural networks (NN), which is a style of programming used to `teach' functions how to classify data.
 
 \section{The Agent}
-In this dissertation we refer to the AI program as the Agent. An agent is anything that perceives the environment through sensors and acts upon it through actuators \cite{Russell2016}. A rational agent is an agent which chooses the best action value given some reward function. In other words, it makes the right decision given some state of the environment.The agent program is how it maps the state to an action and it is this which makes the agent rational. A optimum agent program would be perfectly rational whereas a suboptimal program would select actions at random.
+In this dissertation we refer to the AI program as the Agent. An agent is anything that perceives the environment through sensors and acts upon it through actuators \cite{Russell2016}. A rational agent is an agent which chooses the best action value given some reward function. In other words, it makes the right decision given some state of the environment. The agent program is how it maps the state to an action and it is this which makes the agent rational. An optimum agent program would be perfectly rational, whereas a suboptimal program would select actions at random.
 
 \section{Decision Theory}
 Decision theory is the theory of making the best decisions based upon utility and probability theory \cite{Osborne1994}. Where utility is the `usefulness' of a state or in other words, the happiness of the agent in a certain state. Utility is agent specific as for example two agents in chess, one white and the other black, the white agent would prefer a state where it won much more than the black agent. 
@@ -119,7 +133,7 @@ Markov Decision Processes satisfy the Markov property which means transitioning 
 
 
 \section{Partially Observable Markov Decision Process}\label{s:pomdb}
-Partially Observable Markov Decision Processes (POMDPs) is a Markov Decision Process (MDP) except there is hidden information. To account for the hidden information, states are predicted from observations, for instance if the agent makes observation $o_0$, what is the probability it is in state $s_0$, or $s_1$, or any other state where $s_t \in S$. POMDPs are governed by the same elements as MDPs with the addition of \cite{Browne2012}:
+Partially Observable Markov Decision Processes (POMDPs) is a Markov Decision Process (MDP) except there is hidden information. To account for the hidden information states are predicted from observations, for instance if the agent makes observation $o_0$, what is the probability it is in state $s_0$, or $s_1$, or any other state where $s_t \in S$. POMDPs are governed by the same elements as MDPs with the addition of \cite{Browne2012}:
 
 \begin{itemize}
 	\item $O(s,o)$: An observation model that gives the probability of observing $o$ in state $s$.
@@ -128,7 +142,7 @@ Partially Observable Markov Decision Processes (POMDPs) is a Markov Decision Pro
 Interestingly POMPDs, if possible, can acquire more information to perform better. As such, to achieve optimal performance Kaelbing et al \cite{Kaelbling1998} said that, ``the agent chooses between actions based on the amount of information they provide, the amount of reward they produce, and how they change the state of the world.''
 
 \section{Game Theory}
-Game Theory extends Decision Theory and is concerned with how multiple rational agents interact. It is applicable to this project as single player with stochastic elements can be modelled as the agent playing against the `puzzle maker,' where the puzzle maker is the random element. For example, Solitaire could be modelled as a user playing against a dealer.
+Game Theory extends Decision Theory and is concerned with how multiple rational agents interact. Moreover, single player games with stochastic elements can be modelled as the agent playing against the `puzzle maker'. For example, Solitaire could be modelled as a user playing against a dealer.
 
 A game is generally represented with the following terms \cite{Browne2012}:
 
@@ -152,7 +166,7 @@ Z(s,a) = \frac{W}{N}
 
 Where $s$ is the state and $a$ is the action taken from state $s$, $W$ is the win count, and $N$ is the number of times action $a$ has been selected from state $s$.
 
-Monte Carlo Tree Search builds a tree data structure in memory representing sequences of states and actions where each nodes stores the win rate. This building process can be broken into four phases; selection, expansion, roll-out and back-propagation.
+Monte Carlo Tree Search builds a tree data structure in memory representing sequences of states and actions where each node stores the win rate. This building process can be broken into four phases; selection, expansion, roll-out and back-propagation.
 
 To begin with we take the current state of the game as the root node (State $s_0$) of the tree as shown in Figure \ref{f:initTree} part a.
 \begin{figure}
@@ -179,26 +193,26 @@ Once we reach the end of the game (terminal state), we can determine if we win o
 \end{figure}
 
 \subsection{Tree Policy}\label{s:tPolicy}
-The multi-armed problem is when a gambler tries to maximise his cumulative reward from several slot machine (one-armed bandits). The gambler plays a slot machine to get a reward from some unknown probability distribution, the more he gambler plays, the more accurate he can estimate the distribution and therefore the expected (read average) reward. The gambler must decide which machine to play, how many times to play it, and when to switch to another. He must balance this in order to maximise his cumulative reward over all the slot machines played. 
+The multi-armed problem is when a gambler tries to maximise his cumulative reward from several slot machine (one-armed bandits). The gambler plays a slot machine to get a reward from some unknown probability distribution, the more the gambler plays, the more accurate he can estimate the distribution and therefore the expected (read average) reward. The gambler must decide which machine to play, how many times to play it, and when to switch to another. He must balance this in order to maximise his cumulative reward over all the slot machines played. 
 
-The multi-armed bandit problem is a way of modelling the selection process of child nodes in a Monte Carlo tree. Many solution exist but the most common and successful one is the Upper Confidence Bound for Trees (UCT) \cite{Browne2012}. This uses the formula:
+The multi-armed bandit problem is a way of modelling the selection process of child nodes in a Monte Carlo tree. Many solutions exist but the most common and successful one is the Upper Confidence Bound for Trees (UCT) \cite{Browne2012}. This uses the formula:
 
 \begin{equation}\label{e:UCT}
 Z(s,a) = \frac{W(s,a)}{N(s,a)} + C\sqrt{\frac{\log(N(s))}{N(s,a)}}
 \end{equation} 
 
 
-Where $N(s,a)$ is the number of times action $a$ has been selection from state $s$, $W(s,a)$ the number of times this action has resulted in a win at the terminal state, $N(s)$ is the total number of simulations played from state $s$, and $C$ is a tuning constant.
+Where $N(s,a)$ is the number of times action $a$ has been selected from state $s$, $W(s,a)$ is the number of times this action has resulted in a win at the terminal state, $N(s)$ is the total number of simulations played from state $s$, and $C$ is a tuning constant.
 
 UCT is used to calculate the value of the child nodes and the one with the highest value is selected. This is repeated to follow a sequence through the current tree until we come to a node which has not been explored before. UCT comprises three main components; the exploitation factor $\frac{W(s,a)}{N(s,a)}$ representing the win rate, the exploration factor $\sqrt{\frac{\log(N(s))}{N(s,a)}}$ representing how many times a node has been selected, and the exploration constant $C$ which is tuned to the desired level of exploration. The exploitation factor is high for successful nodes and the exploration factor is high if they have been explored very few times. This means the UCT tree policy favours actions that result in wins but will still select actions if they have not been explored very many times.
 
-There are many other bandit-based algorithms to potentially improve upon the tree policy and alternaitve upper confidence bound algorithms include UCB1-Tuned \cite{Auer2002}, Bayesian UCT \cite{Grunwald2010}, and EXP3 \cite{Auer1995} \cite{Audibert2009}. However, the policy is not the focus of this report is therefore not covered extensively. The papers for the alternative algorithms mentioned above are included in the references for the reader to view at their leisure.
+There are many other bandit-based algorithms to potentially improve upon the tree policy and alternative upper confidence bound algorithms include UCB1-Tuned \cite{Auer2002}, Bayesian UCT \cite{Grunwald2010}, and EXP3 \cite{Auer1995} \cite{Audibert2009}. However, the policy is not the focus of this report, it is therefore not covered extensively. The papers for the alternative algorithms mentioned above are included in the references for the reader to view at their leisure.
 
 \subsection{Roll-out}\label{s:rollOut}
-The roll-out phase is designed for rapid play-out to reduce the overall computational expense of Monte Carlo Tree Search. This is achieved by having a default policy which can be as simple as always selecting the move location at position (0,0) in subsequent states until a terminal state is reached. A more common approach is sampling over a uniform random distribution of legal moves but they can also be tailored to suit the problem domain to dramatically improve performance \cite{Browne2012}.
+The roll-out phase is designed for rapid play-out to reduce the overall computational expense of Monte Carlo Tree Search. This is achieved by having a default policy which can be as simple as always selecting the move location at position (0,0) in subsequent states until a terminal state is reached. A more common approach is sampling over a uniform random distribution of legal moves, but they can also be tailored to suit the problem domain to dramatically improve performance \cite{Browne2012}.
 
 \subsection{Other Enhancements}
-There are further modification that can be done to Monte Carlo Tree Search to enhance it. One popular algorithm is rapid action value estimate (RAVE) and was introduced by MoGo, a 9 $\times$ 9 Go program \cite{Gelly2007}. RAVE solves the problems of initialising the tree (refer Section \ref{s:mcts}) by treating moves selected in subsequent states as if they selected from the root state (if they also exist from the root state).
+There are further modifications that can be done to Monte Carlo Tree Search to enhance it. One popular algorithm is rapid action value estimate (RAVE) and was introduced by MoGo, a 9 $\times$ 9 Go program \cite{Gelly2007}. RAVE solves the problems of initialising the tree (refer Section \ref{s:mcts}) by treating moves selected in subsequent states as if they selected from the root state (if they also exist from the root state).
 This means that any moves from the root state that match those in the simulation can be given the same statistics. RAVE also introduces a decay factor so that this initialisation feature disappears as more simulations are carried out.
 
 \section{Neural Networks and Deep Learning}\label{s:NN}
@@ -207,7 +221,7 @@ In this section we cover the background literature on neural network layers, con
 \subsection{Neural Networks}
 A neural network is a style of programming where programs learn from observing data. It can be thought of as a function which must first be taught how to do something so that it can give accurate answers. They are commonly used in state-of-the-art programs for image recognition, speech recognition, and natural language procession. In other words, they are excellent at classification and identifying patterns in complex data.
 
-Neural networks are made up of an input, output, and one hidden layer as shown in Figure \ref{f:NN} and deep neural networks have more than one hidden layer. A neuron fires when the value of the output function goes above some threshold. This function is composed of weights, input values, and a bias and is given in Equation \ref{f:outputFunc}.
+Neural networks are made up of an input, output, and one hidden layer as shown in Figure \ref{f:NN} and deep neural networks have more than one hidden layer. A neuron fires when the value of the output function goes above some threshold. This function is composed of weights, input values, a bias and is given in Equation \ref{f:outputFunc}.
 
 \begin{equation}\label{f:outputFunc}
 o = w_ix_i - b_i
@@ -223,7 +237,7 @@ Where $w_i$ is the weight, $x_i$ is the input, and $b_i$ is the bias. The output
 
 
 \subsection{Training Neural Networks}\label{s:nnTrainLit}
-Training a neural network (NN) can take days or even weeks and different methods of doing this are common areas of current research. Training a network involves supervised learning which means that it will try to classify something and we tell how close it is to being correct. If it is not correct, the program is reversed and the weights connecting the neurons are changed by a small amount to make it more accurate. This is repeated millions of times until the NN is able to produce accurate results.
+Training a neural network (NN) can take days or even weeks and different methods of doing this are common areas of current research. Training a network involves supervised learning, which means that it will try to classify something, and we tell how close it is to being correct. If it is not correct, the program is reversed and the weights connecting the neurons are changed by a small amount to make it more accurate. This is repeated millions of times until the NN is able to produce accurate results.
 
 \subsection{Convolution Layer}
 In this subsection we describe the convolution operation, how it is used in the convolutional layer and what advantages they have.
@@ -264,7 +278,7 @@ Convolved Image=
 \end{array}\right]
 \end{equation}
 
-The filter can have certain weights to detect edges, dark regions, and other attributes. If we now imagine a convolutional neural network we get something like the example illustrated in Figure \ref{f:CNNInput}. We repeat the previously described process on the input layer to produce the first hidden layer. The weights, depicted as lines in the illustration, are learnt by the neural network and shared for all neurons in the first hidden layer. One shared filter is called a feature map and allows you detect certain aspects of an image such as all the vertical edges. For each different aspect of an image you need another feature map and therefore convolutional neural networks are generally made up of several feature mappings. Figure \ref{f:CNN3Feature} shows three feature maps from the input layer to produce three different layers (channels) in the first hidden layer (3 channels of 24 by 24 neurons). Each layer would be detecting a different aspect of the image such as vertical, horizontal, and circular edges.
+The filter can have certain weights to detect edges, dark regions, and other attributes. If we now imagine a convolutional neural network we get something like the example illustrated in Figure \ref{f:CNNInput}. We repeat the previously described process on the input layer to produce the first hidden layer. The weights, depicted as lines in the illustration, are learnt by the neural network and shared for all neurons in the first hidden layer. One shared filter is called a feature map and allows you to detect certain aspects of an image such as all the vertical edges. For each different aspect of an image you need another feature map and therefore convolutional neural networks are generally made up of several feature mappings. Figure \ref{f:CNN3Feature} shows three feature maps from the input layer to produce three different layers (channels) in the first hidden layer (3 channels of 24 by 24 neurons). Each layer would be detecting a different aspect of the image such as vertical, horizontal, and circular edges.
 
 An advantage of a convolutional layer is that it takes into account the spatial structure of an image. This means it knows the top-left cell is next to the second top-left cell whereas in normal neural networks these two cells would be considered the same distance from each other as the top-left and bottom-right i.e. regular layers have no distance metric.
 
@@ -302,16 +316,14 @@ A drop-out layer is simply a training method to prevent over fitting. Over fitti
 	\caption{Drop-out in a neural network where the dotted lines indicate the temporarily deleted connections \cite{Neilsen2015}.}\label{f:nnDropout}
 \end{figure}
 
-For example, a 50\% drop-out essentially means each half of the NN will trained and able to classify the data independently. Then when it is used in practice, we no longer drop any connections and it is like having two NNs voting on the classification and we take the average as the result.
+For example, a 50\% drop-out essentially means each half of the NN will be trained and able to classify the data independently. Then when it is used in practice we no longer drop any connections. This is like having two NNs voting on the classification and we take the average of the two as the result.
 
 
 
 \chapter{Problem Domain}\label{ch:pb}
 In this chapter we explain why Gem Island (refer Section \ref{s:gamed}) is classified as a POMDP (refer Section \ref{s:pomdb}) with stochastic elements.
 
-Gem Island is a MDP (refer Section \ref{s:mdp}) as it requires a sequence of decision to reach a terminal state and each state transition involves a reward. The agent must find a sequence of actions to maximise the sum of these rewards. 
-
-It is partially observable as each game is generated with five rows of ice with three medals hidden underneath. The medals are also randomly located as long as they do not overlap. An agent cannot see the medals until it removes the ice therefore, this hidden information indicates it is a POMDP.
+Gem Island is a POMDP (refer Sections \ref{s:mdp} and \ref{s:pomdb}) as it requires a sequence of decision to reach a terminal state and each state transition involves a reward. The agent must find a sequence of actions to maximise the sum of these rewards. It is partially observable as each game is generated with five rows of ice with three medals hidden underneath. The medals are also randomly located as long as they do not overlap. An agent cannot see the medals until it removes the ice, therefore, this hidden information indicates it is a POMDP not just an MDP.
 
 Gem Island has stochastic elements due to the random gem generation. Each gem is generated by randomly assigning it a type with value between (and including) one to six. Both the gem generation and medal placement are sampled from a uniform distribution which means these elements are non-deterministic. This element makes it even more challenging for an agent to solve.
 
@@ -376,7 +388,7 @@ The algorithm used for the Flat UCB design is outlined in Figure \ref{l:FlatUCB}
 
 
 \section{No Evaluation Function}\label{s:noEval}
-The first design is a full Monte Carlo Tree Search without an evaluation function. This means the roll-out phase is played until the a terminal state and the action selected from the root state has its win and play count updated according to the outcome. We did not expect this to perform well as it does not realise partially uncovering medals is helpful.
+The first design is a full Monte Carlo Tree Search without an evaluation function. This means the roll-out phase is played until the terminal state and the action selected from the root state has its win and play count updated according to the outcome. We did not expect this to perform well as it does not realise partially uncovering medals is helpful.
 
 \section{Crude Evaluation Function}\label{s:crudeF}
 This design incorporates a crude evaluation function which gives a state a rating in the range of zero to one, where one represents a certain win. This also means the roll-out phase can go to any depth, such as one look-ahead or fives moves, rather than until a terminal state. The function is considered crude as its only feature is to count the portion of medals remaining. The portions count is normalised by dividing it by the total portions remaining in the root state and this function is shown in Equation \ref{e:crude}. This feature was chosen as removing all the medals is the goal of the game and is therefore the most important feature. We expected this to perform well as it can now determine that partially uncovering medals leads to success.
@@ -490,11 +502,11 @@ The overall design pattern used was Model View Controller (MVC), where the model
 Several different controllers were used but they all controlled the game by sending \verb|SwapGemsRequest| objects to the model. The \verb|SwapGemsRequest| class is designed to contain two coordinates to indicate the gems to be swapped. The \verb|MouseController| class listens for mouse events, such as the user clicking and dragging, and sends them via a \verb|SwapGemsRequest|. The \verb|NaiveAIController| reads in the encoded states, selects a legal move at random, and sends a swap request.
 Finally, the \verb|MCTSController| class is designed to read in the encoded states, run one of the various MCTS implementations, and send a swap request.
 
-The communication between the model, view, and controller classes was handled by an event manager class: \verb|EventManager|. The event manager class was passed into each of the model, view, and controllers so they could `register' themselves. Every registered class could now received events and requests via their own notify method, which \verb|EventManger| called by looping over the registered objects. Additionally, they could all send events and requests by calling the \verb|post| method on the passed in \verb|EventManager| object.
+The communication between the model, view, and controller classes was handled by an event manager class: \verb|EventManager|. The event manager class was passed into each of the model, view, and controllers so they could `register' themselves. Every registered class could now receive events and requests via their own notify method, which \verb|EventManger| called by looping over the registered objects. Additionally, they could all send events and requests by calling the \verb|post| method on the passed in \verb|EventManager| object.
 
 The model class was split into a parent and child class. The parent class contained the logic and could be used by the AI to simulate games quickly without any graphics. The child class contained additional methods for communicating with the view, such as to compute movement coordinates for the animations.
 
-The model and view are designed to be dynamically sized allowing the gem grid to be any $m \times n$ size. Furthermore, any number of ice rows, layers of ice, and medals could be added. Figure \ref{f:gemRect} shows a $7 \times 16$ grid to illustrate the dynamic properties. A benefit of this dynamic design is the game can be changed to any difficulty therefore it can be made more challenging for the AI or user.
+The model and view are designed to be dynamically sized allowing the gem grid to be any $m \times n$ size. Furthermore, any number of ice rows, layers of ice, and medals could be added. Figure \ref{f:gemRect} shows a $7 \times 16$ grid to illustrate the dynamic properties. A benefit of this dynamic design is the game can be changed to any difficulty, therefore, it can be made more challenging for the AI or user.
 
 
 \begin{figure}
@@ -814,7 +826,13 @@ The configuration for Gem Island is shown in Table \ref{t:analysisConfig}. As pe
 	\end{tabular}
 \end{table}
 
-The results from the experiments performed as per Section \ref{s:analMeth} are shown in Table \ref{t:MCTSWinRates}. For a baseline, one hundred games were played by randomly selecting a legal move and the results have been included as the first row in the table under the evaluation function name of Random. The win rate of 0\% for selecting random moves also provides evidence that it is a non-trivial game and requires intelligence to solve it.
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{media/img/comparisonEvalFunctions}
+	\caption{A comparison of the evaluation functions.}\label{f:boxComparison}
+\end{figure}
+
+The results from the experiments performed as per Section \ref{s:analMeth} are shown in Table \ref{t:MCTSWinRates} and Figure \ref{f:boxComparison}. For a baseline, one hundred games were played by randomly selecting a legal move and the results have been included as the first row in the table under the evaluation function name of Random. The win rate of 0\% for selecting random moves also provides evidence that it is a non-trivial game and requires intelligence to solve it.
 
 From Table \ref{t:MCTSWinRates} we can see the Heuristic Based (HB) evaluation function (refer Section \ref{s:hbF}) performed best with a win rate of 87\% and a mean moves made (MMM) of 12.5. This is only slightly better than the Crude function (refer Section \ref{s:crudeF}) which is unsurprising as medal portions uncovered is the most important feature to win the game. The HB function also included two additional features, ice and gems removed. This slight increased win rate and slight decreased MMM importantly indicates that these features do not subtract from the success and given more time to tune the parameters it may have performed better. As per the results, we can conclude that removing ice and gems assists in success of the function. This is likely due to the agent acquiring more information when removing ice and the removal of more gems gives a greater chance of random combinations which lead to medal removals. This logic follows along the lines of the quote by Kaelbing et al in Section \ref{s:pomdb} on POMDPs, where optimum moves must balance between maximising reward and acquiring more information.
 
@@ -828,7 +846,7 @@ If we compare the performance of the HB function with humans we see that it is a
 	\label{t:humanWinRates}
 	\begin{tabular}{lrr}
 		\hline
-		Nick name      & Win Rate & Game Played \\ \hline
+		Nick name      & Win Rate & Games Played \\ \hline
 		Astrophysicist & 89 \%    & 118         \\
 		InputNameHere  & 69 \%    & 65          \\
 		Elliott        & 68 \%    & 82          \\
@@ -850,7 +868,7 @@ To appreciate what was completed in this project we provide an outline as follow
 	\item Build, tune and evaluate CNN
 \end{itemize}
 
-It is also worth mentioning the authors motivation in choosing this project. He desired to learn how artificial intelligence (AI) works and how it is implemented. More specifically, how MCTS and CNN work. This required two objectives to be completed, which are (1) build a non-trivial game for AI to solve and (2) build an AI agent to solve it. Both of these objective were met. A game was produced that many users played as shown by over 6000 games recorded in the database. Also, an AI was built successfully with a 87\% win rate over 300 games. 
+It is also worth mentioning the authors motivation in choosing this project. He desired to learn how artificial intelligence (AI) works and how it is implemented. More specifically, how MCTS and CNN work. This required two objectives to be completed, which are (1) build a non-trivial game for AI to solve and (2) build an AI agent to solve it. Both of these objectives were met. A game was produced that many users played as shown by over 6000 games recorded in the database. Also, an AI was built successfully with a 87\% win rate over 300 games. 
 The software engineering of the game was also successful. We employed the design pattern of model-view-controller (MVC) and it separated the code into logical classes. Furthermore, it was simple to connect additional controllers such as the AI agent.
 
 
@@ -861,7 +879,7 @@ In conclusion, we show that a POMDP (refer Section \ref{s:pomdb}) with stochasti
 
 \chapter{Further Study}
 In this chapter we discuss possible future studies using the findings in this report. 
-For further study we recommend training the evaluation network with utility labels as per Section \ref{s:nnUL}. The code repository listed in Appendix A already has a script to calculate these labels and some have been produced. Time must now be spend on designing a successful network.
+For further study we recommend training the evaluation network with utility labels as per Section \ref{s:nnUL}. The code repository listed in Appendix A already has a script to calculate these labels and some have been produced. Time must now be spent on designing a successful network.
 
 
 \backmatter
@@ -871,4 +889,99 @@ For further study we recommend training the evaluation network with utility labe
 %\bibliography{bibeg}
 
 \chapter{Appendices}
+\section*{Appendix A}
+The source code for the python version can be found at the URL below:
+\begin{verbatim}
+https://github.com/tombrereton/threematch
+\end{verbatim}
+
+\noindent The instructions to install and run it are included at the URL above but are also copied in below for convenience.
+
+\noindent \textbf{Prerequisites}
+
+\begin{itemize}
+	\item Python 3.6 (may work with 3.x)
+	\item Pip
+	\item virtualenv (should come with Python 3, if not pip install it)
+	\item h5py==2.7.1
+	\item Keras==2.0.8
+	\item numpy==1.13.1
+	\item pygame==1.9.3
+	\item PyYAML==3.12
+	\item scipy==0.19.1
+	\item six==1.10.0
+	\item Theano==0.9.0
+\end{itemize}
+
+\noindent Install Python 3.6 via the URL below or your package manager (e.g. apt-get or brew).
+
+\begin{verbatim}
+https://www.python.org/downloads/release/python-362/
+\end{verbatim}
+
+\noindent To install prerequisites change into the directory and first create a python virtual environment to avoid any 
+dependency conflicts. Then install the dependencies via the requirements file. The commands for this are outlined below.
+
+\begin{verbatim}
+cd ~/
+git clone https://github.com/tombrereton/threematch.git
+cd ~/threematch
+virtualenv env
+source env/bin/activate
+pip install -r requirements.txt
+\end{verbatim}
+
+
+\noindent Or on some machines
+\begin{verbatim}
+pip3 install -r requirements.txt
+\end{verbatim}
+
+
+\noindent \textbf{Running the Game and AI}
+
+\noindent Run Gem Island
+\begin{verbatim}
+cd ~/threematch
+python main.py
+\end{verbatim}
+
+\noindent Run Gem Island with Monte Carlo Tree Search and Heuristic Based Evaluation Function
+\begin{verbatim}
+cd ~/threematch
+python main_mcts.py
+\end{verbatim}
+
+
+\noindent For help with inputs to change the MCTS parameters type:
+\begin{verbatim}
+cd ~/threematch
+python main_mcts.pt -h
+\end{verbatim}
+
+
+\noindent Run Gem Island with Monte Carlo Tree Search and Value Network
+\begin{verbatim}
+cd ~/threematch
+python main_mcts_DL.py
+\end{verbatim}
+
+
+\noindent Depending on if you have a HiDPi screen or not, you can change the \verb|HD_SCALE| variable
+in \verb|global_variables.py| under the GUI variables section. Recommended values are between and including 1 and 3.
+
+
+\newpage
+\section*{Appendix B}
+The source code for the JavaScript version can be found at the URL:
+
+\begin{verbatim}
+https://github.com/tombrereton/threematch_js
+\end{verbatim}
+
+\noindent The website to play the game is found at the URL:
+\begin{verbatim}
+http://vm-match3.cs.bham.ac.uk/
+\end{verbatim}
+
 \end{document}

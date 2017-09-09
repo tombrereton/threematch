@@ -51,3 +51,7 @@ boxplot(MovesMade~GameLimit, data = mcts_DL,
 boxplot(MovesMade~Type, data = testing_heuristic_eval,
         main = 'Testing Heuristic Features',
         xlab='Feature', ylab='Moves taken to win')
+
+boxplot(MovesMade~Type, data = evaluation_comparison,
+        main = 'Comparison of Moves to Win for Different Evaluation Functions',
+        xlab='Evaluation Function Type', ylab='Moves taken to win')
