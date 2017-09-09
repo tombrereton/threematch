@@ -471,3 +471,11 @@ training_data/*
 /ai/utility_data/
 !/training_data/
 !/training_data/empty.txt
+/file_parser/medals_left.npy
+/file_parser/win.npy
+/file_parser/actions.npy
+/file_parser/grids.npy
+/file_parser/game_ids.npy
+/file_parser/data.7z
+/file_parser/moves_left.npy
+/file_parser/levels.npy
