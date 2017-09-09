@@ -479,3 +479,5 @@ training_data/*
 /file_parser/data.7z
 /file_parser/moves_left.npy
 /file_parser/levels.npy
+file_parser/data/
+/file_parser/data/
