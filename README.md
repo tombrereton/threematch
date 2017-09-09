@@ -3,7 +3,9 @@
 The aim of Gem Island is to match three or more gems of the same type over the ice to free the medals underneath. 
 Each game begins by generating gems in a 9x9 grid each of which is randomly one of 6 different types. 
 Additionally, opaque ice covers the bottom five row of the game to hide the medals, which are randomly placed 
-underneath. The Figure below illustrates a beginning state of the game. A legal move is made by swapping two adjacent 
+underneath. The Figure below illustrates the the game after some moves to remove some ice. A legal move is made by 
+swapping two 
+adjacent 
 gems which results in at least one match.
 
 To account for the hidden information of the medals, we used a simulator to predict state **s** given observations **o**
