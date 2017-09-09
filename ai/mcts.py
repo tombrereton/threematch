@@ -1,8 +1,7 @@
 import math
 import random
 
-from ai.pseudo_board import PseudoBoard
-from ai.state_converter import start_state
+from ai.state_functions import start_state
 
 
 def pick_move_helper(element):
@@ -37,41 +36,45 @@ def interim_move_helper(stats, c):
     return foo
 
 
-lots_of_print = False
-
-if lots_of_print:
-    def p(*arg):
-        print(arg)
-else:
-    def p(*arg):
-        pass
-
-
 class MonteCarlo:
     """
     Monte Carlo Tree Search class
     """
 
-    def __init__(self, board: PseudoBoard, game_limit, move_limit, c, policy, eval_function):
+    def __init__(self,
+                 board_simulator,
+                 game_limit,
+                 move_limit,
+                 c,
+                 policy,
+                 eval_function,
+                 get_q_values=False,
+                 print_move_ratings=True):
         """
         Constructor for the class
-        :param board: Board object containing the game
+        :param board_simulator: Board object containing the game
         :param game_limit: The number of games to play per move choice
         :param move_limit: Maximum depth to play to
         :param c: Parameter to control exploration
         :param policy: Policy object to use
         """
         # Set field variables
-        self.board = board
+        self.board_simulator = board_simulator
         self.game_limit = game_limit
         self.move_limit = move_limit
         self.c = c
         self.policy = policy
         self.eval_function = eval_function
+
         # Initialise list of states
         self.state = None
+
         # Initialise dictionary of statistics
         self.statistics = {}
+
+        # Modifiers
+        self.print_move_ratings = print_move_ratings
+        self.get_q_values = get_q_values
 
     def update(self, state):
         """
@@ -92,15 +95,11 @@ class MonteCarlo:
         # moves = self.board.legal_moves(state)
         moves = self.policy.moves(state)
 
-        p('Choosing interim move')
-
         if not moves:
             # If there are no moves return None
-            p('No moves to chose from')
             move = None
         elif len(moves) == 1:
             # If there is only one possible move return this
-            p('Only one move')
             move = moves[0]
         else:
             # There are multiple moves to choose from
@@ -109,14 +108,11 @@ class MonteCarlo:
 
             if all(stats):
                 # If statistics exist for all these moves use UCB to pick the move
-                p('Move picked from stats')
                 move = max(zip(moves, stats), key=interim_move_helper(stats, self.c))[0]
             else:
                 # If not then pick a move at random from the unexplored moves
-                p('Move picked at random from moves with no stats')
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
 
-        p(f'Move: {move}')
         return move
 
     def roll_out(self, state):
@@ -130,14 +126,34 @@ class MonteCarlo:
 
         if not moves:
             # If there are no moves return None
-            p('No moves to chose from')
             move = None
         elif len(moves) == 1:
             # If there is only one possible move return this
-            p('Only one move')
             move = moves[0]
         else:
-            p('Move picked at random from moves with no stats')
+            move = random.choice([move for move in moves])
+
+        return move
+
+    def ice_rollout(self, state):
+        """
+        Method to pick a move after transitions to the next state.
+        It randomly selects a move without relying on generated statistics
+        :param state:
+        :return:
+        """
+        moves = self.policy.moves(state)
+        ice_moves = [move for move in moves if move[0][0] > 3 or move[1][0] > 3]
+
+        if not moves:
+            # If there are no moves return None
+            move = None
+        elif len(moves) == 1:
+            # If there is only one possible move return this
+            move = moves[0]
+        elif ice_moves:
+            move = random.choice([move for move in ice_moves])
+        else:
             move = random.choice([move for move in moves])
 
         return move
@@ -150,41 +166,35 @@ class MonteCarlo:
         # Make the start state, adds medals
         state = start_state(self.state)
 
-        p(f'Medals: {state[-1][1]}')
-        # Create and empty set for the state/move pairs
-        visited = set()
-
-        p('Starting simulation')
-
         first_move = None
         for move_count in range(self.move_limit):
+            # first check if terminal state and break if so
+            moves_remaining, medals_remaining = state[3]
+            if moves_remaining == 0 or medals_remaining == 0:
+                break
+
             # Get the list of all possible moves at this point
             move = self.interim_move(state) if move_count == 0 else self.roll_out(state)
             if move is None:
                 # No valid moves available, game is over
-                # print('move limit', self.move_limit)
-                p('No moves available, terminal game state')
                 break
             if move_count == 0:
-                # Still expanding, add this to visited set
+                # store first move so we can add statistics to it
                 first_move = move
-            state = self.board.next_state(state, move)
+            state = self.board_simulator.next_state(state, move)
 
-        # Game over or move limit reached
-        # Find the winner of the game
-        # 1 == win, 0 == loss
-        winner = self.eval_function.evaluation_func_simple(state)
-        p(f'Winner: {winner}')
+        # evaluate last state reached
+        state_rating = self.eval_function(self.state, state)
 
         # Update statistics
         stat = self.statistics.get(first_move)
         if stat:
             # Statistics exist, increment plays
             stat[0] += 1
-            stat[1] += winner
+            stat[1] += state_rating
         else:
             # If statistics did not exist add them now
-            self.statistics[first_move] = [1, winner]
+            self.statistics[first_move] = [1, state_rating]
 
     def pick_move(self):
         """
@@ -192,12 +202,11 @@ class MonteCarlo:
         :return: Picked move
         """
         self.statistics = {}
+        stats = None
         # Simulate games, builds tree
         for _ in range(self.game_limit):
             # Simulate one game
             self.play()
-
-        p('Picking a move')
 
         # Get the list of all possible moves at this point
         current_state = self.state
@@ -205,41 +214,42 @@ class MonteCarlo:
         moves = self.policy.moves(current_state)
 
         count = 0
-        print('\nNext move:')
-        for move in moves:
-            play_wins = self.statistics.get(move)
-            if play_wins:
-                plays, wins = play_wins
-                win_rate = wins / plays
-                print('Count: {}, Move: {}, Rating: {:.3f}'.format(count, move, win_rate))
-                count += 1
+        if self.print_move_ratings:
+            print('\nNext move:')
+            for move in moves:
+                play_wins = self.statistics.get(move)
+                if play_wins:
+                    plays, wins = play_wins
+                    win_rate = wins / plays
+                    print(f'Count: {count}, Move: {move}, Rating: {win_rate:.3f}')
+                    count += 1
 
-        print(f'Medals remaining: {current_state[-1][1]}')
+            print(f'Medals remaining: {current_state[-1][1]}')
         if not moves:
             # If there are no moves return None
-            p('No moves to choose from')
             move = None
         elif len(moves) == 1:
             # If there is only one possible move return this
-            p('Only one move')
             move = moves[0]
         else:
             # Get the statistics associated with all moves
             stats = [self.statistics.get(move) for move in moves]
-            # How many of these moves had statistics
-            stats_number = sum(1 for stat in stats if stat)
 
-            p(f'Possible moves: {len(stats)} (with statistics: {stats_number})')
-
-            # Either pick the move with the best win rate or one at random depending on if there were enough statistics
+            # Either pick the move with the best win rate or one at random if there were no statistics
             if len(stats):
                 # Return move with the best win rate
                 move, stat = max((el for el in zip(moves, stats) if el[1]), key=pick_move_helper)
-                print('\nStats based move: {}, Rating: {:.3}'.format(move, stat[1] / stat[0]))
+                if self.print_move_ratings:
+                    print(f'\nStats based move: {move}, Rating: {stat[1] / stat[0]:.3}')
             else:
                 # Return a random move from the moves without statistics
                 move = random.choice([move for move, stat in zip(moves, stats) if not stat])
-                print('\nRandom move: {}'.format(move))
+                if self.print_move_ratings:
+                    print(f'\nRandom move: {move}')
 
-        # print('Move: ', move)
-        return move
+        if self.get_q_values:
+            q_values = [(m, s[1] / s[0]) for m, s in zip(moves, stats)]
+            utility = max(q_values, key=lambda x: x[1])[1]
+            return utility, q_values
+        else:
+            return move

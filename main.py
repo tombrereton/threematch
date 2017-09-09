@@ -30,12 +30,20 @@ from view.gui_variables import *
 def main():
     """..."""
     gui_vars = GUIVariables.from_global()
-    evManager = EventManager()
+    event_manager = EventManager()
 
-    mouse_cont = MouseController(evManager, gui_vars)
-    spinner = CPUSpinnerController(evManager)
-    game = Board(PUZZLE_ROWS, PUZZLE_COLUMNS, ICE_ROWS, LEVEL_1_TOTAL_MEDALS, MOVES_LEFT, event_manager=evManager)
-    view = GUI(gui_vars, *game.state(), event_manager=evManager)
+    mouse_cont = MouseController(event_manager, gui_vars)
+    spinner = CPUSpinnerController(event_manager)
+
+    # board setup
+    game_board = Board(rows=PUZZLE_ROWS,
+                       columns=PUZZLE_COLUMNS,
+                       ice_rows=ICE_ROWS,
+                       medals_remaining=LEVEL_1_TOTAL_MEDALS,
+                       moves_remaining=MOVES_LEFT,
+                       event_manager=event_manager)
+
+    view = GUI(gui_vars, *game_board.state(), event_manager=event_manager)
 
     spinner.run()
 

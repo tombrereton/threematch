@@ -1,4 +1,4 @@
-from ai.move_finder import moves_three
+from ai.state_functions import find_legal_moves
 
 
 class AbstractPolicy:
@@ -22,7 +22,7 @@ class AllPolicy(AbstractPolicy):
         :return: List of possible moves
         """
         if all(state[-1]):
-            legal_moves = moves_three(state[0])
+            legal_moves = find_legal_moves(state[0])
             return legal_moves
         else:
             return []
@@ -41,3 +41,20 @@ class SimplePolicy(AllPolicy):
         # moves.sort()
 
         return moves[:limit]
+
+
+class IceTargetPolicy(AllPolicy):
+    def __init__(self):
+        pass
+
+    def moves(self, state, limit=None):
+        if all(state[-1]):
+            legal_moves = find_legal_moves(state[0])
+            return legal_moves
+        else:
+            return []
+
+        moves.sort()
+
+        return moves[:limit]
+
