@@ -63,9 +63,9 @@ class EvaluationFunction:
         f_gem_grid, f_ice_grid, f_medal_grid, f_moves_medals = final_state
 
         # feature weightings
-        medal_portion_weight = 1
-        ice_removed_weight = 0
-        removed_gems_weight = 0
+        medal_portion_weight = 10
+        ice_removed_weight = 5
+        removed_gems_weight = 1
         moves_rem_weight = 0
         star_count_weight = 0
         cross_count_weight = 0
