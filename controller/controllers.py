@@ -22,12 +22,13 @@ class NaiveAIControllerV1(AbstractController):
     which is sent to the model as a SwapGemsRequest.
     """
 
-    def __init__(self, event_manager, board, move_finder):
+    def __init__(self, event_manager, board, move_finder, quit_on_no_moves=False):
         super().__init__(event_manager)
         # self.event_manager = event_manager
         # self.event_manager.register_listener(self)
         self.game = board
         self.move_finder = move_finder
+        self.quit_on_no_moves = quit_on_no_moves
 
         # ----------------------------------------------------------------------
 
@@ -41,6 +42,9 @@ class NaiveAIControllerV1(AbstractController):
 
             if ev is not None:
                 self.event_manager.post(ev)
+            elif self.quit_on_no_moves:
+                quit_event = QuitEvent()
+                self.event_manager.post(quit_event)
 
 
 class MonteCarloController(AbstractController):

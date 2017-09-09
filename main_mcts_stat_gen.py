@@ -1,11 +1,8 @@
 import sys
 from time import time
 
-from ai.board_simulator import BoardSimulator
-from ai.evaluation_functions import EvaluationFunction
-from ai.mcts import MonteCarlo
-from ai.policies import AllPolicy
-from controller.controllers import CPUSpinnerController, MonteCarloController
+from ai.state_functions import pick_move
+from controller.controllers import CPUSpinnerController, NaiveAIControllerV1
 from events.event_manager import EventManager
 from global_variables import *
 from model.game import Board
@@ -24,7 +21,7 @@ def main(g_limit, m_limit, stats_file_path=None):
         game_limit, move_limit, c = g_limit, m_limit, 1.4
 
     # append scores and hyper params to file
-    line = f'\n1, {game_limit}, {move_limit}, {c}, '
+    line = f'\nRandom, {game_limit}, {move_limit}, {c}, '
     with open(stats_file_path, 'a') as file:
         file.write(line)
 
@@ -32,19 +29,19 @@ def main(g_limit, m_limit, stats_file_path=None):
     event_manager = EventManager()
 
     # ai controller setup
-    board_simulator = BoardSimulator()
-    eval_function_object = EvaluationFunction(board_simulator)
-    eval_function = eval_function_object.evaluation_func_crude
-    mc = MonteCarlo(board_simulator=board_simulator,
-                    game_limit=game_limit,
-                    move_limit=move_limit,
-                    c=c,
-                    policy=AllPolicy(),
-                    eval_function=eval_function,
-                    print_move_ratings=False)
-    mcts_cont = MonteCarloController(event_manager=event_manager,
-                                     monte_carlo_move_finder=mc,
-                                     quit_on_no_moves=True)
+    # board_simulator = BoardSimulator()
+    # eval_function_object = EvaluationFunction(model_path='ai/data/value_network_outcome_labels.h5')
+    # eval_function = eval_function_object.evaluation_simple_conv_NN
+    # mc = MonteCarlo(board_simulator=board_simulator,
+    #                 game_limit=game_limit,
+    #                 move_limit=move_limit,
+    #                 c=c,
+    #                 policy=AllPolicy(),
+    #                 eval_function=eval_function,
+    #                 print_move_ratings=False)
+    # mcts_cont = MonteCarloController(event_manager=event_manager,
+    #                                  monte_carlo_move_finder=mc,
+    #                                  quit_on_no_moves=True)
 
     # mouse controller setup
     # mouse_cont = MouseController(event_manager, gui_vars)
@@ -58,6 +55,8 @@ def main(g_limit, m_limit, stats_file_path=None):
                        event_manager=event_manager,
                        stats_file_path=stats_file_path)
 
+    ai_cont = NaiveAIControllerV1(event_manager, game_board, pick_move, quit_on_no_moves=True)
+
     # view setup
     # view = GUI(gui_vars, *game_board.state(), event_manager=event_manager)
 
@@ -67,8 +66,8 @@ def main(g_limit, m_limit, stats_file_path=None):
 
 
 if __name__ == "__main__":
-    file_name = 'eval_crude.csv'
-    heading = 'Level, GameLimit, MoveLimit, C, Win, MedalLeft, MovesMade, Score, Duration\n'
+    file_name = 'heuristic_tuning.csv'
+    heading = 'Type, GameLimit, MoveLimit, C, Win, MedalLeft, MovesMade, Score, Duration\n'
     write_heading = False
     with open(file_name, 'r') as file:
         first = file.readline()
@@ -79,8 +78,8 @@ if __name__ == "__main__":
         with open(file_name, 'a') as file:
             file.write(heading)
 
-    for g_limit in [100]:
-        for m_limit in [20]:
+    for g_limit in ['-']:
+        for m_limit in ['-']:
             for i in range(100):
                 start_time = time()
                 main(g_limit=g_limit, m_limit=m_limit, stats_file_path=file_name)

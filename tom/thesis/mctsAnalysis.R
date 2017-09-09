@@ -47,3 +47,7 @@ boxplot(MovesMade~MoveLimit, data = mctsRNGDepth[mctsRNGDepth$GameLimit==100,],
 boxplot(MovesMade~GameLimit, data = mcts_DL,
         main = 'DL Eval: Moves Taken to Finish Game',
         xlab='Games Simulated', ylab='Moves taken to win')
+
+boxplot(MovesMade~Type, data = testing_heuristic_eval,
+        main = 'Testing Heuristic Features',
+        xlab='Feature', ylab='Moves taken to win')

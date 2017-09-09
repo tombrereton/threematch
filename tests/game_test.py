@@ -27,10 +27,12 @@ b0 = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', 
 b2 = Board(rows2, columns2, ice_rows2, medals2, moves_left2, test='horizontal', event_manager=event_manager)
 
 
-def test_1_1_use_bonus_type_1():
+def test_1_1_create_and_use_cross_bonus():
     """
+    Tests the use and creation of a cross bonus.
+
     5 gems in a row. 3 gems of type 0.
-    Then 1 gem of type 0 and bonus type 1 (removes entire row).
+    Then 1 gem of type 0 and cross bonus (removes entire row).
     Then gem of type 1.
 
     Should remove all gems in row and create a bonus at 1st swap location.
@@ -60,7 +62,7 @@ def test_1_1_use_bonus_type_1():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_2_use_bonus_type_2():
+def test_1_2_use_star_bonus():
     """
     Testing that a star bonus (type 2)
     removes all gems of the same type.
@@ -92,27 +94,12 @@ def test_1_2_use_bonus_type_2():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_3_use_bonus_type_3():
+def test_1_4_create_cross_over_diamond_bonus():
     """
-    TODO
-    :return:
-    """
-    print('\n\nTest use bonus type 3:\n')
+    Tests creation of cross bonus over diamond bonus.
 
-
-def test_1_4_use_4_match_intersect():
-    """
-    Vertical is a 4 in a row, therefore getting a type 1 bonus
-    Horizontal is a normal 3 match.
-
-    The vertical and horizontal matches intersect.
-
-    This should result in all matches being removed except for the
-    swap position (the intersection point in this case), where a
-    type 1 bonus is created.
-
-    FYI, type 1 bonus removes entire row/column.
-    :return:
+    Vertical and horizontal matches intersect but one is 4 long.
+    This means a cross should be created rather than a diamond.
     """
     print('\n\nTest 4 match intersect:\n')
 
@@ -140,10 +127,11 @@ def test_1_4_use_4_match_intersect():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_5_use_bonus_3_intersect():
+def test_1_5_create_diamond_bonus():
     """
-    Vertical is a three in a column.
+    Test creation of diamond bonus.
 
+    Vertical is a three in a column.
     Horizontal is a three in a row.
 
     The swap makes the horizontal and vertical
@@ -180,9 +168,9 @@ def test_1_5_use_bonus_3_intersect():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_6_use_bonus_2_get_bonus_1():
+def test_1_6_create_cross_from_star_bonus():
     """
-    Testing that a bonus type 1 is still
+    Testing that a cross bonus is still
     created when using a bonus type 2.
 
     8 gems in a row.
@@ -218,8 +206,14 @@ def test_1_6_use_bonus_2_get_bonus_1():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_7_use_bonuses_when_removed_by_bonus():
+def test_1_7_cascade_bonus_activations():
     """
+    Testing cascade of bonus activation.
+
+    Star bonus should remove all type 0 gems,
+    one of which is a cross bonus, which should
+    remove the remaining type 1 gem.
+
     5 gems in a row.
 
     1st gem is a diamond of type 0. 2nd is a gem of
@@ -252,10 +246,10 @@ def test_1_7_use_bonuses_when_removed_by_bonus():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_8_swap_in_bonus_and_activate_vertical():
+def test_1_8_using_cross_bonus_vertically():
     """
-    Testing activating a cross bonus (type 1)
-    when being swapped in.
+    Testing cross bonus removes column when
+    in vertical match.
 
     5 gems in a column. 2 gems of type 0,
     then a gem of type 1, then a cross gem of
@@ -290,10 +284,10 @@ def test_1_8_swap_in_bonus_and_activate_vertical():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_9_swap_in_bonus_and_activate_horizontal():
+def test_1_9_using_cross_bonus_horizontally():
     """
-    Testing activating a cross bonus (type 1)
-    when being swapped in.
+    Testing cross bonus removes row when
+    in horizontal match.
 
     5 gems in a row. 2 gems of type 0,
     then a gem of type 1, then a cross gem of
@@ -328,66 +322,6 @@ def test_1_9_swap_in_bonus_and_activate_horizontal():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_10_swap_in_bonus_from_above_and_activate_horizontal():
-    """
-    Testing activating a cross bonus (type 1)
-    when being swapped in.
-
-    Grid is 2 by 5.
-
-    Second row should all be removed except for swap location
-    which should create a bonus.
-    :return:
-    """
-    print('\n\nTest 1.10 swap in a cross bonus from above and remove all gems horizontally:\n')
-
-    b2 = Board(rows=2, columns=5, ice_rows=0, medals_remaining=0, moves_remaining=10, gem_types=3, test='horizontal',
-               event_manager=event_manager)
-
-    # Set up grid for testing
-    b2.gem_grid.grid[0][1] = (1, 1, 0)
-    b2.gem_grid.grid[0][2] = (1, 0, 0)
-    b2.gem_grid.grid[1][1] = (0, 0, 0)
-    b2.gem_grid.grid[1][4] = (0, 0, 0)
-    print(b2)
-
-    swap_locations = [(0, 1), (1, 1)]
-    b2.set_swap_locations(swap_locations)
-    b2.swap_gems()
-
-    print(b2)
-
-    expected_removals = [(1, 0, 1, 0, 0), (1, 2, 1, 0, 0), (1, 3, 1, 0, 0), (1, 4, 0, 0, 0)]
-    expected_bonuses = [(1, 1, 1, 1, 0)]
-
-    actual_removals, actual_bonuses = b2.find_matches()
-
-    assert expected_removals == actual_removals
-    assert expected_bonuses == actual_bonuses
-
-
-def test_1_11_diamond_grid():
-    """
-    Should remove all gems
-    :return:
-    """
-
-    print('\n\nTest 1.11 grid full of diamonds, remove all:\n')
-
-    b2 = Board(rows=3, columns=3, ice_rows=0, medals_remaining=0, moves_remaining=10, gem_types=1, test='horizontal',
-               event_manager=event_manager)
-    print(b2)
-
-    actual_removed, actual_bonus = b2.find_matches()
-    b2.match_list = actual_removed
-    b2.bonus_list = actual_bonus
-    b2.remove_gems_add_bonuses()
-
-    print('\n\n second:\n')
-    print(actual_removed)
-    print(actual_bonus)
-
-
 def test_2_1_ice_removed():
     """
     Testing that all ice is removed
@@ -402,35 +336,21 @@ def test_2_1_ice_removed():
     print("\nBoard 1:\n")
     print(b)
 
+    # ice should be like this
+    ice_grid = [[-1] * columns0 for _ in range(rows0)]
+    expected_ice = b.ice_grid.grid
+
     swap_locations = [(0, 0), (0, 1)]
     b.set_swap_locations(swap_locations)
 
-    print("\nbag 1:\n")
-    bag = b.get_update()
-    print(bag)
+    actual_removals, actual_bonuses = b.find_matches()
+    b.match_list = actual_removals
+    b.bonus_list = actual_bonuses
+    b.remove_gems_add_bonuses()
 
-    print("\nbag 2:\n")
-    bag = b.get_update()
-    print(bag)
+    actual_ice_grid = b.ice_grid.grid
 
-    print("\nbag 3:\n")
-    bag = b.get_update()
-    print(bag)
-
-    print("\nbag 4:\n")
-    bag = b.get_update()
-    print(bag)
-
-    print("\nbag 5:\n")
-    bag = b.get_update()
-    print(bag)
-
-    print("\nBoard 2:\n")
-    print(b)  #
-    # ice should be like this
-    ice_grid = [[-1] * columns0 for _ in range(rows0)]
-    current_ice = b.ice_grid.grid
-    assert current_ice == ice_grid
+    assert expected_ice == actual_ice_grid
 
 
 def test_2_2_remove_ice_when_creating_bonus():

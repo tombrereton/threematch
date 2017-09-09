@@ -37,8 +37,8 @@ def main():
 
     # ai controller setup
     board_simulator = BoardSimulator()
-    eval_function_object = EvaluationFunction(board_simulator)
-    eval_function = eval_function_object.evaluation_func_crude
+    eval_function_object = EvaluationFunction()
+    eval_function = eval_function_object.ev
     mc = MonteCarlo(board_simulator=board_simulator,
                     game_limit=game_limit,
                     move_limit=move_limit,

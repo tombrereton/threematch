@@ -1,3 +1,48 @@
+@article{Coquelin2007,
+abstract = {Bandit based methods for tree search have recently gained popularity when applied to huge trees, e.g. in the game of go [Gelly et al., 2006]. Their efficient exploration of the tree enables to return rapidly a good value, and improve precision if more time is provided. The UCT algorithm [Kocsis and Szepesvari, 2006], a tree search method based on Upper Confidence Bounds (UCB) [Auer et al. 2002], is believed to adapt locally to the effective smoothness of the tree. However, we show that UCT is ''over-optimistic'' in some sense, leading to a worst-case regret that may be very poor. We propose alternative bandit algorithms for tree search. First, a modification of UCT using a confidence sequence that scales exponentially in the horizon depth is analyzed. We then consider Flat-UCB performed on the leaves and provide a finite regret bound with high probability. Then, we introduce and analyze a Bandit Algorithm for Smooth Trees (BAST) which takes into account actual smoothness of the rewards for performing efficient ''cuts'' of sub-optimal branches with high confidence. Finally, we present an incremental tree expansion which applies when the full tree is too big (possibly infinite) to be entirely represented and show that with high probability, only the optimal branches are indefinitely developed. We illustrate these methods on a global optimization problem of a continuous function, given noisy values.},
+author = {Coquelin, Pierre-Arnaud and Munos, R{\'{e}}mi},
+file = {:home/tom/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Coquelin, Munos - 2007 - Bandit Algorithms for Tree Search.pdf:pdf},
+keywords = {Bandit algorithm Tree search Concentration inequality Stochastic optimization},
+title = {{Bandit Algorithms for Tree Search}},
+url = {https://hal.inria.fr/inria-00150207},
+year = {2007}
+}
+@book{Osborne1994,
+author = {Osborne, Martin J. and Rubinstein, Ariel.},
+isbn = {0262650401},
+pages = {352},
+publisher = {MIT Press},
+title = {{A course in game theory}},
+year = {1994}
+}
+@article{Pratt1964,
+abstract = {This paper concerns utility functions for money. A measure of risk aversion in the small, the risk premium or insurance premium for an arbitrary risk, and a natural concept of decreasing risk aversion are discussed and related to one another. Risks are also considered as a proportion of total assets.},
+author = {Pratt, John W.},
+doi = {10.2307/1913738},
+issn = {00129682},
+journal = {Econometrica},
+keywords = {Cash equivalents,Concavity,Decreasing functions,Economic theory,Financial risk,Insurance premiums,Probability distributions,Risk aversion,Risk premiums,Utility functions},
+month = {jan},
+number = {1/2},
+pages = {122},
+publisher = {The Econometric Society},
+title = {{Risk Aversion in the Small and in the Large}},
+url = {http://www.jstor.org/stable/1913738?origin=crossref},
+volume = {32},
+year = {1964}
+}
+@article{Kaelbling1998,
+abstract = {In this paper, we bring techniques from operations research to bear on the problem of choosing optimal actions in partially observable stochastic domains. We begin by introducing the theory of Markov decision processes (MDPs) and partially observable MDPs (POMDPs). We then outline a novel algorithm for solving POMDPs off line and show how, in some cases, a finite-memory controller can be extracted from the solution to a POMDP. We conclude with a discussion of how our approach relates to previous work, the complexity of finding exact solutions to POMDPs, and of some possibilities for finding approximate solutions. Consider the problem of a robot navigating in a large office building. The robot can move from hallway intersection to intersection and can make local observations of its world. Its actions are not completely reliable, however. Sometimes, when it intends to move, it stays where it is or goes too far; sometimes, when it intends to turn, it overshoots. It has similar problems with observation. Sometimes a corridor looks like a corner; sometimes a T-junction looks like an L-junction. How can such an error-plagued robot navigate, even given a map of the corridors? PII: S 0 0 0 4 -3 7 0 2 (9 8) 0 0 0 2 3 -X 100 L.P. Kaelbling et al. / Artificial Intelligence 101 (1998) 99–134 In general, the robot will have to remember something about its history of actions and observations and use this information, together with its knowledge of the underlying dynamics of the world (the map and other information), to maintain an estimate of its location. Many engineering applications follow this approach, using methods like the Kalman filter [26] to maintain a running estimate of the robot's spatial uncertainty, expressed as an ellipsoid or normal distribution in Cartesian space. This approach will not do for our robot, though. Its uncertainty may be discrete: it might be almost certain that it is in the north-east corner of either the fourth or the seventh floors, though it admits a chance that it is on the fifth floor, as well. Then, given an uncertain estimate of its location, the robot has to decide what actions to take. In some cases, it might be sufficient to ignore its uncertainty and take actions that would be appropriate for the most likely location. In other cases, it might be better for the robot to take actions for the purpose of gathering information, such as searching for a landmark or reading signs on the wall. In general, it will take actions that fulfill both purposes simultaneously.},
+author = {Kaelbling, Leslie Pack and Littman, Michael L and Cassandra, Anthony R},
+file = {:home/tom/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Kaelbling, Littman, Cassandra - 1998 - Planning and acting in partially observable stochastic domains.pdf:pdf},
+journal = {Artificial Intelligence},
+keywords = {Partially observable Markov decision processes,Planning,Uncertainty},
+pages = {99--134},
+title = {{Planning and acting in partially observable stochastic domains}},
+url = {http://people.csail.mit.edu/lpk/papers/aij98-pomdp.pdf},
+volume = {101},
+year = {1998}
+}
 @book{Neilsen2015,
 author = {Neilsen, Michael},
 keywords = {nnDeep},
@@ -44,7 +89,7 @@ journal = {Machine Learning},
 keywords = {adaptive allocation rules,bandit problems,finite horizon regret},
 pages = {235--256},
 title = {{Finite-time Analysis of the Multiarmed Bandit Problem*}},
-url = {https://d2925a48-a-62cb3a1a-s-sites.googlegroups.com/site/anrexplora/bibliography/fta-2002.pdf?attachauth=ANoY7coeZC0HlDGNM8HV9yv-Ortdkr4PV0f4s4ACpG6jD5frf1k4uI4h4UOvKE74sUf7bshbEXqaTwCw0n-5QBDvrQgw6Q6VLAzWNLQlWmI{\_}{\_}O4CnzTwZDM9ed3nEa9h1haSb-Hyz6N1nAT7dSee3},
+url = {https://link.springer.com/article/10.1023/A:1013689704352},
 volume = {47},
 year = {2002}
 }
@@ -75,7 +120,7 @@ doi = {10.1145/2093548.2093574},
 file = {:home/tom/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Gelly et al. - 2012 - The Grand Challenge of Computer Go Monte Carlo Tree Search and Extensions.pdf:pdf},
 number = {3},
 title = {{The Grand Challenge of Computer Go: Monte Carlo Tree Search and Extensions}},
-url = {http://delivery.acm.org/10.1145/2100000/2093574/p106-gelly.pdf?ip=147.188.254.221{\&}id=2093574{\&}acc=ACTIVE SERVICE{\&}key=BF07A2EE685417C5.426E5CB647D49637.4D4702B0C3E38B35.4D4702B0C3E38B35{\&}CFID=802598993{\&}CFTOKEN=66784509{\&}{\_}{\_}acm{\_}{\_}=1503920618{\_}3dff4b75dd84e3d34976},
+url = {http://dl.acm.org/citation.cfm?id=2093574},
 volume = {55},
 year = {2012}
 }
