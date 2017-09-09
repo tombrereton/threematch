@@ -27,107 +27,7 @@ b0 = Board(rows0, columns0, ice_rows0, medals0, moves_left0, test='horizontal', 
 b2 = Board(rows2, columns2, ice_rows2, medals2, moves_left2, test='horizontal', event_manager=event_manager)
 
 
-def test_1_1_create_and_use_cross_bonus():
-    """
-    Tests the use and creation of a cross bonus.
-
-    5 gems in a row. 3 gems of type 0.
-    Then 1 gem of type 0 and cross bonus (removes entire row).
-    Then gem of type 1.
-
-    Should remove all gems in row and create a bonus at 1st swap location.
-
-    Swap location is the zeroth element, and the bonus created should be
-    type 1.
-    :return:
-    """
-    print('\n\nTest use bonus type 1:\n')
-    b1 = Board(rows1, columns1, ice_rows1, medals1, moves_left1, test='horizontal', event_manager=event_manager)
-
-    # Set up grid for testing
-    b1.gem_grid.grid[0][3] = (0, 1, 0)
-    b1.gem_grid.grid[0][4] = (1, 0, 0)
-    print(b1)
-
-    # swap to allow matches to be found
-    swap_locations = [(0, 0), (0, 1)]
-    b1.set_swap_locations(swap_locations)
-
-    expected_removals = [(0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 1, 0), (0, 4, 1, 0, 0)]
-    expected_bonuses = [(0, 0, 0, 1, 0)]
-
-    actual_removals, actual_bonuses = b1.find_matches()
-
-    assert expected_removals == actual_removals
-    assert expected_bonuses == actual_bonuses
-
-
-def test_1_2_use_star_bonus():
-    """
-    Testing that a star bonus (type 2)
-    removes all gems of the same type.
-
-    5 gems in a row.
-    2 gems of type 0. Then gem of type 0 and bonus type 2 (star).
-    Then gem of type 1. Then gem of type 0.
-
-    4 Gems should be removed (all of type 0).
-    :return:
-    """
-    print('\n\nTest use bonus type 2:\n')
-
-    # Set up grid for testing
-    row = b2.gem_grid.grid[0]
-    # Add type 2 bonus
-    row[2] = (0, 2, 0)
-    # Add type 1
-    row[3] = (1, 0, 0)
-    print(row)
-
-    # find matches by calling find_matches
-    actual_removals, actual_bonuses = b2.find_matches()
-
-    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 2, 0), (0, 4, 0, 0, 0)]
-    expected_bonuses = []
-
-    assert expected_removals == actual_removals
-    assert expected_bonuses == actual_bonuses
-
-
-def test_1_4_create_cross_over_diamond_bonus():
-    """
-    Tests creation of cross bonus over diamond bonus.
-
-    Vertical and horizontal matches intersect but one is 4 long.
-    This means a cross should be created rather than a diamond.
-    """
-    print('\n\nTest 4 match intersect:\n')
-
-    b2 = Board(4, 4, ice_rows1, medals1, moves_left1, gem_types=4, test='horizontal', event_manager=event_manager)
-
-    # Set up grid for testing
-    b2.gem_grid.grid[0][2] = (2, 0, 0)
-    b2.gem_grid.grid[1][2] = (2, 0, 0)
-    b2.gem_grid.grid[2][2] = (0, 0, 0)
-    b2.gem_grid.grid[3][2] = (2, 0, 0)
-    print(b2)
-
-    # swap to allow matches to be found
-    swap_locations = [(2, 2), (2, 3)]
-    b2.set_swap_locations(swap_locations)
-    b2.swap_gems()
-
-    # find matches by calling get update twice
-    actual_removals, actual_bonuses = b2.find_matches()
-
-    expected_removals = [(0, 2, 2, 0, 0), (1, 2, 2, 0, 0), (2, 0, 2, 0, 0), (2, 1, 2, 0, 0), (3, 2, 2, 0, 0)]
-    expected_bonuses = [(2, 2, 2, 1, 0)]
-
-    assert expected_removals == actual_removals
-    assert expected_bonuses == actual_bonuses
-
-
-def test_1_5_create_diamond_bonus():
+def test_create_diamond_bonus():
     """
     Test creation of diamond bonus.
 
@@ -168,7 +68,132 @@ def test_1_5_create_diamond_bonus():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_6_create_cross_from_star_bonus():
+def test_create_star_bonus():
+    """
+    Test creation of star bonus.
+
+    5 gems in a row. Swap first 2 gems.
+    :return:
+    """
+    print('\n\nTest 1.5 match intersect:\n')
+
+    b2 = Board(1, 5, ice_rows1, medals1, moves_left1, gem_types=3, test='horizontal', event_manager=event_manager)
+
+    # swap to allow matches to be found
+    swap_locations = [(0, 0), (0, 1)]
+    b2.set_swap_locations(swap_locations)
+    b2.swap_gems()
+
+    expected_removals = [(0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 0, 0), (0, 4, 0, 0, 0)]
+    expected_bonuses = [(0, 0, 0, 2, 0)]
+
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_create_and_use_cross_bonus():
+    """
+    Tests the use and creation of a cross bonus.
+
+    5 gems in a row. 3 gems of type 0.
+    Then 1 gem of type 0 and cross bonus (removes entire row).
+    Then gem of type 1.
+
+    Should remove all gems in row and create a bonus at 1st swap location.
+
+    Swap location is the zeroth element, and the bonus created should be
+    type 1.
+    :return:
+    """
+    print('\n\nTest use bonus type 1:\n')
+    b1 = Board(rows1, columns1, ice_rows1, medals1, moves_left1, test='horizontal', event_manager=event_manager)
+
+    # Set up grid for testing
+    b1.gem_grid.grid[0][3] = (0, 1, 0)
+    b1.gem_grid.grid[0][4] = (1, 0, 0)
+    print(b1)
+
+    # swap to allow matches to be found
+    swap_locations = [(0, 0), (0, 1)]
+    b1.set_swap_locations(swap_locations)
+
+    expected_removals = [(0, 1, 0, 0, 0), (0, 2, 0, 0, 0), (0, 3, 0, 1, 0), (0, 4, 1, 0, 0)]
+    expected_bonuses = [(0, 0, 0, 1, 0)]
+
+    actual_removals, actual_bonuses = b1.find_matches()
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_use_star_bonus():
+    """
+    Testing that a star bonus (type 2)
+    removes all gems of the same type.
+
+    5 gems in a row.
+    2 gems of type 0. Then gem of type 0 and bonus type 2 (star).
+    Then gem of type 1. Then gem of type 0.
+
+    4 Gems should be removed (all of type 0).
+    :return:
+    """
+    print('\n\nTest use bonus type 2:\n')
+
+    # Set up grid for testing
+    row = b2.gem_grid.grid[0]
+    # Add type 2 bonus
+    row[2] = (0, 2, 0)
+    # Add type 1
+    row[3] = (1, 0, 0)
+    print(row)
+
+    # find matches by calling find_matches
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    expected_removals = [(0, 0, 0, 0, 0), (0, 1, 0, 0, 0), (0, 2, 0, 2, 0), (0, 4, 0, 0, 0)]
+    expected_bonuses = []
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_create_cross_over_diamond_bonus():
+    """
+    Tests creation of cross bonus over diamond bonus.
+
+    Vertical and horizontal matches intersect but one is 4 long.
+    This means a cross should be created rather than a diamond.
+    """
+    print('\n\nTest 4 match intersect:\n')
+
+    b2 = Board(4, 4, ice_rows1, medals1, moves_left1, gem_types=4, test='horizontal', event_manager=event_manager)
+
+    # Set up grid for testing
+    b2.gem_grid.grid[0][2] = (2, 0, 0)
+    b2.gem_grid.grid[1][2] = (2, 0, 0)
+    b2.gem_grid.grid[2][2] = (0, 0, 0)
+    b2.gem_grid.grid[3][2] = (2, 0, 0)
+    print(b2)
+
+    # swap to allow matches to be found
+    swap_locations = [(2, 2), (2, 3)]
+    b2.set_swap_locations(swap_locations)
+    b2.swap_gems()
+
+    # find matches by calling get update twice
+    actual_removals, actual_bonuses = b2.find_matches()
+
+    expected_removals = [(0, 2, 2, 0, 0), (1, 2, 2, 0, 0), (2, 0, 2, 0, 0), (2, 1, 2, 0, 0), (3, 2, 2, 0, 0)]
+    expected_bonuses = [(2, 2, 2, 1, 0)]
+
+    assert expected_removals == actual_removals
+    assert expected_bonuses == actual_bonuses
+
+
+def test_create_cross_from_star_bonus():
     """
     Testing that a cross bonus is still
     created when using a bonus type 2.
@@ -206,7 +231,7 @@ def test_1_6_create_cross_from_star_bonus():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_7_cascade_bonus_activations():
+def test_cascade_bonus_activations():
     """
     Testing cascade of bonus activation.
 
@@ -246,7 +271,7 @@ def test_1_7_cascade_bonus_activations():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_8_using_cross_bonus_vertically():
+def test_using_cross_bonus_vertically():
     """
     Testing cross bonus removes column when
     in vertical match.
@@ -284,7 +309,7 @@ def test_1_8_using_cross_bonus_vertically():
     assert expected_bonuses == actual_bonuses
 
 
-def test_1_9_using_cross_bonus_horizontally():
+def test_using_cross_bonus_horizontally():
     """
     Testing cross bonus removes row when
     in horizontal match.
@@ -322,7 +347,7 @@ def test_1_9_using_cross_bonus_horizontally():
     assert expected_bonuses == actual_bonuses
 
 
-def test_2_1_ice_removed():
+def test_ice_removed():
     """
     Testing that all ice is removed
     when gems are matched on top.
@@ -353,7 +378,7 @@ def test_2_1_ice_removed():
     assert expected_ice == actual_ice_grid
 
 
-def test_2_2_remove_ice_when_creating_bonus():
+def test_remove_ice_when_creating_bonus():
     """
     Testing that ice is removed when a bonus is
     also created.
@@ -389,7 +414,7 @@ def test_2_2_remove_ice_when_creating_bonus():
     assert expected_bonuses == actual_bonuses
 
 
-def test_3_1_get_game_state():
+def test_get_game_state():
     """
     The get game state function should
     return all three states as a string in vector form.
@@ -416,7 +441,7 @@ def test_3_1_get_game_state():
     assert state == expected_state
 
 
-def test_3_2_get_game_state():
+def test_get_game_state_2():
     """
     The get game state function should
     return all three states as a string in vector form.
@@ -439,7 +464,7 @@ def test_3_2_get_game_state():
     assert game_state == expected_game_state
 
 
-def test_3_3_get_game_state():
+def test_get_game_state_3():
     """
     The get game state function should
     return all three states as a string in vector form.
